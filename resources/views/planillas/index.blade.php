@@ -60,14 +60,46 @@ $(document).ready(function() {
                 $('#generateReportButton').text('Generar Reporte');
 
                 $('#generateReportButton').on('click', function(e) {
-                    e.preventDefault(); // Prevenir el envío del formulario por defecto
+                e.preventDefault(); // Prevenir el envío del formulario por defecto
 
-                    // Cambia el action del formulario y establece el target para abrir en una nueva ventana
-                    $('#reporteForm').attr('action', '{{ route('planillas.generar_reporte') }}').attr('target', '_blank');
-                    
-                    // Envía el formulario
-                    $('#reporteForm').submit();
+                // Obtener los datos del formulario
+                var formData = new FormData($('#reporteForm')[0]);
+
+                // Hacer la petición AJAX
+                fetch('{{ route('planillas.generar_reporte') }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // Agrega el token CSRF
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        // Si la respuesta no es 200, manejar el error
+                        return response.json().then(data => {
+                            throw new Error(data.error);
+                        });
+                    }
+                    // Si la respuesta es correcta, puede ser la lógica para mostrar el reporte
+                    return response.blob();
+                })
+                .then(blob => {
+                    // Si todo fue bien, abrir el reporte en una nueva pestaña (si es un archivo descargable)
+                    var url = window.URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = "reporte.pdf"; // Cambiar el nombre del archivo si es necesario
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove(); // Elimina el enlace después de hacer clic
+                })
+                .catch(error => {
+                    // Mostrar el mensaje de error si no se encontraron empleados
+                    alert(error.message);
                 });
+            });
+
 
 
                 // Mostrar el campo correspondiente basado en la selección
@@ -110,9 +142,45 @@ $(document).ready(function() {
             });
     
             // Manejar el clic en el botón de reporte general
-            $('#generalReportButton').on('click', function() {
-                window.open('{{ route('planillas.generar_reporte_general') }}', '_blank'); // Abre en una nueva pestaña
+            $('#generalReportButton').on('click', function(e) {
+            e.preventDefault(); // Prevenir la acción por defecto
+
+            var url = '{{ route('planillas.generar_reporte_general') }}'; // La URL a la que haremos la solicitud
+
+            // Usar fetch para hacer la petición
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // Añadir token CSRF si es necesario
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // Si la respuesta no es 200, manejar el error
+                    return response.json().then(data => {
+                        throw new Error(data.error);
+                    });
+                }
+                // Si la respuesta es correcta, procesar el PDF u otro tipo de reporte
+                return response.blob(); // Esperar el archivo (PDF, etc.)
+            })
+            .then(blob => {
+                // Si la respuesta es correcta, abrir el reporte o descargarlo
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = "reporte_general.pdf"; // Nombre del archivo a descargar
+                document.body.appendChild(a);
+                a.click(); // Hacer clic en el enlace de descarga
+                a.remove(); // Eliminar el enlace después de la descarga
+            })
+            .catch(error => {
+                // Mostrar el mensaje de error si ocurrió algún problema
+                alert(error.message);
             });
+        });
+
         });
     
         function confirmDeletion() {
@@ -153,6 +221,19 @@ $(document).ready(function() {
                         });
                     </script>
                 @endif
+
+                 <!-- Mostrar mensajes de éxito -->
+                 @if(session('success'))
+                 <script>
+                     document.addEventListener('DOMContentLoaded', function() {
+                         Swal.fire({
+                             icon: 'success',
+                             title: '¡Éxito!',
+                             text: '{{ session('success') }}',
+                         });
+                     });
+                 </script>
+             @endif
 
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#generarPlanillaModal">
@@ -198,6 +279,13 @@ $(document).ready(function() {
                                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $planilla['COD_PLANILLA'] }}">
                                             <li><a class="dropdown-item" href="{{ route('planillas.show', $planilla['COD_PLANILLA']) }}">Ver detalle de planilla</a></li>
                                             <li><a class="dropdown-item" href="{{ route('reporte.generar', ['id' => $planilla->COD_PLANILLA]) }}" class="btn btn-success" target="_blank">Reporte</a></li>
+                                            <li>
+                                                <form action="{{ route('planillas.destroy', $planilla['COD_PLANILLA']) }}" method="POST" class="d-inline" onsubmit="return confirmDelete({{ $planilla['COD_PLANILLA'] }})">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="dropdown-item">ELIMINAR</button>
+                                                </form>
+                                            </li>
                                         </ul>
                                     </div>
                                 </td>
