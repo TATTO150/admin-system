@@ -3,7 +3,8 @@
 @section('title', 'Listado de Empleados')
 
 @section('content_header')
-    <h1>Empleados</h1>
+<h3 class="text-center mt-3" id="tituloActivos">Empleados</h3>
+<h3 id="tituloInactivos" class="text-center mt-3" style="display: none;">Empleados Anteriores</h3>
 @stop
 
 @section('content')
@@ -32,32 +33,32 @@
 @endif
 
 
-    <div class="custom-button-container mb-3">
-        <!-- Botones para crear empleado, ver inactivos y generar reporte -->
-        <a class="btn btn-info text-white hover:bg-green-600" href="{{ route('empleados.crear') }}">Nuevo</a>
-        <button id="toggleInactivos" class="btn btn-primary bg-blue-500 text-white hover:bg-blue-600">Ver Empleados Anteriores</button>
-        <button id="reporteModalBtn" class="btn btn-info bg-teal-500 text-white hover:bg-teal-600" data-toggle="modal" data-target="#pdfModal">Generar Reporte</button>
-    </div>
-    
-
-    <!-- Formulario de búsqueda -->
-<form id="buscador-form" method="GET">
-    <div class="input-group mb-3">
-        <input type="text" class="form-control" id="buscar" placeholder="Buscar..." name="buscar" value="{{ request()->input('buscar') }}">
-    </div>
-</form>
+   
 
     <!-- Card para empleados activos -->
-    <div class="card mb-3">
+    <div class="card mb-3 mt-4">
         <div class="card-header">
-            <h3>Empleados Activos</h3>
+           <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
+                <!-- Botones para crear empleado, ver inactivos y generar reporte -->
+                <a class="btn btn-success text-white hover:bg-green-600" href="{{ route('empleados.crear') }}">Nuevo</a>
+                <button id="toggleInactivos" class="btn btn-warning text-white hover:bg-blue-600">Ver Empleados Anteriores</button>
+                <button id="reporteModalBtn" class="btn btn-primary bg-teal-500 text-white hover:bg-teal-600" data-toggle="modal" data-target="#pdfModal">Generar Reporte</button>
+            </div>
+            
+        
+            <!-- Formulario de búsqueda -->
+        <form id="buscador-form" method="GET">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="buscar" placeholder="Buscar..." name="buscar" value="{{ request()->input('buscar') }}">
+            </div>
+        </form>
         </div>
         
-        <div class="card-body">
+        <div class="card-body"  id="tablaActivos">
             <!-- Contenedor para la tabla con barra de desplazamiento horizontal -->
             <div class="table-responsive">
-                <table id="tablaActivos" class="table table-striped table-bordered dt-responsive nowrap">
-                    <thead>
+                <table  class="table table-hover table-bordered dt-responsive nowrap">
+                    <thead class="thead-dark">
                         <tr>
                             <th>Acciones</th>
                             <th>DNI</th>
@@ -120,14 +121,14 @@
 
     <!-- Card para empleados inactivos -->
     <div class="card mb-3 d-none" id="tablaInactivos">
-        <div class="card-header">
-            <h3>Empleados Inactivos</h3>
-        </div>
+        
+
+        
         <div class="card-body">
             <!-- Contenedor para la tabla con barra de desplazamiento horizontal -->
             <div class="table-responsive">
-                <table id="tablaInactivos" class="table table-striped table-bordered dt-responsive nowrap">
-                    <thead>
+                <table id="tablaInactivos" class="table table-hover table-bordered dt-responsive nowrap">
+                    <thead class="thead-dark">
                         <tr>
                             <th>Acciones</th>
                             <th>DNI</th>
@@ -178,6 +179,15 @@
 
     <!-- Modal para Generar Reportes -->
     <div class="modal fade" id="pdfModal" tabindex="-1" aria-labelledby="pdfModalLabel" aria-hidden="true">
+        @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -249,199 +259,7 @@
 <!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <style>
-        /* General styling */
-     body {
-         background-color: #f4f6f9;
-         font-family: 'Poppins', sans-serif;
-         color: #333;
-     }
-     
-     h1 {
-         font-size: 2rem;
-         font-weight: 600;
-         color: #000;
-         text-align: center;
-         margin-bottom: 1.5rem;
-     }
-     
-     .custom-button-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem; /* Espaciado entre los botones */
-}
-
-.custom-button-container .btn {
-    flex: 1; /* Hace que los botones se estiren igualmente */
-    text-align: center; /* Centra el texto dentro de los botones */
-}
-
-.custom-button-container .btn:not(:last-child) {
-    margin-right: 1rem; /* Espacio a la derecha de los botones, excepto el último */
-}
-
-/* Estilos opcionales para los botones */
-.btn-success {
-    background-color: #28a745; /* Verde */
-    color: #fff;
-}
-
-.btn-success:hover {
-    background-color: #218838;
-}
-
-.btn-primary {
-    background-color: #007bff; /* Azul */
-    color: #fff;
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-}
-
-.btn-info {
-    background-color: #17a2b8; /* Teal */
-    color: #fff;
-}
-
-.btn-info:hover {
-    background-color: #117a8b;
-}
-
-     .container {
-         background-color: #fff;
-         padding: 2rem;
-         border-radius: 8px;
-         box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-     }
-     
-     /* Button styling */
-     .btn-primary, .btn-secondary, .boton, .btn-info {
-         border-radius: 30px;
-         font-weight: 600;
-         text-transform: uppercase;
-         padding: 10px;
-         color: #f4f6f9;
-     }
-     
-     .btn-primary, .btn-info, .boton {
-         background-color: #000;
-         border-color: #000;
-     }
-     
-     .btn-secondary {
-         background-color: #6c757d;
-         border-color: #6c757d;
-     }
-     
-     .btn-primary:hover, .btn-secondary:hover {
-         opacity: 0.8;
-     }
-     
-     /* Table styling */
-     #mitabla {
-         width: 100%;
-         border-collapse: separate;
-         border-spacing: 0 10px;
-     }
-     
-     #tablaActivos thead th, #tablaInactivos thead th {
-         background-color: #000;
-         color: #fff;
-         font-weight: bold;
-         padding: 12px;
-         text-align: center;
-         border: none;
-     }
-     
-     #tablaActivos, #tablaInactivos tbody tr {
-         background-color: #fff;
-         border-radius: 8px;
-         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-         transition: all 0.3s ease-in-out;
-         position: relative; /* Ensure rows are positioned correctly */
-     }
-     
-     #mitabla tbody tr:hover {
-         
-         box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
-     }
-     
-     #mitabla tbody td {
-         padding: 12px;
-         text-align: center;
-         vertical-align: middle;
-         border-top: none;
-         border-bottom: none;
-     }
-     
-     /* Dropdown styling */
-     .btn-group {
-         position: relative; /* Necessary for correct positioning of the dropdown */
-     }
-     
-     olor: #fff;
-     }
-     
-     /* Modal styling */
-     .modal-content {
-         border-radius: 10px;
-         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-     }
-     
-     .modal-header {
-         background-color: #000;
-         color: #fff;
-         border-bottom: none;
-         border-radius: 10px 10px 0 0;
-     }
-     
-     .modal-title {
-         font-weight: 600;
-     }
-     
-     .modal-footer button {
-         border-radius: 30px;
-     }
-     
-     
-     
-     .alert {
-         border-radius: 8px;
-         padding: 15px;
-         font-weight: 500;
-     }
-     
-     .alert-danger {
-         background-color: #f8d7da;
-         color: #721c24;
-         border-color: #f5c6cb;
-     }
-
-     /* Estilo para el formulario de búsqueda */
-#buscador-form {
-    margin-bottom: 1.5rem;
-}
-
-#buscador-form .input-group {
-    max-width: 600px;
-    margin: 0 auto;
-}
-
-#buscador-form .form-control {
-    border-radius: 0.375rem; /* Bordes redondeados */
-    padding: 0.75rem 1.25rem; /* Espaciado interno */
-    font-size: 1rem; /* Tamaño de fuente */
-}
-
-#buscador-form .btn {
-    border-radius: 0.375rem; /* Bordes redondeados */
-    padding: 0.75rem 1.25rem; /* Espaciado interno */
-    font-size: 1rem; /* Tamaño de fuente */
-}
-     
-     
-           </style>
+   
     
 @stop
 
@@ -505,6 +323,8 @@ $(document).ready(function() {
             $('#toggleInactivos').click(function() {
                 $('#tablaActivos').toggleClass('d-none');
                 $('#tablaInactivos').toggleClass('d-none');
+                $('#tituloActivos').toggle();  
+                $('#tituloInactivos').toggle(); 
                 $(this).text($(this).text() === 'Ver Empleados Anteriores' ? 'Ver Empleados Activos' : 'Ver Empleados Anteriores');
             });
 
@@ -553,14 +373,36 @@ $(document).ready(function() {
         }
 
         if (tipo && (tipo === 'general' || id || estado || tipoE)) {
-            var url = '/empleados/pdf?tipo=' + tipo +
-                (id ? '&id=' + id : '') +
-                (estado ? '&estado=' + estado : '') +
-                (tipoE ? '&tipoE=' + tipoE : '');
-                window.open(url, '_blank');
-        } else {
-            alert('Por favor seleccione un tipo de reporte y el valor correspondiente.');
+    var url = '/empleados/pdf?tipo=' + tipo +
+        (id ? '&id=' + id : '') +
+        (estado ? '&estado=' + estado : '') +
+        (tipoE ? '&tipoE=' + tipoE : '');
+
+    // Usar AJAX para verificar si hay empleados antes de abrir la nueva pestaña
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json'
         }
+    })
+    .then(response => {
+        if (!response.ok) {
+            // Si la respuesta no es 200, manejar el error
+            return response.json().then(data => {
+                throw new Error(data.error);
+            });
+        }
+        // Si la respuesta es correcta, abrir el PDF en una nueva pestaña
+        window.open(url, '_blank');
+    })
+    .catch(error => {
+        // Mostrar el mensaje de error si no se encontraron empleados
+        alert(error.message);
+    });
+} else {
+    alert('Por favor seleccione un tipo de reporte y el valor correspondiente.');
+}
+
     });
         });
 

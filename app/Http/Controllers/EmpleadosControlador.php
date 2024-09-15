@@ -156,8 +156,8 @@ class EmpleadosControlador extends Controller
 
     // Validar si no se encontraron empleados
     if ($empleados->isEmpty()) {
-        // Redirigir con mensaje de error
-        return redirect()->route('empleados.index')->withErrors('No se encontraron empleados para el reporte solicitado');
+        // Retornar un mensaje de error en formato JSON
+        return response()->json(['error' => 'No se encontraron empleados para el reporte solicitado'], 404);
     }
 
     // Obtener la fecha y hora actual
@@ -635,6 +635,7 @@ public function restaurar($id)
     // Cambiar el estado del empleado a INACTIVO
     $empleado->ESTADO_EMPLEADO = 'ACTIVO';
     $empleado->FEC_INGRESO_EMPLEADO = Carbon::now();
+    $empleado->FECHA_SALIDA = null;
     $empleado->save();
     // Registrar en la bitácora
     $this->bitacora->registrarEnBitacora(21, "Empleado con ID $id restaurado", 'Update');

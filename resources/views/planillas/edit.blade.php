@@ -1,58 +1,84 @@
 @extends('adminlte::page')
 
-@section('title', 'EDITAR PLANILLA')
+@section('title', 'Editar Planilla')
 
 @section('content_header')
-    <h1>EDITAR PLANILLA</h1>
+    <h1>Editar Planilla</h1>
 @stop
 
 @section('content')
-<div class="container">
-    <main class="mt-3">
-        @if ($errors->any())
-            <div class="alert alert-danger">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-        <form action="{{ route('planillas.update', ['COD_PLANILLA' => $planillas->COD_PLANILLA]) }}" method="POST">
-            @csrf
-            @method('PUT')
+    <div class="container mt-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="text-secondary">Planilla #{{ $planillas->COD_PLANILLA }}</h2>
+                    <p><strong>Total Pagado:</strong> {{ $planillas->TOTAL_PAGADO }}</p>
+                </div>
+                <p><strong>Fecha de Pago:</strong> {{ \Carbon\Carbon::parse($planillas->FECHA_PAGADA)->format('Y-m-d') }}</p>
 
-            <div class="mb-3">
-                <label for="COD_PLANILLA" class="form-label">NUMERO PLANILLA</label>
-                <input type="number" class="form-control" id="COD_PLANILLA" name="COD_PLANILLA"
-                       value="{{ $planillas->COD_PLANILLA }}" readonly>
+                <form action="{{ route('empleados.eliminar') }}" method="POST">
+                    @csrf
+                    <table class="table table-hover table-bordered mt-4">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th></th>
+                                <th>Nombre</th>
+                                <th>Área</th>
+                                <th>Cargo</th>
+                                <th>Salario Base</th>
+                                <th>Deducciones</th>
+                                <th>Salario Neto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($empleados as $empleado)
+                                <tr>
+                                    <td><input type="checkbox" name="empleados[]" value="{{ $empleado->id }}"></td>
+                                    <td>{{ $empleado->NOM_EMPLEADO }}</td>
+                                    <td>{{ $empleado->area->NOM_AREA }}</td>
+                                    <td>{{ $empleado->cargo->NOM_CARGO }}</td>
+                                    <td>{{ number_format($empleado->SALARIO_BASE, 2) }}</td>
+                                    <td>{{ number_format($empleado->DEDUCCIONES, 2) }}</td>
+                                    <td>{{ number_format($empleado->SALARIO_NETO, 2) }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                    <button type="submit" class="btn btn-danger">Eliminar Seleccionados</button>
+                    <a href="{{ route('planillas.index') }}" class="btn btn-primary">Volver a Planillas</a>
+                </form>
+                
             </div>
-
-            <div class="mb-3">
-                <label for="FECHA_PAGO" class="form-label">FECHA PAGADA</label>
-                <input type="date" class="form-control" id="FECHA_PAGO" name="FECHA_PAGO"
-                       value="{{ $planillas->FECHA_PAGO }}">
-            </div>
-
-            
-            <div class="mb-3">
-                <label for="TOTAL_PAGADO" class="form-label">TOTAL PAGADO</label>
-                <input type="number" class="form-control" id="TOTAL_PAGADO" name="TOTAL_PAGADO"
-                       value="{{ $planillas->TOTAL_PAGADO }}">
-            </div>
-            
-            <!-- Botón de Guardar Cambios -->
-            <button type="submit" class="btn btn-primary">GUARDAR</button>
-            <a href="{{ route('planillas.index') }}" class="btn btn-secondary">CANCELAR</a>
-        </form>
-    </main>
-</div>
+        </div>
+    </div>
 @stop
 
 @section('css')
-    <link rel="stylesheet" href="/css/admin_custom.css">
-@stop
-
-@section('js')
-    <script> console.log('Hi!'); </script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .card {
+            border-radius: 15px;
+            border: none;
+        }
+        .card-body {
+            padding: 2rem;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+        .thead-dark th {
+            background-color: #343a40;
+            color: #fff;
+        }
+        .btn-primary, .btn-success {
+            border-radius: 30px;
+            font-weight: bold;
+        }
+    </style>
 @stop

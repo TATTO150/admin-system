@@ -3,7 +3,7 @@
 @section('title', 'Detalle de Planilla')
 
 @section('content_header')
-    <h1 class="text-center">Detalle de Planilla</h1>
+    <h2 class="mt-3 text-center">Esta es una previsualizacion, presione el boton CONFIRMAR para generar la planilla</h2>
 @stop
 
 @section('content')
@@ -14,6 +14,7 @@
                     <h2 class="text-secondary">Planilla #{{ $planilla->COD_PLANILLA }}</h2>
                     <p><strong>Total Pagado:</strong> {{ $planilla->TOTAL_PAGADO }}</p>
                 </div>
+                
                 <p><strong>Fecha de Pago:</strong> {{ \Carbon\Carbon::parse($planilla->FECHA_PAGADA)->format('Y-m-d') }}</p>
 
                 <table class="table table-hover table-bordered mt-4">
@@ -42,8 +43,8 @@
                 </table>
 
                 <div class="mt-4 d-flex justify-content-between">
-                    <a href="{{ route('planillas.index') }}" class="btn btn-primary">Volver a Planillas</a>
-                    <a href="{{ route('reporte.generar', ['id' => $planilla->COD_PLANILLA]) }}" class="btn btn-success" target="_blank">Generar Reporte</a>
+                    <a href="{{ route('planillas.confirmar', $planilla['COD_PLANILLA']) }}" class="btn btn-primary">CONFRIMAR</a>
+                    <a href="{{ route('planillas.cancelar', $planilla['COD_PLANILLA']) }}" class="btn btn-danger">CANCELAR</a>
                 </div>
             </div>
         </div>

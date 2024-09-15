@@ -88,10 +88,10 @@ class PlanillaControlador extends Controller
     $tipo_reporte = 'En Rango de: ' . $fechaInicio . ' - ' . $fechaFin;
 
 
-    // Validar si no se encontraron planillas en el rango seleccionado
+    // Validar si no se encontraron empleados
     if ($planillas->isEmpty()) {
-        // Redirigir con mensaje de error
-        return redirect()->route('planillas.index')->withErrors('No se encontraron planillas para el rango de fechas y tipo de planilla seleccionados.');
+        // Retornar un mensaje de error en formato JSON
+        return response()->json(['error' => 'No se encontraron empleados para el reporte solicitado'], 404);
     }
 
     // Resto del código para preparar el PDF
@@ -118,6 +118,12 @@ public function generarReporteGeneral()
     // Obtiene todas las planillas
     $planillas = Planillas::select('COD_PLANILLA', 'FECHA_GENERADA', 'TOTAL_PAGADO')->get();
     $tipos_planilla = TipoPlanilla::all()->keyBy('COD_TIPO_PLANILLA');
+
+     // Validar si no se encontraron empleados
+     if ($planillas->isEmpty()) {
+        // Retornar un mensaje de error en formato JSON
+        return response()->json(['error' => 'No se encontraron empleados para el reporte solicitado'], 404);
+    }
 
     // Resto del código para preparar el PDF
     $tipo_reporte = 'Reporte General de Planillas';
@@ -327,21 +333,14 @@ if ($codTipoPlanilla == 1) { // Mensual
     }
 }
 
-
-    if ($fechaPlanilla->isFuture()) {
-        return redirect()->route('planillas.index')->withErrors('No se puede generar planillas para fechas futuras.');
-    }
-
-    // Filtrar empleados activos durante el mes especificado
     $empleados = empleados::where('ESTADO_EMPLEADO', 'ACTIVO')
-        ->where(function ($query) use ($fechaPlanilla) {
-            $query->whereDate('FEC_INGRESO_EMPLEADO', '<=', $fechaPlanilla)
-                ->where(function ($query) use ($fechaPlanilla) {
-                    $query->whereNull('FECHA_SALIDA')
-                        ->orWhereDate('FECHA_SALIDA', '>=', $fechaPlanilla);
-                });
-        })
-        ->get();
+    ->where('FEC_INGRESO_EMPLEADO', '<=', $fechaPlanilla)
+    ->where(function ($query) use ($fechaPlanilla) {
+        // Incluir empleados que no tienen fecha de salida o cuya fecha de salida es después de la fecha de la planilla
+        $query->whereNull('FECHA_SALIDA')
+            ->orWhere('FECHA_SALIDA', '>=', $fechaPlanilla);
+    })
+    ->get();
 
     // Nueva validación: si no hay empleados para la fecha seleccionada
     if ($empleados->isEmpty()) {
@@ -359,7 +358,37 @@ if ($codTipoPlanilla == 1) { // Mensual
     $planilla->COD_TIPO_PLANILLA = $codTipoPlanilla;
     $planilla->save();
 
-    // Asignar empleados a la planilla usando el modelo EmpleadoPlanilla
+    $this->bitacora->registrarEnBitacora(21, 'Nueva planilla generada', 'Insert');
+
+    // Llamar a la función show para redirigir a la vista de detalle de la planilla
+    return view('planillas.confirm', compact('planilla', 'empleados', 'totalPagar'));
+}
+
+public function confirmarPlanilla($COD_PLANILLA){
+    // Buscar la planilla específica usando el COD_PLANILLA
+    $planilla = Planillas::where('COD_PLANILLA', $COD_PLANILLA)->first();
+
+    // Verificar si se encontró la planilla
+    if (!$planilla) {
+        // Manejar el caso donde no se encuentra la planilla (puedes ajustar este mensaje según sea necesario)
+        return response()->json(['error' => 'Planilla no encontrada'], 404);
+    }
+
+    // Obtener el mes de la planilla
+    $mesPlanilla = $planilla->MES;
+
+    // Filtrar empleados activos durante el mes de la planilla
+    $empleados = empleados::where('ESTADO_EMPLEADO', 'ACTIVO')
+        ->where(function ($query) use ($mesPlanilla) {
+            $query->whereMonth('FEC_INGRESO_EMPLEADO', '<=', $mesPlanilla)
+                ->where(function ($query) use ($mesPlanilla) {
+                    $query->whereNull('FECHA_SALIDA')
+                        ->orWhereMonth('FECHA_SALIDA', '>=', $mesPlanilla);
+                });
+        })
+        ->get();
+
+        // Asignar empleados a la planilla usando el modelo EmpleadoPlanilla
     foreach ($empleados as $empleado) {
         EmpleadoPlanilla::create([
             'COD_EMPLEADO' => $empleado->COD_EMPLEADO,
@@ -367,10 +396,24 @@ if ($codTipoPlanilla == 1) { // Mensual
         ]);
     }
 
-    $this->bitacora->registrarEnBitacora(21, 'Nueva planilla generada', 'Insert');
+    return redirect()->route('planillas.index')->with('success', 'Planilla actualizada correctamente');
+}
 
-    // Llamar a la función show para redirigir a la vista de detalle de la planilla
-    return view('planillas.show', compact('planilla', 'empleados', 'totalPagar'));
+public function cancelarPlanilla($COD_PLANILLA){
+    // Buscar la planilla por su COD_PLANILLA
+    $planilla = Planillas::find($COD_PLANILLA);
+
+    // Verificar si se encontró la planilla
+    if (!$planilla) {
+        // Manejar el caso donde no se encuentra la planilla (puedes ajustar este mensaje según sea necesario)
+        return response()->json(['error' => 'Planilla no encontrada'], 404);
+    }
+
+    // Eliminar la planilla
+    $planilla->delete();
+
+    return redirect()->route('planillas.index')->with('success', 'Planilla cancelada correctamente');
+
 }
 
 public function show($COD_PLANILLA)
@@ -444,10 +487,34 @@ public function show($COD_PLANILLA)
        
     
     $planillas = Planillas::findOrFail($COD_PLANILLA);
+     // Obtener empleados asignados a la planilla específica
+     $empleados = EmpleadoPlanilla::where('COD_PLANILLA', $COD_PLANILLA)
+     ->with('empleado') // Carga la relación con el modelo empleado
+     ->get()
+     ->pluck('empleado'); // Extrae la colección de empleados
+
+ $totalPagar = $planillas->TOTAL_PAGADO;
 
         $proyectos = $this->proyectos;
     
-        return view('planillas.edit', compact('planillas', 'proyectos'));
+        return view('planillas.edit', compact('planillas', 'empleados', 'totalPagar'));
+    }
+
+    public function eliminarEmpleados(Request $request)
+    {
+        // Validar que al menos un empleado haya sido seleccionado
+        if (!$request->has('empleados')) {
+            return redirect()->back()->with('error', 'Debe seleccionar al menos un empleado.');
+        }
+
+        // Obtener los empleados seleccionados
+        $empleadosSeleccionados = $request->input('empleados');
+
+        // Eliminar los registros de la tabla 'tbl_empleado_planilla'
+        EmpleadoPlanilla::whereIn('COD_EMPLEADO', $empleadosSeleccionados)->delete();
+
+        // Redirigir con un mensaje de éxito
+        return redirect()->back()->with('success', 'Los empleados seleccionados han sido eliminados de la planilla.');
     }
     
     public function update(Request $request, $COD_PLANILLA)
