@@ -15,10 +15,7 @@ class EmpleadoPlanilla extends Model
     protected $fillable = [
         'COD_EMPLEADO_PLANILLA', 
         'COD_EMPLEADO', 
-        'COD_PLANILLA', 
-        'SALARIO_BASE', 
-        'DEDUCCIONES', 
-        'SALARIO_NETO'
+        'COD_PLANILLA'
     ]; // Ajusta los campos según tu esquema de base de datos
     
     public $timestamps = false; // Deshabilita las marcas de tiempo
