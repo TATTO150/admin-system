@@ -15,9 +15,9 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Permisos;
 use App\Models\Asignacion_Equipos;
 use App\Models\TipoAsignacion;
-
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB; 
+use Illuminate\Support\Facades\DB;
+ 
 class AsignadorEquipoController extends Controller
 {
     protected $apiBaseUrl = 'http://localhost:3000';

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\UpdatesUserPasswords;
 use Illuminate\Validation\ValidationException;
-use Laravel\Fortify\Rules\Validaciones;
+use App\Rules\Validaciones;
 use App\Models\Bitacora;
 use Carbon\Carbon;
 

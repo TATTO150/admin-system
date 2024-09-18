@@ -7,7 +7,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
-use Laravel\Fortify\Rules\Validaciones;
+use App\Rules\Validaciones;
 use App\Models\Bitacora;
 use Carbon\Carbon;
 

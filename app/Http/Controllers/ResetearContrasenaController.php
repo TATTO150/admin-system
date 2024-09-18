@@ -9,7 +9,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
-use Laravel\Fortify\Rules\Validaciones;
+use App\Rules\Validaciones;
 use Carbon\Carbon;
 
 class ResetearContrasenaController extends Controller
