@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Laravel\Fortify\Contracts\CreatesNewUsers;
 use Carbon\Carbon;
 use App\Rules\ReglaUsuarioContraseña;
-use Laravel\Fortify\Rules\Validaciones;
+use App\Rules\Validaciones;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Validation\ValidationException;

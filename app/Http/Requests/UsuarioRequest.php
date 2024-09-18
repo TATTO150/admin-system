@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Laravel\Fortify\Rules\Validaciones;
+use App\Rules\Validaciones;
 use Illuminate\Support\Facades\Http;
 
 class UsuarioRequest extends FormRequest

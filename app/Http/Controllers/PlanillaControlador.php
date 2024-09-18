@@ -14,7 +14,7 @@ use App\Models\Proyectos;
 use App\Models\TipoPlanilla;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Laravel\Fortify\Rules\Validaciones;
+use App\Rules\Validaciones;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 

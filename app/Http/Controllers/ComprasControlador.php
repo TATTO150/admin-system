@@ -10,7 +10,7 @@ use App\Http\Controllers\BitacoraController;
 use App\Models\Compras;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Laravel\Fortify\Rules\Validaciones;
+use App\Rules\Validaciones;
 use Carbon\Carbon;
 use App\Models\Proyectos;
 use Barryvdh\DomPDF\Facade\Pdf;

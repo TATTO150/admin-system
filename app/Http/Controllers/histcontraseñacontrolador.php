@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\HistContrasena;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
-use Laravel\Fortify\Rules\Validaciones;
+use App\Rules\Validaciones;
 use Illuminate\Support\Str;
 use App\Models\User;
 use App\Http\Controllers\BitacoraController;

@@ -12,7 +12,7 @@ use App\Models\Permisos;
 use App\Models\Proyectos;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
-use Laravel\Fortify\Rules\Validaciones;
+use App\Rules\Validaciones;
 use Illuminate\Support\Facades\Log;
 
 class GastosControlador extends Controller

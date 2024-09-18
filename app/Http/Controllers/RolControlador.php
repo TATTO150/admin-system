@@ -10,7 +10,7 @@ use App\Models\Rol;
 use App\Models\Permisos;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Laravel\Fortify\Rules\Validaciones;
+use App\Rules\Validaciones;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Parametros;
 use App\Http\Requests\RolRequest;

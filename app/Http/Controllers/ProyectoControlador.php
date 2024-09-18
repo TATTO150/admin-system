@@ -17,7 +17,7 @@ use App\Models\Asignacion_Equipos;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
-use Laravel\Fortify\Rules\Validaciones;
+use App\Rules\Validaciones;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Log;
 use App\Models\EstadoProyecto;
