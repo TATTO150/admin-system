@@ -6,7 +6,7 @@
 
         <div>
             <div class="mb-4 mt-4 text-big text-white dark:text-white text-center">
-                {{ __('Para restablecer su contraseña, complete los siguientes campos.') }}
+                {{ __('Para restablecer su contraseña, complete los siguientes campos. Si no cuenta con su codigo OTP, contacte con un administrador para que reestablezca su contraseña') }}
             </div>
 
             <x-validation-errors class="mb-4" />

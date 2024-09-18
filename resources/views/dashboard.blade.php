@@ -8,6 +8,14 @@
 
 @section('content')
 
+     <!-- Mostrar mensajes de éxito -->
+    @if (session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
+
+
     <!-- Mostrar errores -->
         @if ($errors->any())
         <div class="alert alert-danger">

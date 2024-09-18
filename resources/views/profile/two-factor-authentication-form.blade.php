@@ -76,10 +76,30 @@
                     </div>
 
                     <div class="mt-4">
-                        <a href="{{ route('autoregistro-notificacion') }}" class="text-blue-500 hover:text-blue-700 font-medium">
-                            {{ __('Finalizar Registro') }}
-                        </a>
+                        @if (Auth::user()->Id_Rol == 3)
+                            <a href="{{ route('autoregistro-notificacion') }}" class="ms-4 inline-flex items-center px-4 py-2 bg-white border border-transparent rounded-md font-semibold text-xs text-gray-800 uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                {{ __('Finalizar') }}
+                            </a>
+                        @else
+                            <a href="{{ route('dashboard') }}" 
+                               class="ms-4 inline-flex items-center px-4 py-2 bg-white border border-transparent rounded-md font-semibold text-xs text-gray-800 uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150"
+                               onclick="event.preventDefault(); document.getElementById('success-form').submit();">
+                                {{ __('Finalizar') }}
+                            </a>
+                            <form id="success-form" action="{{ route('dashboard') }}" method="POST" style="display: none;">
+                                @csrf
+                                @method('GET')
+                                <input type="hidden" name="success" value="Código OTP restablecido correctamente">
+                            </form>
+                        @endif
                     </div>
+                    
+                    @if (session('success'))
+                        <div class="mt-2 text-green-500">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    
                 @endif
             @endif
 
