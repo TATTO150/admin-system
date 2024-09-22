@@ -522,6 +522,7 @@ Route::get('estado_proyecto/{id}/check', [EstadoProyectoControllador::class, 'ch
 
     Route::get('/proyectos/pdf/{id}', [ProyectoControlador::class, 'pdfproyecto'])->name('proyecto.pdf');  //ESTA FUNCIONA BIEN, ESTA ES LA RUTA DEL REPORTE ESCALICHE
     Route::post('/proyectos/activar/{id}', [ProyectoControlador::class, 'activar'])->name('proyectos.activar');//PARA LOS ESTADOS DE SUSPENDIDO A ACTIVO
+    Route::post('/proyectos/restaurar/{COD_PROYECTO}', [ProyectoControlador::class, 'restaurar'])->name('proyectos.restaurar'); //RUTA DE ACTIVAR LOS PROYECTOS INACTIVOS
 
 
    // Route::post('/proyectos/{proyecto}/gestionar-empleados', [ProyectoControlador::class, 'gestionarEmpleados'])->name('proyectos.gestionarEmpleados');//DESIGNAR 

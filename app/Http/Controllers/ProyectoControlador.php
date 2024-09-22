@@ -105,7 +105,7 @@ public function index(Request $request)
     $verInactivos = $request->query('ver_inactivos') === 'true'; // Verificar si se debe mostrar inactivos
     $proyectosQuery = Proyectos::query();
 
-    // Filtrar proyectos con estado INACTIVO si se está viendo inactivos
+    // Filtrar proyectos según el estado
     if ($verInactivos) {
         $proyectosQuery->where('ESTADO_PROYECTO', 'INACTIVO');
     } else {
@@ -116,6 +116,7 @@ public function index(Request $request)
         $proyectosQuery->where('ESTADO_PROYECTO', $estadoFiltro);
     }
 
+    // Obtener proyectos
     $proyectos = $proyectosQuery->get();
 
     // Procesar proyectos para incluir empleados asignados
@@ -135,6 +136,9 @@ public function index(Request $request)
             in_array($proyecto->ESTADO_PROYECTO, ['APERTURA', 'ACTIVO', 'SUSPENDIDO']);
     });
 
+    // Obtener proyectos inactivos
+    $proyectosInactivos = Proyectos::where('ESTADO_PROYECTO', 'INACTIVO')->get();
+
     // Obtener empleados activos
     $empleados = Empleados::where('ESTADO_EMPLEADO', 'ACTIVO')->get();
 
@@ -146,12 +150,12 @@ public function index(Request $request)
         'proyectos' => $proyectos,
         'empleados' => $empleados,
         'proyectosVencidos' => $proyectosVencidos,
+        'proyectosInactivos' => $proyectosInactivos, // Añadido
         'verInactivos' => $verInactivos,
         'obtenerColorEstado' => [$this, 'obtenerColorEstado'],
         'estadosProyecto' => $estadosProyecto // Pasamos los estados a la vista
     ]);
 }
-
 
 
 
@@ -562,6 +566,49 @@ public function destroy($COD_PROYECTO)
         return redirect()->route('proyectos.index')->with('error', 'Error al actualizar estado del proyecto');
     }
 }
+
+
+
+
+//FUNCION DE ACTIVAR LOS PROYECTOS INACTIVO
+public function restaurar($COD_PROYECTO)
+{
+    $user = Auth::user();
+    $roleId = $user->Id_Rol;
+
+    // Verificar si el rol del usuario tiene el permiso de actualización en el objeto PROYECTO
+    $permisoRestaurar = Permisos::where('Id_Rol', $roleId)
+        ->where('Id_Objeto', function ($query) {
+            $query->select('Id_Objetos')
+                ->from('tbl_objeto')
+                ->where('Objeto', 'PROYECTO')
+                ->limit(1);
+        })
+        ->where('Permiso_Actualizacion', 'PERMITIDO') // Cambiar a Permiso_Actualizacion
+        ->exists();
+
+    if (!$permisoRestaurar) {
+        $this->bitacora->registrarEnBitacora(12, 'Intento de restauración de proyecto sin permisos', 'Restore');
+        return redirect()->route('proyectos.index')->withErrors('No tiene permiso para restaurar proyectos');
+    }
+
+    try {
+        // Actualizar el estado del proyecto a ACTIVO
+        DB::table('tbl_proyectos')
+            ->where('COD_PROYECTO', $COD_PROYECTO)
+            ->update(['ESTADO_PROYECTO' => 'ACTIVO']);
+
+        $this->bitacora->registrarEnBitacora(12, 'Estado del proyecto actualizado a ACTIVO', 'Update');
+        return redirect()->route('proyectos.index')->with('success', 'Proyecto restaurado correctamente');
+    } catch (\Exception $e) {
+        Log::error('Error al restaurar el proyecto: ' . $e->getMessage());
+        return redirect()->route('proyectos.index')->with('error', 'Error al restaurar el proyecto');
+    }
+}
+
+
+
+
 
 
 
