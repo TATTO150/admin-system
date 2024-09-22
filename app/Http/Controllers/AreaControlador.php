@@ -197,15 +197,15 @@ public function edit($COD_AREA)
     }
 
     // Buscar el área en la base de datos usando el modelo Area
-    $area = Area::find($COD_AREA);
+    $areas = Area::find($COD_AREA);
 
     // Verificar si el área existe
-    if (!$area) {
+    if (!$areas) {
         return redirect()->route('areas.index')->withErrors('Área no encontrada');
     }
 
     // Retornar la vista de edición con el área encontrada
-    return view('areas.edit', compact('area'));
+    return view('areas.edit', compact('areas'));
 }
 
 public function update(Request $request, $COD_AREA)
