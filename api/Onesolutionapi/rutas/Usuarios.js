@@ -36,11 +36,12 @@ routes.get('/Usuarios/:Id_usuario', (req, res) => {
         });
     });
 });
+
 routes.post('/INS_USUARIOS', (req, res) => {
-    const { Usuario, Nombre_Usuario, Estado_Usuario, Id_Rol, Fecha_Ultima_Conexion, Fecha_Vencimiento, Correo_Electronico ,Contrasena} = req.body;
+    const { Usuario, Nombre_Usuario, Id_Rol, Fecha_Ultima_Conexion, Fecha_Vencimiento, Correo_Electronico ,Contrasena} = req.body;
     const consulta = `
         CALL INS_USUARIOS(
-            '${Usuario}', '${Nombre_Usuario}', '${Estado_Usuario}', '${Id_Rol}',
+            '${Usuario}', '${Nombre_Usuario}', '${Id_Rol}',
             '${Fecha_Ultima_Conexion}', '${Fecha_Vencimiento}', '${Correo_Electronico}', '${Contrasena}'
         )
     `;
@@ -67,7 +68,6 @@ routes.post('/INS_USUARIOS', (req, res) => {
         });
     });
 });
-
      //ACTUALIZAR USUARIO
      routes.put('/Usuarios/:Id_usuario', (req, res) => {
         const { Id_usuario } = req.params;

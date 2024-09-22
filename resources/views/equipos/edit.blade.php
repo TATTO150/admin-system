@@ -72,7 +72,8 @@
 
                     <div class="mb-3">
                         <label for="VALOR_EQUIPO" class="form-label">VALOR EQUIPO</label>
-                        <input type="number" class="form-control" id="VALOR_EQUIPO" name="VALOR_EQUIPO" value="{{ old('VALOR_EQUIPO', $equipo['VALOR_EQUIPO']) }}" step="0.01" min="0" required>
+                        <input type="number" class="form-control" id="VALOR_EQUIPO" name="VALOR_EQUIPO" value="{{ old('VALOR_EQUIPO', intval($equipo['VALOR_EQUIPO'])) }}" min="0" required>
+
                     </div>
 
                     <div class="d-grid gap-2 d-md-block">

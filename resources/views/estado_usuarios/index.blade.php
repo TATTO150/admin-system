@@ -44,7 +44,6 @@
                 <table id="tblEstadoUsuarios" class="table table-hover table-bordered" style="width: 75%; margin: auto;">
                     <thead class="thead-dark">
                         <tr>
-                            <th>ID</th>
                             <th>Estado</th>
                             <th>Descripción</th>
                             <th>Acciones</th>
@@ -53,7 +52,7 @@
                     <tbody id="tablaEstados">
                         @foreach($estados as $estado)
                             <tr>
-                                <td>{{ $estado->COD_ESTADO }}</td>
+                        
                                 <td>{{ $estado->ESTADO }}</td>
                                 <td>{{ $estado->DESCRIPCION }}</td>
                                 <td>
@@ -63,13 +62,6 @@
                                         </button>
                                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $estado->COD_ESTADO }}">
                                             <li><a class="dropdown-item" href="{{ route('estado_usuarios.edit', $estado->COD_ESTADO) }}">Editar</a></li>
-                                            <li>
-                                                <form action="{{ route('estado_usuarios.destroy', $estado->COD_ESTADO) }}" method="POST" class="d-inline" id="delete-form-{{ $estado->COD_ESTADO }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="button" class="dropdown-item" onclick="confirmDeletion('{{ $estado->COD_ESTADO }}')">Eliminar</button>
-                                                </form>
-                                            </li>
                                         </ul>
                                     </div>
                                 </td>
@@ -102,57 +94,13 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    @section('js')
+    <script src="//code.jquery.com/jquery-3.7.0.js" type="text/javascript"></script>
+    <script src="//cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js" type="text/javascript"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <script>
-         $(document).ready(function() {
-        // Guardar las filas originales para poder restaurarlas
-        var originalRows = $('#tablaEstados').html();
-
-        // Funcionalidad de búsqueda personalizada
-        $('#searchInput').on('input', function() {
-            var searchTerm = $(this).val().toLowerCase().trim();
-            var hasResults = false;
-
-            // Restaurar filas originales cada vez que cambia el término de búsqueda
-            $('#tablaEstados').html(originalRows);
-
-            if (searchTerm.length > 0) {
-                $('#tablaEstados tr').each(function() {
-                    var rowText = $(this).text().toLowerCase().replace(/\s+/g, ' ');
-                    if (rowText.includes(searchTerm)) {
-                        $(this).show();
-                        hasResults = true;
-                    } else {
-                        $(this).hide();
-                    }
-                });
-
-                // Mostrar mensaje de "No se encontraron coincidencias" si no hay resultados
-                if (!hasResults) {
-                    $('#tablaEstados').html(
-                        '<tr><td colspan="4" class="text-center">No se encontraron coincidencias.</td></tr>'
-                    );
-                }
-            }
-        });
-
-        // Mostrar alertas según los mensajes de sesión en caso de redirección
-        @if(session('error'))
-            Swal.fire({
-                icon: 'error',
-                title: '¡Error!',
-                text: '{{ session('error') }}',
-            });
-        @endif
-
-        @if(session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: '¡Éxito!',
-                text: '{{ session('success') }}',
-            });
-        @endif
-    });
-
+    // Función para confirmar la eliminación de un estado
     function confirmDeletion(COD_ESTADO) {
         Swal.fire({
             title: '¿Estás seguro?',
@@ -165,43 +113,10 @@
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Enviar el formulario de eliminación a través de AJAX
-                $.ajax({
-                    url: '{{ route('estado_usuarios.destroy', '') }}/' + COD_ESTADO,
-                    type: 'POST',
-                    data: {
-                        '_method': 'DELETE',
-                        '_token': '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        // Mostrar alerta según el estado de la respuesta
-                        if (response.status === 'success') {
-                            Swal.fire({
-                                icon: 'success',
-                                title: '¡Eliminado!',
-                                text: response.message,
-                            }).then(() => {
-                                window.location.reload(); // Recargar la página para reflejar los cambios
-                            });
-                        } else if (response.status === 'error') {
-                            Swal.fire({
-                                icon: 'error',
-                                title: '¡Error!',
-                                text: response.message,
-                            });
-                        }
-                    },
-                    error: function(response) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: '¡Error!',
-                            text: 'Ocurrió un error inesperado. Por favor, inténtalo nuevamente.',
-                        });
-                    }
-                });
+                // Enviar el formulario manualmente
+                document.getElementById('delete-form-' + COD_ESTADO).submit();
             }
         });
     }
     </script>
-   
 @stop

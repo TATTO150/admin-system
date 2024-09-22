@@ -58,17 +58,20 @@
                         <label for="Estado_Usuario" class="form-label">ESTADO USUARIO</label>
                         <select id="Estado_Usuario" class="form-control" name="Estado_Usuario" required>
                             @foreach($estados as $estado)
-                                <option value="{{ $estado->COD_ESTADO }}" 
-                                    {{ ($usuario['Estado_Usuario'] == $estado->COD_ESTADO || $usuario['Estado_Usuario'] == $estado->ESTADO) ? 'selected' : '' }}>
+                                <option value="{{ $estado->ESTADO }}" 
+                                    {{ ($usuario['Estado_Usuario'] == $estado->ESTADO) ? 'selected' : '' }}>
                                     {{ $estado->ESTADO }}
                                 </option>
                             @endforeach
+                    
                             <!-- Mostrar el estado actual si no coincide con ningún estado en la tabla de estados -->
-                            @if(!in_array($usuario['Estado_Usuario'], $estados->pluck('COD_ESTADO')->toArray()))
+                            @if(!in_array($usuario['Estado_Usuario'], $estados->pluck('ESTADO')->toArray()))
                                 <option value="{{ $usuario['Estado_Usuario'] }}" selected>{{ $usuario['Estado_Usuario'] }}</option>
                             @endif
                         </select>
                     </div>
+                    
+                    
                     <div class="mb-3">
                         <label for="Id_Rol" class="form-label">ROL</label>
                         <select id="Id_Rol" name="Id_Rol" class="form-select select2" required>
