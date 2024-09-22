@@ -11,6 +11,7 @@
     <div class="container mt-4">
         <div class="card shadow-sm" style="width: 90%; margin: auto;">
             <div class="card-body">
+                <!-- Mostrar la alerta de éxito si existe en la sesión -->
                 @if(session('success'))
                     <script>
                         Swal.fire({
@@ -105,40 +106,49 @@
 
     <script>
         // Función para confirmar eliminación
-    function confirmDeletion() {
-        return Swal.fire({
-            title: '¿Estás seguro?',
-            text: "¡No podrás revertir esto!",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            return result.isConfirmed;
-        });
-    }
+        function confirmDeletion() {
+            return Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¡No podrás revertir esto!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                return result.isConfirmed;
+            });
+        }
 
-    // Evento para manejar el click en el botón de eliminación
-    $('.delete-btn').on('click', function(e) {
-        e.preventDefault();
+        // Evento para manejar el click en el botón de eliminación
+        $('.delete-btn').on('click', function(e) {
+            e.preventDefault();
 
-        var form = $(this).closest('form');
-        confirmDeletion().then((confirmed) => {
-            if (confirmed) {
-                form.submit();
-            }
+            var form = $(this).closest('form');
+            confirmDeletion().then((confirmed) => {
+                if (confirmed) {
+                    form.submit();
+                }
+            });
         });
-    });
 
-    // Mostrar alerta si hay un error de eliminación
-    @if(session('error'))
-        Swal.fire({
-            icon: 'error',
-            title: 'No se puede eliminar',
-            text: '{{ session('error') }}',
-        });
-    @endif
+        // Mostrar alerta si hay un mensaje de éxito (creación o eliminación)
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: '¡Éxito!',
+                text: '{{ session('success') }}',
+            });
+        @endif
+
+        // Mostrar alerta si hay un error de eliminación
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'No se puede eliminar',
+                text: '{{ session('error') }}',
+            });
+        @endif
     </script>
 @stop

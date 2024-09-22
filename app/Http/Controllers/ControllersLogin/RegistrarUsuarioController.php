@@ -107,10 +107,11 @@ class RegistrarUsuarioController extends Controller
             return redirect()->route('dashboard')->withErrors('No tiene permiso de ingresar a la ventana de usuarios');
         }
     
+       
         $response = Http::get('http://127.0.0.1:3000/Usuarios');
         $usuarios = User::with('rol')->get();
            // Obtener todos los usuarios y cargar la relación con el estado de usuario
-    $usuarios = User::with('estado')->get();
+        $usuarios = User::with('estado')->get();
     
         return view('usuarios.index', compact('usuarios'));
     }
@@ -167,69 +168,63 @@ class RegistrarUsuarioController extends Controller
 
     
 
-public function insertar(UsuarioRequest $request)
-{
-    // Generar una nueva contraseña aleatoria
-    $contraseña = Str::random(8); // Ajusta la longitud según sea necesario
+    public function insertar(UsuarioRequest $request)
+    {
+         // Generar una nueva contraseña aleatoria
+$contraseña = Str::random(8); // Ajusta la longitud según sea necesario
 
-    // Encriptar la contraseña
-    $contraseñaHasheada = Hash::make($contraseña);
-    Log::info('Contraseña Generada: ' . $contraseña); // Depuración
-    Log::info('Contraseña Hasheada: ' . $contraseñaHasheada); // Depuración
+// Encriptar la contraseña
+$contraseñaHasheada = Hash::make($contraseña);
+Log::info('Contraseña Generada: ' . $contraseña); // Depuración
+Log::info('Contraseña Hasheada: ' . $contraseñaHasheada); // Depuración
 
-    // Formatear las fechas para que sean compatibles con MySQL
-    $fechaUltimaConexion = Carbon::now()->format('Y-m-d H:i:s');
-    $primerIngreso = Carbon::now()->format('Y-m-d H:i:s');
-    $fechaVencimiento = Carbon::now()->addMonth(3)->format('Y-m-d H:i:s');
+// Crear el usuario en la base de datos
+$response = Http::post('http://127.0.0.1:3000/INS_USUARIOS', [
+    'Usuario' => $request->Usuario,
+    'Nombre_Usuario' => $request->Nombre_Usuario,
+    'Estado_Usuario' => 'NUEVO',
+    'Contrasena' => $contraseñaHasheada,
+    'Id_Rol' => $request->Id_Rol,
+    'Fecha_Ultima_Conexion' => Carbon::now(),
+    'Primer_Ingreso' => Carbon::now(),
+    'Fecha_Vencimiento' => Carbon::now()->addMonth(3),
+    'Correo_Electronico' => $request->Correo_Electronico,
+]);
 
-    // Crear el usuario en la base de datos
-    $response = Http::post('http://146.190.208.117:3000/INS_USUARIOS', [
-        'Usuario' => $request->Usuario,
-        'Nombre_Usuario' => $request->Nombre_Usuario,
-        'Estado_Usuario' => $request->Estado_Usuario,
-        'Contrasena' => $contraseñaHasheada,
-        'Id_Rol' => $request->Id_Rol,
-        'Fecha_Ultima_Conexion' => $fechaUltimaConexion,
-        'Primer_Ingreso' => $primerIngreso,
-        'Fecha_Vencimiento' => $fechaVencimiento,
-        'Correo_Electronico' => $request->Correo_Electronico,
-    ]);
+if ($response->successful()) {
+    $data = $response->json(); // Captura la respuesta JSON
 
-    if ($response->successful()) {
-        $data = $response->json(); // Captura la respuesta JSON
+    if (isset($data['Id_usuario'])) {
+        $id_usuario = $data['Id_usuario'];
 
-        if (isset($data['Id_usuario'])) {
-            $id_usuario = $data['Id_usuario'];
+        // Almacenar la contraseña en la tabla de historial de contraseñas
+        Histcontrasena::create([
+            'Id_usuario' => $id_usuario,
+            'Contrasena' => $contraseña, // Usa la contraseña en texto plano aquí
+        ]);
 
-            // Almacenar la contraseña en la tabla de historial de contraseñas
-            Histcontrasena::create([
-                'Id_usuario' => $id_usuario,
-                'Contrasena' => $contraseña, // Usa la contraseña en texto plano aquí
-            ]);
+        // Enviar el correo con la contraseña temporal
+        $detalles = [
+            'nombre' => $request->Nombre_Usuario,
+            'usuario' => $request->Usuario,
+            'contraseña_temporal' => $contraseña,
+        ];
 
-            // Enviar el correo con la contraseña temporal
-            $detalles = [
-                'nombre' => $request->Nombre_Usuario,
-                'usuario' => $request->Usuario,
-                'contraseña_temporal' => $contraseña,
-            ];
+        Mail::to($request->Correo_Electronico)->send(new EnviarContraseñaTemporal($detalles));
 
-            Mail::to($request->Correo_Electronico)->send(new EnviarContraseñaTemporal($detalles));
-
-            return redirect()->route('usuarios.index')->with('success', 'Usuario creado y correo enviado correctamente.');
-        } else {
-            Log::error('La respuesta de la API no contiene el ID del usuario.', ['response' => $data]);
-            return redirect()->back()->withErrors(['error' => 'Error al crear el usuario: No se pudo obtener el ID del usuario']);
-        }
+        return redirect()->route('usuarios.index')->with('success', 'Usuario creado y correo enviado correctamente.');
     } else {
-        Log::error('Fallo en la solicitud de la API: ' . $response->body());
-        return redirect()->back()->withErrors(['error' => 'Error al crear el usuario: Fallo en la solicitud de la API']);
+        Log::error('La respuesta de la API no contiene el ID del usuario.', ['response' => $data]);
+        return redirect()->back()->withErrors(['error' => 'Error al crear el usuario: No se pudo obtener el ID del usuario']);
     }
+} else {
+    Log::error('Fallo en la solicitud de la API: ' . $response->body());
+    return redirect()->back()->withErrors(['error' => 'Error al crear el usuario: Fallo en la solicitud de la API']);
 }
- 
 
 
-
+    }
+    
 
 
     public function destroy($Id_usuario)
@@ -315,6 +310,10 @@ public function insertar(UsuarioRequest $request)
     }
          // Cargar los estados de usuario desde la base de datos
     $estados = EstadoUsuario::all();
+    $estadoUsuario = EstadoUsuario::where('COD_ESTADO', $usuario['Estado_Usuario'])->first();
+    if ($estadoUsuario) {
+        $usuario['Estado_Usuario'] = $estadoUsuario->ESTADO;
+    }
         // Cargar la vista de edición con los datos del usuario y los roles
         return view('usuarios.edit', compact('usuario', 'estados'))->with('roles', $this->roles);
     }

@@ -132,8 +132,8 @@ public function setEstadoUsuarioAttribute($estado)
     if ($estadoUsuario) {
         // Asigna el COD_ESTADO correspondiente al campo Estado_Usuario
         $this->attributes['Estado_Usuario'] = $estadoUsuario->COD_ESTADO;
-    } else {
+    } /*else {
         throw new \Exception("El estado '{$estado}' no existe en la tabla tbl_estado_usuario.");
-    }
+    }*/
 }
 }

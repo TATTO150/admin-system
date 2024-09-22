@@ -51,17 +51,6 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="Estado_Usuario" class="form-label">ESTADO USUARIO</label>
-                        <select id="Estado_Usuario" class="form-select select2" name="Estado_Usuario" required>
-                            @foreach($estados as $estado)
-                                <option value="{{ $estado->COD_ESTADO }}" @if(old('Estado_Usuario') == $estado->COD_ESTADO) selected @endif>
-                                    {{ $estado->ESTADO }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
                         <label for="Id_Rol" class="form-label">ROL</label>
                         <select id="Id_Rol" class="form-select select2" name="Id_Rol" required>
                             <option value="">{{ __('Seleccione un rol') }}</option>

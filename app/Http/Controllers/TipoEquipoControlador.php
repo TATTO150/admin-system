@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Equipos;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use  App\Models\TipoEquipo;
@@ -77,7 +78,6 @@ class TipoEquipoControlador extends Controller
         // Crear un nuevo tipo de equipo con `protegido` establecido en 1
         $tipoEquipo = new TipoEquipo();
         $tipoEquipo->TIPO_EQUIPO = $request->TIPO_EQUIPO;
-        $tipoEquipo->PROTEGIDO = 1; // Proteger el nuevo tipo de equipo
         $tipoEquipo->save();
         $this->bitacora->registrarEnBitacora(18, 'tipoequipo insertado', 'insertado');
         return redirect()->route('tipo_equipo.index')->with('success', 'Tipo de equipo creado correctamente');
@@ -137,11 +137,10 @@ class TipoEquipoControlador extends Controller
 
     public function destroy($id)
     {
-        
         $user = Auth::user();
         $roleId = $user->Id_Rol;
-
-        // Verificar si el rol del usuario tiene el permiso de eliminación en el objeto SOLICITUD
+    
+        // Verificar si el rol del usuario tiene el permiso de eliminación en el objeto TIPOEQUIPO
         $permisoEliminacion = Permisos::where('Id_Rol', $roleId)
             ->where('Id_Objeto', function ($query) {
                 $query->select('Id_Objetos')
@@ -151,28 +150,32 @@ class TipoEquipoControlador extends Controller
             })
             ->where('Permiso_Eliminacion', 'PERMITIDO')
             ->exists();
-
+    
         if (!$permisoEliminacion) {
             $this->bitacora->registrarEnBitacora(18, 'Intento de eliminar tipoequipo sin permisos', 'ingreso');
-            return redirect()->route('tipoequipo.index')->withErrors('No tiene permiso para eliminar solicitudes');
+            return redirect()->route('tipoequipo.index')->withErrors('No tiene permiso para eliminar este tipo de equipo.');
         }
+    
         $tipoEquipo = TipoEquipo::find($id);
     
         // Verificar si el tipo de equipo existe
         if (!$tipoEquipo) {
-            return redirect()->route('tipoequipo.index')->with('error', 'Tipo de equipo no encontrado');
+            return redirect()->route('tipoequipo.index')->with('error', 'Tipo de equipo no encontrado.');
         }
     
-        // Verificar si el tipo de equipo está protegido
-        if ($tipoEquipo->PROTEGIDO) {
-            return redirect()->route('tipoequipo.index')->with('error', 'No se puede eliminar este tipo de equipo porque está protegido.');
+        // Verificar si el tipo de equipo está en uso por algún equipo
+        $equiposUsandoTipo = Equipos::where('COD_TIP_EQUIPO', $tipoEquipo->COD_TIP_EQUIPO)->exists();
+        
+        if ($equiposUsandoTipo) {
+            return redirect()->route('tipoequipo.index')->with('error', 'No se puede eliminar este tipo de equipo.');
         }
     
-        // Eliminar el tipo de equipo si no está protegido
+        // Eliminar el tipo de equipo si no está en uso
         $tipoEquipo->delete();
     
-        return redirect()->route('tipo_equipo.index')->with('success', 'Tipo de equipo eliminado correctamente');
+        return redirect()->route('tipo_equipo.index')->with('success', 'Tipo de equipo eliminado correctamente.');
     }
+    
     public function generateReport()
     {
         $tipoEquipos = TipoEquipo::with('equipos')->get();

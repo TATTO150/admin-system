@@ -49,12 +49,13 @@ class EstadoUsuarioController extends Controller
      public function store(EstadoUsuarioRequest $request)
      {
          // Verificar si ya existe un estado con el mismo nombre
-         $estadoExistente = EstadoUsuario::where('ESTADO', $request->ESTADO)->first();
-         
-         if ($estadoExistente) {
-             // Si ya existe un estado con el mismo nombre, lo eliminamos
-             $estadoExistente->delete();
-         }
+         // Verificar si ya existe un estado con el mismo nombre
+    $estadoExistente = EstadoUsuario::where('ESTADO', $request->ESTADO)->first();
+
+    // Si ya existe un estado con el mismo nombre, retornar con error
+    if ($estadoExistente) {
+        return redirect()->back()->withErrors(['ESTADO' => 'Este estado ya está registrado en el sistema.'])->withInput();
+    }
      
          // Crear el nuevo estado de usuario
          EstadoUsuario::create([
@@ -113,60 +114,33 @@ class EstadoUsuarioController extends Controller
          return redirect()->route('estado_usuarios.index')->with('success', 'Estado de usuario actualizado exitosamente.');
      }
      public function destroy($id)
-     {
-         $user = Auth::user();
-         $roleId = $user->Id_Rol;
-     
-         // Verificar si el rol del usuario tiene el permiso de eliminación en el objeto SOLICITUD
-         $permisoEliminacion = Permisos::where('Id_Rol', $roleId)
-             ->where('Id_Objeto', function ($query) {
-                 $query->select('Id_Objetos')
-                     ->from('tbl_objeto')
-                     ->where('Objeto', 'USUARIOESTADO')
-                     ->limit(1);
-             })
-             ->where('Permiso_Eliminacion', 'PERMITIDO')
-             ->exists();
-     
-         if (!$permisoEliminacion) {
-             $this->bitacora->registrarEnBitacora(18, 'Intento de eliminar estadousuario sin permisos', 'ingreso');
-             return response()->json([
-                 'status' => 'error',
-                 'message' => 'No tiene permiso para eliminar solicitudes',
-             ], 403);
-         }
-     
-         // Obtener el estado por su ID
-         $estado = EstadoUsuario::findOrFail($id);
-     
-         // Estados protegidos que no se pueden eliminar
-         $estadosProtegidos = ['NUEVO', 'ACTIVO', 'BLOQUEADO', 'INACTIVO'];
-     
-         // Verificar si el estado es uno de los protegidos
-         if (in_array($estado->ESTADO, $estadosProtegidos)) {
-             return response()->json([
-                 'status' => 'error',
-                 'message' => 'Este estado de usuario está protegido y no puede ser eliminado.',
-             ], 400);
-         }
-     
-         // Verificar si tiene registros asociados
-         if ($estado->relatedRecords()->exists()) {
-             Parametros::where('Parametro', 'REGISTRO_ESTADO_USUARIO')->update(['Valor' => 1]);
-             return response()->json([
-                 'status' => 'error',
-                 'message' => 'No se puede eliminar este estado porque tiene registros asociados.',
-             ], 400);
-         }
-     
-         // Si no está protegido ni tiene registros asociados, eliminarlo
-         $estado->delete();
-     
-         return response()->json([
-             'status' => 'success',
-             'message' => 'Estado de usuario eliminado exitosamente.',
-         ]);
-     }
+{
+    // Obtener el estado de usuario por su ID
+    $estado = EstadoUsuario::findOrFail($id);
+
+    // Estados que no se pueden eliminar
+    $estadosNoEliminables = ['NUEVO', 'ACTIVO', 'BLOQUEADO', 'INACTIVO'];
+
+    // Verificar si el estado es uno de los que no se pueden eliminar
+    if (in_array($estado->ESTADO, $estadosNoEliminables)) {
+        return redirect()->route('estado_usuarios.index')
+            ->with('error', 'No se puede eliminar este estado de usuario porque su eliminación está bloqueada.');
+    }
+
+    // Verificar si el estado está siendo utilizado en la tabla usuarios
+    if ($estado->relatedRecords()->count() > 0) {
+        return redirect()->route('estado_usuarios.index')
+            ->with('error', 'No se puede eliminar este estado de usuario porque está siendo utilizado por uno o más usuarios.');
+    }
+
+    // Si no está en la lista de estados bloqueados y no está en uso, eliminar el estado
+    $estado->delete();
+
+    // Redirigir con mensaje de éxito
+    return redirect()->route('estado_usuarios.index')
+        ->with('success', 'Estado de usuario eliminado correctamente.');
+}
+
      
 
  

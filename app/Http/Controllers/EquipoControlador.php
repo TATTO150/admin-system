@@ -358,7 +358,7 @@ class EquipoControlador extends Controller
         }
     
         $estadoEquipo = $equipo->get('COD_ESTADO_EQUIPO');
-        if ($estadoEquipo ==1) { // Estado 2 significa "Asignado"
+        if ($estadoEquipo ==2) { // Estado 2 significa "Asignado"
             return redirect()->route('equipos.index')->with('error', 'No se puede borrar el equipo porque está Asignado.');
         } 
     
