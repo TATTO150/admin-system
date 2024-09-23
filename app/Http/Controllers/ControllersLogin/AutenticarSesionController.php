@@ -9,6 +9,7 @@ use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Contracts\LoginViewResponse;
 use Laravel\Fortify\Contracts\LogoutResponse;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Bitacora;
 use App\Models\Parametros;
 use Illuminate\Support\Facades\Hash;
@@ -44,6 +45,16 @@ class AutenticarSesionController extends Controller
      */
     public function create(Request $request): LoginViewResponse
     {
+        $user = $this->guard->user();
+        
+        $this->guard->logout();
+
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            // Eliminar el Id_usuario de la sesión
+            $request->session()->forget('Id_usuario');
+        }
         return app(LoginViewResponse::class);
     }
 
@@ -57,6 +68,10 @@ class AutenticarSesionController extends Controller
     {
         $user = User::where('Correo_Electronico', $request->Correo_Electronico)->first();
         $parametro = Parametros::where('Id_Parametro', 1)->first();
+        $user->two_factor_status = 0;
+            
+                // Guardar los cambios en el modelo
+                $user->save();
 
         if ($user) {
             // Verificar si la fecha de vencimiento es hoy
@@ -66,7 +81,7 @@ class AutenticarSesionController extends Controller
                 return redirect()->route('bloqueo');
             }
 
-            if ($user->Estado_Usuario === 3) {
+            if ($user->Estado_Usuario === 'BLOQUEADO') {
                 $this->registrarEnBitacora($user, 4, 'Intento de inicio de sesión con usuario bloqueado', 'Consulta'); // ID_objetos 4: 'bloqueo'
                 return redirect()->route('bloqueo');
             }
@@ -103,7 +118,7 @@ class AutenticarSesionController extends Controller
                 } 
             } else {
                 $this->incrementarIntentosLogin($user);
-                if ($user->Intentos_Login >= $parametro->Valor && $user->Id_Rol != 1) {
+                if ($user->Intentos_Login >= 3 && $user->Id_Rol != 1) {
                     $this->bloquearUsuario($user);
                     $this->registrarEnBitacora($user, 2, 'Usuario bloqueado por intentos fallidos', 'Update'); 
                 }
@@ -118,13 +133,16 @@ class AutenticarSesionController extends Controller
 
     /**
      * Destroy an authenticated session.
-     *
+     * @param \App\Models\User
+     * @param \Illuminate\Support\Facades\Auth
      * @param  \Illuminate\Http\Request  $request
+     * @param  \Laravel\Fortify\Http\Requests\LoginRequest
      * @return \Laravel\Fortify\Contracts\LogoutResponse
      */
     public function destroy(Request $request): LogoutResponse
     {
         $user = $this->guard->user();
+        
         $this->registrarEnBitacora($user, 2, 'Cierre de sesión', 'Ingreso'); // ID_objetos 2: 'login'
 
         $this->guard->logout();
@@ -195,7 +213,7 @@ class AutenticarSesionController extends Controller
      */
     protected function bloquearUsuario($user)
     {
-        $user->Estado_Usuario = 3;
+        $user->Estado_Usuario = 'BLOQUEADO';
         $user->save();
     }
 

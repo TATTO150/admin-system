@@ -17,6 +17,7 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         '2fa' => \PragmaRX\Google2FALaravel\Middleware::class,
         'throttle.logins' => \App\Http\Middleware\ThrottleLogins::class,
+        'two_factor_verified' => \App\Http\Middleware\EnsureTwoFactorIsVerified::class,
     ];
 
     protected $middlewareGroups = [
