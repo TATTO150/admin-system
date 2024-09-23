@@ -20,12 +20,21 @@ use App\Models\Equipos;
 use App\Models\EstadoAsignacion;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index()
 {
+    $user = Auth::user();
+
+    // Validar si el usuario tiene pendiente la autenticación de dos factores
+   // Validar si el usuario tiene pendiente la autenticación de dos factores
+   if (!is_null($user->two_factor_secret) && ($user->two_factor_status === 0 || is_null($user->two_factor_status))) {
+        return redirect()->route('two-factor.login');
+    }
+
     // Cantidad de proyectos por estado
     $proyectosActivosCount = Proyectos::where('ESTADO_PROYECTO', 'ACTIVO')->count();
     $proyectosSuspendidosCount = Proyectos::where('ESTADO_PROYECTO', 'SUSPENDIDO')->count();

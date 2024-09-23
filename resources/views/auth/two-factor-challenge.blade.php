@@ -5,7 +5,7 @@
         </x-slot>
 
         <div x-data="{ recovery: false }">
-            <div class="mb-4 text-sm text-gray-600 dark:text-gray-400" x-show="! recovery">
+            <div class="mb-4 mt-4 text-big text-white dark:text-white-400" x-show="! recovery">
                 {{ __('Por favor, confirme el acceso a su cuenta ingresando el código de autenticación proporcionado por su aplicación de autenticación.') }}
             </div>
 

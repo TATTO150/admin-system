@@ -16,7 +16,7 @@ use App\Models\Rol;
 use App\Actions\Fortify\CreateNewUser;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
-use Laravel\Fortify\Rules\Validaciones;
+use App\Rules\Validaciones;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
@@ -173,11 +173,9 @@ public function insertar(UsuarioRequest $request)
 
     // Encriptar la contraseña
     $contraseñaHasheada = Hash::make($contraseña);
-    Log::info('Contraseña Generada: ' . $contraseña); // Depuración
-    Log::info('Contraseña Hasheada: ' . $  'Fecha_Ultima_Conexion' => Carbon::now(),
         'Primer_Ingreso' => Carbon::now(),
         'Fecha_Vencimiento' => Carbon::now()->addMonth(3),
-        'Correo_Electa depuración
+        'Correo_Electa depuración'
     Log::info('Datos enviados a la API:', $datos);
 
     // Crear el usuario en la base de datos a través de la API

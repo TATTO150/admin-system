@@ -212,7 +212,7 @@ public function crear()
     $tipo = EstadoEmpleado::where('ESTADO', 'ACTIVO')->get();
     $cargos = Cargo::all();
     $areas = Area::all();
-    $proyectos = Proyectos::whereNotIn('ESTADO_PROYECTO', ['FINALIZADO', 'SUSPENDIDO', 'INACTIVO'])->get();
+    $proyectos = Proyectos::whereNotIn('ESTADO_PROYECTO', ['FINALIZADOS', 'SUSPENDIDO', 'INACTIVO'])->get();
 
     return view('empleados.crear', compact('areas', 'cargos', 'proyectos', 'tipo'));
 }
@@ -405,7 +405,7 @@ public function edit($COD_EMPLEADO)
     $tipo = EstadoEmpleado::where('ESTADO', 'ACTIVO')->get();
     $areas = Area::all();
     $cargos = Cargo::all();
-    $proyectos = Proyectos::whereNotIn('ESTADO_PROYECTO', ['FINALIZADO', 'SUSPENDIDO'])->get();
+    $proyectos = Proyectos::whereNotIn('ESTADO_PROYECTO', ['FINALIZADO', 'SUSPENDIDO', 'INACTIVO'])->get();
 
     // Obtener proyectos asignados al empleado
     $empleadosProyectos = EmpleadoProyectos::where('DNI_EMPLEADO', $empleados['DNI_EMPLEADO'])

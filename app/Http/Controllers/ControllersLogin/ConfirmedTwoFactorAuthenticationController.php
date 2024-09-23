@@ -41,10 +41,17 @@ class ConfirmedTwoFactorAuthenticationController extends Controller
                 throw ValidationException::withMessages([
                     'code' => 'El código de autenticación proporcionado es incorrecto.'
                 ]);
-            }else{
+            }else {
+                $user->Verificacion_Usuario = 1;
+                $user->two_factor_status = 1;
+            
+                // Guardar los cambios en el modelo
+                $user->save();
+            
                 $this->registrarEnBitacora($user->Id_usuario, 2, 'Código OTP verificado correctamente', 'Update');
                 return redirect()->route('dashboard');
             }
+            
             
         } catch (ValidationException $e) {
             throw $e;

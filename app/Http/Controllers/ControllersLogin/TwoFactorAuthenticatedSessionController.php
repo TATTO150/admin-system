@@ -67,13 +67,13 @@ class TwoFactorAuthenticatedSessionController extends Controller
     if ($code = $request->input('code')) {
         if (!$user->two_factor_secret || !$user->validateTwoFactorAuthenticationCode($code)) {
             throw ValidationException::withMessages([
-                'code' => [__('The provided two factor authentication code was invalid.')],
+                'code' => [__('El codigo otp ingresado es invalido')],
             ]);
         }
     } elseif ($recovery_code = $request->input('recovery_code')) {
         if (!$user->recoverTwoFactorAuthentication($recovery_code)) {
             throw ValidationException::withMessages([
-                'recovery_code' => [__('The provided two factor recovery code was invalid.')],
+                'recovery_code' => [__('El codigo otp ingresado es invalido')],
             ]);
         }
     }
