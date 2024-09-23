@@ -26,15 +26,6 @@
 @endif
 
 
- <!-- Botón para ver proyectos inactivos -->
- <form action="{{ route('proyectos.index') }}" method="GET" class="mb-3">
-        <button type="submit" name="ver_inactivos" value="{{ $verInactivos ? 'false' : 'true' }}" class="btn btn-primary">
-            {{ $verInactivos ? 'OCULTAR INACTIVOS' : 'VER INACTIVOS' }}
-        </button>
-        <!-- Puedes añadir otros filtros o controles aquí -->
-    </form>
-
-
 
    <!--  <form method="GET" action="{{ route('proyectos.index') }}">
     <div class="form-group">
@@ -202,6 +193,15 @@
     }
 </style> -->
 
+
+<!-- Botón para ver proyectos inactivos -->
+<form action="{{ route('proyectos.index') }}" method="GET" class="mb-3">
+    <button type="submit" name="ver_inactivos" value="{{ $verInactivos ? 'false' : 'true' }}" class="btn btn-primary">
+        {{ $verInactivos ? 'OCULTAR INACTIVOS' : 'VER INACTIVOS' }}
+    </button>
+</form>
+
+
                 <!-- Formulario de filtro -->
                 <form action="{{ route('proyectos.index') }}" method="GET" class="form-inline">
     <div class="form-group mr-2">
@@ -260,6 +260,7 @@
             </div>
 
             
+            
 <!-- ESTE CSS ES PARA LA CONFIGURACION DE LA DESCRIPCION -->
             <style>
     .table td {
@@ -302,46 +303,95 @@
 </style>
 
 
-<h2>TODOS LOS PROYECTOS</h2>
-<table id="mitabla" class="table table-striped">
-    <thead>
-        <tr>
-            <th>NOMBRE PROYECTO</th>
-            <th>FECHA INICIO</th>
-            <th>FECHA FINAL</th>
-            <th>DESCRIPCION PROYECTO</th>
-            <th>PRESUPUESTO INICIO</th>
-            <th>ESTADO PROYECTO</th>
-            <th>ACCION</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach ($proyectos as $proyecto)
-        <tr>
-            <td>{{ $proyecto->NOM_PROYECTO }}</td>
-            <td>{{ $proyecto->FEC_INICIO }}</td>
-            <td>{{ $proyecto->FEC_FINAL }}</td>
+@if($verInactivos)
+    <h2>PROYECTOS INACTIVOS</h2>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>NOMBRE PROYECTO</th>
+                <th>FECHA INICIO</th>
+                <th>FECHA FINAL</th>
+                <th>DESCRIPCION PROYECTO</th>
+                <th>PRESUPUESTO INICIO</th>
+                <th>ESTADO PROYECTO</th>
+                <th>ACCION</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($proyectosInactivos as $proyecto)
+                <tr>
+                    <td>{{ $proyecto->NOM_PROYECTO }}</td>
+                    <td>{{ $proyecto->FEC_INICIO }}</td>
+                    <td>{{ $proyecto->FEC_FINAL }}</td>
+                    <td>
+                        @php
+                            $descripcion = $proyecto->DESC_PROYECTO;
+                            $descripcion_truncada = strlen($descripcion) > 30 ? substr($descripcion, 0, 30) . '...' : $descripcion;
+                        @endphp
+                        <div class="descripcion">
+                            <span class="descripcion-corta" id="descripcionCorta{{ $proyecto->COD_PROYECTO }}">{{ $descripcion_truncada }}</span>
+                            @if(strlen($proyecto->DESC_PROYECTO) > 30)
+                            <span class="btn-fecha" id="btnMostrarMas{{ $proyecto->COD_PROYECTO }}" onclick="mostrarDescripcionCompleta({{ $proyecto->COD_PROYECTO }})">Mostrar más</span>
+                            <span class="descripcion-completa" id="descripcionCompleta{{ $proyecto->COD_PROYECTO }}">{{ $proyecto->DESC_PROYECTO }}</span>
+                            <span class="btn-menos" id="btnMenos{{ $proyecto->COD_PROYECTO }}" onclick="ocultarDescripcionCompleta({{ $proyecto->COD_PROYECTO }})">Mostrar menos</span>
+                            @endif
+                        </div>
+                    </td>
+                    <td>{{ $proyecto->PRESUPUESTO_INICIO }}</td>
+                    <td style="color: {{ $obtenerColorEstado($proyecto->ESTADO_PROYECTO) }}">
+                        {{ $proyecto->ESTADO_PROYECTO }}
+                    </td>
+                    <td>
+                    <form id="restaurarForm{{ $proyecto->COD_PROYECTO }}" action="{{ route('proyectos.restaurar', $proyecto->COD_PROYECTO) }}" method="POST" style="display:inline;">
+    @csrf
+    <button type="button" class="btn btn-success" onclick="confirmRestauracion({{ $proyecto->COD_PROYECTO }})">RESTAURAR</button>
+</form>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    
+@else
+    <h2>TODOS LOS PROYECTOS</h2>
+    <table id="mitabla" class="table table-striped">
+        <thead>
+            <tr>
+                <th>NOMBRE PROYECTO</th>
+                <th>FECHA INICIO</th>
+                <th>FECHA FINAL</th>
+                <th>DESCRIPCION PROYECTO</th>
+                <th>PRESUPUESTO INICIO</th>
+                <th>ESTADO PROYECTO</th>
+                <th>ACCION</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($proyectos as $proyecto)
+                <tr>
+                    <td>{{ $proyecto->NOM_PROYECTO }}</td>
+                    <td>{{ $proyecto->FEC_INICIO }}</td>
+                    <td>{{ $proyecto->FEC_FINAL }}</td>
+                    <td>
+                        @php
+                            $descripcion = $proyecto->DESC_PROYECTO;
+                            $descripcion_truncada = strlen($descripcion) > 30 ? substr($descripcion, 0, 30) . '...' : $descripcion;
+                        @endphp
+                        <div class="descripcion">
+                            <span class="descripcion-corta" id="descripcionCorta{{ $proyecto->COD_PROYECTO }}">{{ $descripcion_truncada }}</span>
+                            @if(strlen($proyecto->DESC_PROYECTO) > 30)
+                            <span class="btn-fecha" id="btnMostrarMas{{ $proyecto->COD_PROYECTO }}" onclick="mostrarDescripcionCompleta({{ $proyecto->COD_PROYECTO }})">Mostrar más</span>
+                            <span class="descripcion-completa" id="descripcionCompleta{{ $proyecto->COD_PROYECTO }}">{{ $proyecto->DESC_PROYECTO }}</span>
+                            <span class="btn-menos" id="btnMenos{{ $proyecto->COD_PROYECTO }}" onclick="ocultarDescripcionCompleta({{ $proyecto->COD_PROYECTO }})">Mostrar menos</span>
+                            @endif
+                        </div>
+                    </td>
+                    <td>{{ $proyecto->PRESUPUESTO_INICIO }}</td>
+                    <td style="color: {{ $obtenerColorEstado($proyecto->ESTADO_PROYECTO) }}">
+                        {{ $proyecto->ESTADO_PROYECTO }}
+                        </td>
             <td>
-                @php
-                    $descripcion = $proyecto->DESC_PROYECTO;
-                    $descripcion_truncada = strlen($descripcion) > 30 ? substr($descripcion, 0, 30) . '...' : $descripcion;
-                @endphp
-                <div class="descripcion">
-                    <span class="descripcion-corta" id="descripcionCorta{{ $proyecto->COD_PROYECTO }}">{{ $descripcion_truncada }}</span>
-                    @if(strlen($proyecto->DESC_PROYECTO) > 30)
-                    <span class="btn-fecha" id="btnMostrarMas{{ $proyecto->COD_PROYECTO }}" onclick="mostrarDescripcionCompleta({{ $proyecto->COD_PROYECTO }})">Mostrar más</span>
-                    <span class="descripcion-completa" id="descripcionCompleta{{ $proyecto->COD_PROYECTO }}">{{ $proyecto->DESC_PROYECTO }}</span>
-                    <span class="btn-menos" id="btnMenos{{ $proyecto->COD_PROYECTO }}" onclick="ocultarDescripcionCompleta({{ $proyecto->COD_PROYECTO }})">Mostrar menos</span>
-                    @endif
-                </div>
-            </td>
-            <td>{{ $proyecto->PRESUPUESTO_INICIO }}</td>
-            <td style="color: {{ $obtenerColorEstado($proyecto->ESTADO_PROYECTO) }}">
-                {{ $proyecto->ESTADO_PROYECTO }}
-              </td>     
-             <td>
-
-
                 @if($proyecto->ESTADO_PROYECTO !== 'INACTIVO')
                 <!-- Dropdown Button -->
                 <div class="dropdown">
@@ -383,13 +433,38 @@
                     </ul>
                 </div>
                 @endif
+            </td>
+        </tr>
+            @endforeach
+        </tbody>
+    </table>
+@endif
 
-                
-              </td>
-              </tr>
-                @endforeach
-               </tbody>
-</table>
+
+<!-- FUNCION DE ALERTA DE RESTAURAR -->
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function confirmRestauracion(proyectoId) {
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: '¿Quieres restaurar este proyecto?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',  // Color para "Restaurar"
+            cancelButtonColor: '#d33',      // Color para "Cancelar"
+            confirmButtonText: 'RESTAURAR',
+            cancelButtonText: 'CANCELAR'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Envía el formulario correspondiente
+                document.getElementById('restaurarForm' + proyectoId).submit();
+            }
+        });
+    }
+</script>
+
 
 
 
