@@ -31,7 +31,7 @@ class EstadoEmpleadoControlador extends Controller
             ->where('Id_Objeto', function ($query) {
                 $query->select('Id_Objetos')
                     ->from('tbl_objeto')
-                    ->where('Objeto', 'ESTADO')
+                    ->where('Objeto', 'TIPOEMPLEADO')
                     ->limit(1);
             })
             ->where('Permiso_Consultar', 'PERMITIDO')
@@ -81,7 +81,7 @@ class EstadoEmpleadoControlador extends Controller
             ->where('Id_Objeto', function ($query) {
                 $query->select('Id_Objetos')
                     ->from('tbl_objeto')
-                    ->where('Objeto', 'ESTADO')
+                    ->where('Objeto', 'TIPOEMPLEADO')
                     ->limit(1);
             })
             ->where('Permiso_Insercion', 'PERMITIDO')
@@ -140,7 +140,7 @@ class EstadoEmpleadoControlador extends Controller
             ->where('Id_Objeto', function ($query) {
                 $query->select('Id_Objetos')
                     ->from('tbl_objeto')
-                    ->where('Objeto', 'ESTADO')
+                    ->where('Objeto', 'TIPOEMPLEADO')
                     ->limit(1);
             })
             ->where('Permiso_Eliminacion', 'PERMITIDO')
@@ -181,7 +181,7 @@ class EstadoEmpleadoControlador extends Controller
             ->where('Id_Objeto', function ($query) {
                 $query->select('Id_Objetos')
                     ->from('tbl_objeto')
-                    ->where('Objeto', 'ESTADO')
+                    ->where('Objeto', 'TIPOEMPLEADO')
                     ->limit(1);
             })
             ->where('Permiso_Actualizacion', 'PERMITIDO')

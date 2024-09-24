@@ -36,7 +36,7 @@ class GestionSolicitudesControlador extends Controller
             ->where('Id_Objeto', function ($query) {
                 $query->select('Id_Objetos')
                     ->from('tbl_objeto')
-                    ->where('Objeto', 'SOLICITUD')
+                    ->where('Objeto', 'GESTIONSOLICITUD')
                     ->limit(1);
             })
             ->where('Permiso_Consultar', 'PERMITIDO')
@@ -64,7 +64,7 @@ class GestionSolicitudesControlador extends Controller
             ->where('Id_Objeto', function ($query) {
                 $query->select('Id_Objetos')
                     ->from('tbl_objeto')
-                    ->where('Objeto', 'SOLICITUD')
+                    ->where('Objeto', 'GESTIONSOLICITUD')
                     ->limit(1);
             })
             ->where('Permiso_Actualizacion', 'PERMITIDO')
