@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\BitacoraController;
+use App\Providers\PermisoService;
 use App\Models\Area;
 use App\Models\Permisos;
 use App\Models\empleados;
@@ -18,32 +19,20 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class AreaControlador extends Controller
 {
     protected $bitacora;
+    protected $permisoService;
 
-    public function __construct(BitacoraController $bitacora)
+    public function __construct(BitacoraController $bitacora, PermisoService $permisoService)
     {
         $this->bitacora = $bitacora;
+        $this->permisoService = $permisoService;  // Inyectar el PermisoService
     }
 
     public function index()
     {
-        $user = Auth::user();
-    $roleId = $user->Id_Rol;
-
-    // Verificar si el rol del usuario tiene el permiso de consulta en el objeto PROYECTO
-    $permisoConsultar = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'AREA')
-                ->limit(1);
-        })
-        ->where('Permiso_Consultar', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoConsultar) {
-        $this->bitacora->registrarEnBitacora(22, 'Intento de ingreso a la ventana de areas sin permisos', 'Ingreso');
-        return redirect()->route('dashboard')->withErrors('No tiene permiso para ingresar a la ventana de areas');
-    }
+    $user = Auth::user();
+    
+    //Nueva validacvion de permisos
+    $this->permisoService->tienePermiso('AREA', 'Consultar', true);
 
     $areas = Area::where('ESTADO', 'ACTIVO')->get();
 
@@ -76,22 +65,9 @@ class AreaControlador extends Controller
     public function crear()
     {
         $user = Auth::user();
-        $roleId = $user->Id_Rol;
-
-        // Verificar si el rol del usuario tiene el permiso de inserción en el objeto PROYECTO
-        $permisoInsertar = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'AREA')
-                    ->limit(1);
-            })
-            ->where('Permiso_Insercion', 'PERMITIDO')
-            ->exists();
-
-        if (!$permisoInsertar) {
-            return redirect()->route('areas.index')->withErrors('No tiene permiso para anadir areas');
-        }
+        
+        //Nueva validacvion de permisos
+        $this->permisoService->tienePermiso('AREA', 'Insercion', true);
 
         return view('areas.crear');
     }
@@ -134,24 +110,9 @@ class AreaControlador extends Controller
     public function destroy($COD_AREA)
 {
     $user = Auth::user();
-    $roleId = $user->Id_Rol;
-
-    // Verificar si el rol del usuario tiene el permiso de eliminación en el objeto PROYECTO
-    $permisoEliminar = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'AREA')
-                ->limit(1);
-        })
-        ->where('Permiso_Eliminacion', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoEliminar) {
-        $this->bitacora->registrarEnBitacora(22, 'Intento de eliminar area sin permisos', 'Ingreso');
-        
-        return redirect()->route('areas.index')->withErrors('No tiene permiso para eliminar áreas');
-    }
+    
+    //Nueva validacvion de permisos
+    $this->permisoService->tienePermiso('AREA', 'Eliminacion', true);
 
     // Verificar si hay empleados asignados a esta área
     $empleadosAsignados = empleados::where('COD_AREA', $COD_AREA)->exists();
@@ -175,26 +136,9 @@ public function edit($COD_AREA)
 {
     // Obtener el usuario autenticado y su rol
     $user = Auth::user();
-    $roleId = $user->Id_Rol;
-
-    // Verificar si el rol del usuario tiene permiso de actualización en el objeto AREA
-    $permisoActualizar = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'AREA')
-                ->limit(1);
-        })
-        ->where('Permiso_Actualizacion', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoActualizar) {
-        // Registrar en bitácora el intento de actualización sin permisos
-        $this->bitacora->registrarEnBitacora(22, 'Intento de actualizar áreas sin permisos', 'Update');
-        
-        // Redirigir al índice de áreas con un mensaje de error
-        return redirect()->route('areas.index')->withErrors('No tiene permiso para editar áreas');
-    }
+    
+    //Nueva validacvion de permisos
+    $this->permisoService->tienePermiso('AREA', 'Actualizacion', true);
 
     // Buscar el área en la base de datos usando el modelo Area
     $areas = Area::find($COD_AREA);

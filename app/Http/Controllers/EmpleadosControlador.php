@@ -19,15 +19,18 @@ use App\Models\EmpleadoProyectos;
 use App\Models\Proyectos;
 use App\Models\Empleados;
 use App\Models\Planillas;
+use App\Providers\PermisoService;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class EmpleadosControlador extends Controller
 {
     protected $bitacora;
+    protected $permisoService;
 
-    public function __construct(BitacoraController $bitacora)
+    public function __construct(BitacoraController $bitacora, PermisoService $permisoService)
     {
         $this->bitacora = $bitacora;
+        $this->permisoService = $permisoService;  // Inyectar el PermisoService
     }
     protected $areas;
     protected $cargos;
@@ -37,21 +40,8 @@ class EmpleadosControlador extends Controller
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     
-        // Verificar si el rol del usuario tiene el permiso de consulta en el objeto EMPLEADO
-        $permisoConsultar = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'EMPLEADO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Consultar', 'PERMITIDO')
-            ->exists();
-    
-        if (!$permisoConsultar) {
-            $this->bitacora->registrarEnBitacora(16, 'Intento de ingreso a la ventana de empleados sin permisos', 'Ingreso');
-            return redirect()->route('dashboard')->withErrors('No tiene permiso para consultar empleados');
-        }
+        //Nueva validacvion de permisos
+        $this->permisoService->tienePermiso('EMPLEADO', 'Consultar', true);
     
         $empleados = Empleados::with('estadoEmpleado')->get();
     
@@ -190,24 +180,9 @@ class EmpleadosControlador extends Controller
 public function crear()
 {
     $user = Auth::user();
-    $roleId = $user->Id_Rol;
-
-    // Verificar si el rol del usuario tiene el permiso de inserción en el objeto SOLICITUD
-    $permisoInsercion = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'EMPLEADO')
-                ->limit(1);
-        })
-        ->where('Permiso_Insercion', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoInsercion) {
-        $this->bitacora->registrarEnBitacora(16, 'Intento de anadir empleados sin permisos', 'Ingreso');
     
-        return redirect()->route('empleados.index')->withErrors('No tiene permiso para anadir empleados');
-    }
+    //Nueva validacvion de permisos
+    $this->permisoService->tienePermiso('EMPLEADO', 'Insercion', true);
 
     $tipo = EstadoEmpleado::where('ESTADO', 'ACTIVO')->get();
     $cargos = Cargo::all();
@@ -334,24 +309,10 @@ public function insertar(Request $request)
 public function destroy($COD_EMPLEADO)
 {
     $user = Auth::user();
-        $roleId = $user->Id_Rol;
+    
+    //Nueva validacvion de permisos
+    $this->permisoService->tienePermiso('EMPLEADO', 'Eliminacion', true);
 
-        // Verificar si el rol del usuario tiene el permiso de eliminación en el objeto SOLICITUD
-        $permisoEliminacion = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'EMPLEADO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Eliminacion', 'PERMITIDO')
-            ->exists();
-
-        if (!$permisoEliminacion) {
-            $this->bitacora->registrarEnBitacora(16, 'Nuevo usuario creado exitosamente', 'Insert');
-        
-            return redirect()->route('empleados.index')->withErrors('No tiene permiso para eliminar empleados');
-        }
     // Obtener el salario neto del empleado antes de eliminarlo
     $empleado = DB::table('tbl_empleado')->where('COD_EMPLEADO', $COD_EMPLEADO)->first();
     
@@ -374,24 +335,9 @@ public function destroy($COD_EMPLEADO)
 public function edit($COD_EMPLEADO)
 {
     $user = Auth::user();
-    $roleId = $user->Id_Rol;
-
-    // Verificar si el rol del usuario tiene el permiso de actualización en el objeto SOLICITUD
-    $permisoActualizacion = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'EMPLEADO')
-                ->limit(1);
-        })
-        ->where('Permiso_Actualizacion', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoActualizacion) {
-        $this->bitacora->registrarEnBitacora(16, 'Intento de actualizacion de empleados sin permisos', 'Insert');
     
-        return redirect()->route('empleados.index')->withErrors('No tiene permiso para editar empleados');
-    }
+    //Nueva validacvion de permisos
+    $this->permisoService->tienePermiso('EMPLEADO', 'Actualizacion', true);
 
    // En tu controlador, al pasar los datos a la vista
     $empleados = Empleados::find($COD_EMPLEADO);
@@ -565,23 +511,9 @@ public function update(Request $request, $COD_EMPLEADO)
 public function desactivar($id)
 {
     $user = Auth::user();
-    $roleId = $user->Id_Rol;
-
-    // Verificar si el rol del usuario tiene el permiso de actualización en el objeto EMPLEADO
-    $permisoActualizacion = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'EMPLEADO')
-                ->limit(1);
-        })
-        ->where('Permiso_Actualizacion', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoActualizacion) {
-        $this->bitacora->registrarEnBitacora(21, 'INTENTO DE DESACTIVAR EMPLEADO SIN PERMISOS', 'Update');
-        return redirect()->route('empleados.index')->withErrors('No tiene permiso para desactivar empleados');
-    }
+    
+    //Nueva validacvion de permisos
+    $this->permisoService->tienePermiso('EMPLEADO', 'Eliminacion', true);
 
     // Encontrar al empleado por su ID
     $empleado = Empleados::findOrFail($id);

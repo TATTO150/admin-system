@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\BitacoraController;
+use App\Providers\PermisoService;
 use App\Models\EmpleadoPlanilla;
 use App\Models\Planillas;
 use App\Models\Permisos;
@@ -23,34 +24,21 @@ class PlanillaControlador extends Controller
     protected $planillas;
     protected $proyectos;
     protected $bitacora;
+    protected $permisoService;
 
-    public function __construct(BitacoraController $bitacora)
+    public function __construct(BitacoraController $bitacora, PermisoService $permisoService)
     {
         $this->bitacora = $bitacora;
         $this->proyectos = Proyectos::all();
+        $this->permisoService = $permisoService;
     }
 
     public function index()
     {
         $user = Auth::user();
-        $roleId = $user->Id_Rol;
-
-        // Verificar si el rol del usuario tiene el permiso de consulta en el objeto SOLICITUD
-        $permisoConsultar = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'PLANILLA')
-                    ->limit(1);
-            })
-            ->where('Permiso_Consultar', 'PERMITIDO')
-            ->exists();
-
-        if (!$permisoConsultar) {
-            $this->bitacora->registrarEnBitacora(21, 'Intento de ingreso a la ventana de planillas sin permisos', 'Ingreso');
         
-            return redirect()->route('dashboard')->withErrors('No tiene permiso para ingresar a la ventana de planillas');
-        }
+        //Nueva validacvion de permisos
+        $this->permisoService->tienePermiso('PLANILLA', 'Consultar', true);
        
         $planillas = Planillas::all();
         // Obtener los proyectos
@@ -176,25 +164,10 @@ public function generarReporteGeneral()
     public function crear()
     {
         $user = Auth::user();
-    $roleId = $user->Id_Rol;
 
-    // Verificar si el rol del usuario tiene el permiso de inserción en el objeto SOLICITUD
-    $permisoInsercion = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'PLANILLA')
-                ->limit(1);
-        })
-        ->where('Permiso_Insercion', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoInsercion) {
-        $this->bitacora->registrarEnBitacora(21, 'Intento de generar planilla sin permisos', 'Insert');
-    
-        return redirect()->route('planillas.index')->withErrors('No tiene permiso para generar planilla');
-    }
-        $responseProyectos = Http::get('http://127.0.0.1:3000/proyectos');
+    //Nueva validacvion de permisos
+    $this->permisoService->tienePermiso('Planilla', 'Insercion', true);
+       
         $proyectos = Proyectos::all(); 
 
         return view('planillas.crear', compact('proyectos'));
@@ -227,35 +200,14 @@ public function generarReporteGeneral()
             'TOTAL_PAGAR' => $totalPagar, // Usar el valor 0
         ]);
     
-        /* 
-        if ($response->successful()) {
-            $this->bitacora->registrarEnBitacora(Auth::id(), 12, 'Planilla insertada', 'Insert'); // ID_objetos 12: 'planillas'
-        }
-        */
-    
         return redirect()->route('planillas.index');
     }
 
     public function generarPlanilla(Request $request)
 {
     $user = Auth::user();
-    $roleId = $user->Id_Rol;
-
-    // Verificar permisos
-    $permisoInsercion = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'PLANILLA')
-                ->limit(1);
-        })
-        ->where('Permiso_Insercion', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoInsercion) {
-        $this->bitacora->registrarEnBitacora(21, 'INTENTO DE GENERAR PLANILLA SIN PERMISOS', 'Insert');
-        return redirect()->route('planillas.index')->withErrors('No tiene permiso para generar planillas');
-    }
+    //Nueva validacvion de permisos
+    $this->permisoService->tienePermiso('PLANILLA', 'Insercion', true);
 
     // Obtener mes y tipo de planilla del request
     $fechaSeleccionada = $request->input('fecha_inicio');
@@ -419,23 +371,9 @@ public function cancelarPlanilla($COD_PLANILLA){
 public function show($COD_PLANILLA)
 {
     $user = Auth::user();
-    $roleId = $user->Id_Rol;
 
-    // Verificar si el rol del usuario tiene el permiso de actualización en el objeto PLANILLA
-    $permisoActualizacion = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'PLANILLA')
-                ->limit(1);
-        })
-        ->where('Permiso_Actualizacion', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoActualizacion) {
-        $this->bitacora->registrarEnBitacora(21, 'Intento de ver detalles de planilla sin permisos', 'Error');
-        return redirect()->route('planillas.index')->withErrors('No tiene permiso para ver los detalles de la planilla');
-    }
+    //Nueva validacvion de permisos
+    $this->permisoService->tienePermiso('PLANILLA', 'Actualizacion', true);
 
     $planilla = Planillas::findOrFail($COD_PLANILLA);
 
@@ -454,6 +392,9 @@ public function show($COD_PLANILLA)
     
     public function destroy($COD_PLANILLA)
     {
+        //Nueva validacvion de permisos
+        $this->permisoService->tienePermiso('PLANILLA', 'Eliminacion', true);
+
         try {
             DB::statement('CALL ELI_PLANILLA(?)', [$COD_PLANILLA]);
            $this->bitacora->registrarEnBitacora(21, 'Planilla eliminada', 'Delete'); // ID_objetos 12: 'planillas'*/
@@ -466,24 +407,9 @@ public function show($COD_PLANILLA)
     public function edit($COD_PLANILLA)
     {
         $user = Auth::user();
-    $roleId = $user->Id_Rol;
 
-    // Verificar si el rol del usuario tiene el permiso de actualización en el objeto SOLICITUD
-    $permisoActualizacion = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'PLANILLA')
-                ->limit(1);
-        })
-        ->where('Permiso_Actualizacion', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoActualizacion) {
-        $this->bitacora->registrarEnBitacora(21, 'Intento de actualizacion de planilla sin permisos', 'Update');
-    
-        return redirect()->route('planillas.index')->withErrors('No tiene permiso para editar planillas');
-    }
+    //Nueva validacvion de permisos
+    $this->permisoService->tienePermiso('PLANILLA', 'Actualizacion', true);
        
     
     $planillas = Planillas::findOrFail($COD_PLANILLA);
@@ -493,7 +419,7 @@ public function show($COD_PLANILLA)
      ->get()
      ->pluck('empleado'); // Extrae la colección de empleados
 
- $totalPagar = $planillas->TOTAL_PAGADO;
+    $totalPagar = $planillas->TOTAL_PAGADO;
 
         $proyectos = $this->proyectos;
     
