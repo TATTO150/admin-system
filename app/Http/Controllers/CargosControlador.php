@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\BitacoraController;
+use App\Providers\PermisoService;
 use App\Models\Cargo;
 use App\Models\Permisos;
 use App\Models\Empleados;
@@ -18,33 +19,20 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class CargosControlador extends Controller
 {
     protected $bitacora;
+    protected $permisoService;
 
-    public function __construct(BitacoraController $bitacora)
+    public function __construct(BitacoraController $bitacora, PermisoService $permisoService)
     {
         $this->bitacora = $bitacora;
+        $this->permisoService = $permisoService;  // Inyectar el PermisoService
     }
 
     public function index()
     {
         $user = Auth::user();
-        $roleId = $user->Id_Rol;
-
-        // Verificar si el rol del usuario tiene el permiso de consulta en el objeto SOLICITUD
-        $permisoConsultar = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'CARGO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Consultar', 'PERMITIDO')
-            ->exists();
-
-        if (!$permisoConsultar) {
-            $this->bitacora->registrarEnBitacora(17, 'Intento de entrar a la ventana de cargos sin permisos', 'Error');
-
-            return redirect()->route('dashboard')->withErrors('No tiene permiso para consultar cargos');
-        }
+        
+        //Nueva validacvion de permisos
+        $this->permisoService->tienePermiso('CARGO', 'Consultar', true);
 
         $cargos = Cargo::where('ESTADO', 'ACTIVO')->get();
         $this->bitacora->registrarEnBitacora(17, 'Ingreso a la ventana de cargos', 'Ingreso');
@@ -78,24 +66,9 @@ class CargosControlador extends Controller
     public function crear()
     {
         $user = Auth::user();
-        $roleId = $user->Id_Rol;
-
-        // Verificar si el rol del usuario tiene el permiso de inserción en el objeto COMPRA
-        $permisoInsercion = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'CARGO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Insercion', 'PERMITIDO')
-            ->exists();
-
-        if (!$permisoInsercion) {
-            $this->bitacora->registrarEnBitacora(17, 'Intento de anadir cargos sin permisos', 'Error');
-
-            return redirect()->route('cargos.index')->withErrors('No tiene permiso para crear cargos');
-        }
+        
+        //Nueva validacvion de permisos
+        $this->permisoService->tienePermiso('CARGO', 'Insercion', true);
 
         return view('cargos.crear');
     }
@@ -162,24 +135,9 @@ class CargosControlador extends Controller
     public function destroy($COD_CARGO)
 {
     $user = Auth::user();
-    $roleId = $user->Id_Rol;
-
-    // Verificar si el rol del usuario tiene el permiso de eliminación en el objeto CARGO
-    $permisoEliminacion = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'CARGO')
-                ->limit(1);
-        })
-        ->where('Permiso_Eliminacion', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoEliminacion) {
-        $this->bitacora->registrarEnBitacora(17, 'Intento de eliminar cargos sin permisos', 'Error');
-
-        return redirect()->route('cargos.index')->withErrors('No tiene permiso para eliminar cargos');
-    }
+    
+    //Nueva validacvion de permisos
+    $this->permisoService->tienePermiso('CARGO', 'Eliminacion', true);
 
     // Verificar si hay empleados asignados a este cargo
     $empleadosAsignados = Empleados::where('COD_CARGO', $COD_CARGO)->exists();
@@ -203,24 +161,9 @@ class CargosControlador extends Controller
     public function edit($COD_CARGO)
     {
         $user = Auth::user();
-        $roleId = $user->Id_Rol;
-
-        // Verificar si el rol del usuario tiene el permiso de actualización en el objeto COMPRA
-        $permisoActualizacion = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'CARGO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Actualizacion', 'PERMITIDO')
-            ->exists();
-
-        if (!$permisoActualizacion) {
-            $this->bitacora->registrarEnBitacora(17, 'Intento de actualizar cargos sin permisos', 'Error');
-
-            return redirect()->route('cargos.index')->withErrors('No tiene permiso para editar cargos');
-        }
+        
+        //Nueva validacvion de permisos
+        $this->permisoService->tienePermiso('CARGO', 'Actualizacion', true);
 
         $cargos = Cargo::find($COD_CARGO);
 

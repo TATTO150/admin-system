@@ -7,6 +7,7 @@ use App\Models\EstadoEmpleado;
 use App\Models\Permisos;
 use App\Models\Empleados;
 use App\Http\Controllers\BitacoraController;
+use App\Providers\PermisoService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Rules\Validaciones;
@@ -15,32 +16,19 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class EstadoEmpleadoControlador extends Controller
 {
     protected $bitacora;
+    protected $permisoService;
 
-    public function __construct(BitacoraController $bitacora)
+    public function __construct(BitacoraController $bitacora, PermisoService $permisoService)
     {
         $this->bitacora = $bitacora;
+        $this->permisoService = $permisoService;  // Inyectar el PermisoService
     }
 
     public function index()
     {
         $user = Auth::user();
-        $roleId = $user->Id_Rol;
-
-        // Verificar si el rol del usuario tiene el permiso de consulta en el objeto ESTADO
-        $permisoConsultar = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'TIPOEMPLEADO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Consultar', 'PERMITIDO')
-            ->exists();
-
-        if (!$permisoConsultar) {
-            $this->bitacora->registrarEnBitacora(22, 'Intento de ingreso a la ventana de estados sin permisos', 'Ingreso');
-            return redirect()->route('dashboard')->withErrors('No tiene permiso para ingresar a la ventana de tipos de empleado');
-        }
+        //Nueva validacvion de permisos
+        $this->permisoService->tienePermiso('TIPOEMPLEADO', 'Consultar', true);
 
         $estados = EstadoEmpleado::where('ESTADO', 'ACTIVO')->get();
 
@@ -74,22 +62,9 @@ class EstadoEmpleadoControlador extends Controller
     public function crear()
     {
         $user = Auth::user();
-        $roleId = $user->Id_Rol;
 
-        // Verificar si el rol del usuario tiene el permiso de inserción en el objeto ESTADO
-        $permisoInsertar = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'TIPOEMPLEADO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Insercion', 'PERMITIDO')
-            ->exists();
-
-        if (!$permisoInsertar) {
-            return redirect()->route('estado_empleados.index')->withErrors('No tiene permiso para añadir estados');
-        }
+         //Nueva validacvion de permisos
+         $this->permisoService->tienePermiso('TIPOEMPLEADO', 'Insercion', true);
 
         return view('estado_empleados.create');
     }
@@ -135,22 +110,8 @@ class EstadoEmpleadoControlador extends Controller
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
-        // Verificar si el rol del usuario tiene el permiso de eliminación en el objeto ESTADO
-        $permisoEliminar = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'TIPOEMPLEADO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Eliminacion', 'PERMITIDO')
-            ->exists();
-
-        if (!$permisoEliminar) {
-            $this->bitacora->registrarEnBitacora(22, 'Intento de eliminar estado sin permisos', 'Ingreso');
-            
-            return redirect()->route('estado_empleados.index')->withErrors('No tiene permiso para eliminar estados');
-        }
+         //Nueva validacvion de permisos
+         $this->permisoService->tienePermiso('TIPOEMPLEADO', 'Eliminacion', true);
 
         // Verificar si hay empleados asignados a este estado
         $empleadosAsignados = Empleados::where('COD_ESTADO_EMPLEADO', $COD_ESTADO_EMPLEADO)->exists();
@@ -174,24 +135,9 @@ class EstadoEmpleadoControlador extends Controller
     public function edit($COD_ESTADO_EMPLEADO)
     {
         $user = Auth::user();
-        $roleId = $user->Id_Rol;
-
-        // Verificar si el rol del usuario tiene el permiso de actualización en el objeto ESTADO
-        $permisoActualizar = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'TIPOEMPLEADO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Actualizacion', 'PERMITIDO')
-            ->exists();
-
-        if (!$permisoActualizar) {
-            $this->bitacora->registrarEnBitacora(22, 'Intento de actualizar estado sin permisos', 'Update');
         
-            return redirect()->route('estado_empleados.index')->withErrors('No tiene permiso para editar estados');
-        }
+         //Nueva validacvion de permisos
+         $this->permisoService->tienePermiso('TIPOEMPLEADO', 'Actualizacion', true);
 
         $estado = EstadoEmpleado::findOrFail($COD_ESTADO_EMPLEADO);
     
