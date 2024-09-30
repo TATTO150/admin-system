@@ -27,7 +27,13 @@ class ResetearContrasenaController extends Controller
             $request->validate([
                 'email' => 'required|email|exists:tbl_ms_usuario,Correo_Electronico',
                 'code' => 'required|string',
-                'password' => [(new Validaciones)->requerirSinEspacios()->requerirSimbolo()->requerirMinuscula()->requerirMayuscula()->requerirNumero()->requerirlongitudMinima(8)->requerirlongitudMaxima(12)->requerirCampo()],
+                'password' => [
+                    'required',
+                    (new Validaciones)->requerirSinEspacios()->requerirSimbolo()->requerirMinuscula()->requerirMayuscula()->requerirNumero()->requerirlongitudMinima(8)->requerirlongitudMaxima(12)->requerirCampo(),
+                    'confirmed', // Agrega la validación de confirmación de contraseña
+                ],
+            ], [
+                'password.confirmed' =>'Las contraseñas no son iguales. Asegúrese de que la confirmación coincida con la nueva contraseña.' // Mensaje personalizado
             ]);
 
             $user = User::where('Correo_Electronico', $request->input('email'))->first();
