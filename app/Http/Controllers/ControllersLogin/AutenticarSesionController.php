@@ -66,14 +66,15 @@ class AutenticarSesionController extends Controller
      */
     public function store(LoginRequest $request)
     {
-        $user = User::where('Correo_Electronico', $request->Correo_Electronico)->first();
+        $user = User::where('Correo_Electronico', $request->Correo_Electronico)
+            ->orWhere('Usuario', $request->Correo_Electronico)
+            ->first();
         $parametro = Parametros::where('Id_Parametro', 1)->first();
-        $user->two_factor_status = 0;
-            
-                // Guardar los cambios en el modelo
-                $user->save();
 
         if ($user) {
+
+            $user->two_factor_status = null;
+            $user->save();
             // Verificar si la fecha de vencimiento es hoy
             if ($user->Fecha_Vencimiento && $user->Fecha_Vencimiento->isToday()) {
                 $this->bloquearUsuario($user);
@@ -124,11 +125,11 @@ class AutenticarSesionController extends Controller
                 }
 
                 $this->registrarEnBitacora($user, 2, 'Intento fallido de inicio de sesión', 'Consulta'); // ID_objetos 2: 'login'
-                return back()->withErrors(['email' => 'Las credenciales no coinciden con nuestros registros.']);
+                return back()->withErrors(['email' => 'Usuario o contrasena incorrectos']);
             }
         }
 
-        return back()->withErrors(['email' => 'Las credenciales no coinciden con nuestros registros.']);
+        return back()->withErrors(['email' => 'Usario o contrasena incorrectos']);
     }
 
     /**
