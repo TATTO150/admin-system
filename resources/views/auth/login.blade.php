@@ -16,8 +16,8 @@
             @csrf
 
             <div>
-                <x-label for="Correo_Electronico" value="{{ __('Correo Electronico') }}" />
-                <x-input id="Correo_Electronico" class="block mt-1 w-full" type="email" name="Correo_Electronico" value="" required autofocus autocomplete="off" />
+                <x-label for="Correo_Electronico" value="{{ __('Usuario o Correo Electronico') }}" />
+                <x-input id="Correo_Electronico" class="block mt-1 w-full" type="text" name="Correo_Electronico" value="" required autofocus autocomplete="off" />
             </div>
 
             <div class="mt-4">
