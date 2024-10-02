@@ -82,10 +82,11 @@ class AutenticarSesionController extends Controller
                 return redirect()->route('bloqueo');
             }
 
-            if ($user->Estado_Usuario === 'BLOQUEADO') {
+            if ($user->Estado_Usuario === 'BLOQUEADO'|| $user->Estado_Usuario == 3) {
                 $this->registrarEnBitacora($user, 4, 'Intento de inicio de sesión con usuario bloqueado', 'Consulta'); // ID_objetos 4: 'bloqueo'
                 return redirect()->route('bloqueo');
             }
+           
 
             if (Hash::check($request->password, $user->Contrasena)) {
                 $this->resetearIntentosLogin($user);
@@ -96,12 +97,13 @@ class AutenticarSesionController extends Controller
 
                 // Guardar el Id_usuario en la sesión
                 Session::put('Id_usuario', $user->Id_usuario);
+           
 
                 // Verificar si el usuario está autenticado con two_factor_secret y si Verificacion_Usuario es 0
                 if (is_null($user->two_factor_secret) && $user->Verificacion_Usuario == 0) {
                     return redirect()->route('two-factor.authenticator');
                 }
-
+              
                 // Verificar el rol del usuario
                 if ($user->Id_Rol == 3) {
                     // Redirigir a la vista de notificación de registro
@@ -113,6 +115,10 @@ class AutenticarSesionController extends Controller
                     return redirect()->route('dashboard');
                 }
 
+                if ($user->Estado_Usuario === 'RESETEO' || $user->Estado_Usuario == 5 && $user->Id_usuario != 1) {
+                    // Redirigir a la vista de confirmación de restablecimiento de contraseña
+                    return redirect()->route('password.reset.confirmation');
+                }
                 // Verificar si la verificación en dos pasos está activa
                 if (!is_null($user->two_factor_secret)) {
                     return redirect()->route('two-factor.login'); // Redirige a la vista de two-factor-challenge

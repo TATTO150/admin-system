@@ -53,11 +53,24 @@ class RegistrarUsuarioController extends Controller
     public function store(Request $request, CreatesNewUsers $creator)
     {
         $request->validate([
-            'Usuario' =>  [(new Validaciones)->requerirSinEspacios()->requerirTodoMayusculas()],
+            'Usuario' => [(new Validaciones)->requerirSinEspacios()->requerirTodoMayusculas()],
             'Nombre_Usuario' => [(new Validaciones)->requerirUnEspacio()->requerirTodoMayusculas()->prohibirNumerosSimbolos()],
-            'Contrasena' => [(new Validaciones)->requerirSinEspacios()->requerirSimbolo()->requerirMinuscula()->requerirMayuscula()->requerirNumero()->requerirlongitudMinima(8)->requerirlongitudMaxima(12)->requerirCampo()],
-            'Correo_Electronico' => [(new Validaciones)->requerirSinEspacios()->requerirArroba()->requerirCampo()->requerirCorreoUnico('users', 'email')],
+            'Contrasena' => [
+                (new Validaciones)->requerirSinEspacios()->requerirSimbolo()
+                ->requerirMinuscula()->requerirMayuscula()
+                ->requerirNumero()->requerirlongitudMinima(8)
+                ->requerirlongitudMaxima(12)->requerirCampo(),
+                'confirmed' // Validación para confirmar que la contraseña coincida
+            ],
+            'Correo_Electronico' => [
+                (new Validaciones)->requerirSinEspacios()->requerirArroba()
+                ->requerirCampo()->requerirCorreoUnico('users', 'email')
+            ],
+        ], [
+            // Mensaje personalizado para la confirmación de contraseña
+            'Contrasena.confirmed' => 'Las contraseñas no son iguales. Asegúrese de que la confirmación coincida con contraseña.',
         ]);
+        
 
         if (config('fortify.lowercase_usernames')) {
             $request->merge([
@@ -347,7 +360,19 @@ public function update(UsuarioRequest $request, $Id_usuario)
         return redirect()->route('usuarios.index')->with('error', 'Ocurrió un error inesperado: ' . $e->getMessage());
     }
 }
-    
+public function aprobarAcceso($Id_usuario)
+{
+    $user = User::find($Id_usuario);
+    if ($user) {
+        $user->Estado_Usuario = 'ACTIVO';
+        $user->save();
+
+        return redirect()->route('dashboard')->with('status', 'El acceso del usuario ha sido aprobado correctamente.');
+    }
+
+    return redirect()->route('dashboard')->with('error', 'No se pudo aprobar el acceso del usuario.');
+}
+
 
     
 }
