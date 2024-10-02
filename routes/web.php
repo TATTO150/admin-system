@@ -90,6 +90,9 @@ Route::get('/autoregistro-notificacion', function () {
     return view('auth.autoregistro-notificacion');
 })->name('autoregistro-notificacion');
 
+Route::get('/confirmación-restablecimiento-contraseña', function () {
+    return view('auth.password-reset-confirmation');
+})->name('password.reset.confirmation');
 
 Route::get('/bloqueo', [BlockedController::class, 'show'])->name('bloqueo');
 
@@ -120,7 +123,7 @@ Route::post(RoutePath::for('logout', '/logout'), [AutenticarSesionController::cl
         Route::get('/otp', function () {
             return view('auth.otp');
         })->name('otp.show');
-    
+
         // Ruta para manejar la verificación del OTP y redirigir a la vista de restablecimiento de la contraseña
 
         Route::post('/otp', [ResetearContrasenaController::class, 'verify'])->name('otp.verify');
@@ -706,5 +709,5 @@ Route::post('/solicitudes/reportes/general', [SolicitudesControlador::class, 're
 Route::post('/Perfil', [PerfilController::class, 'updateProfile'])->name('Perfil.update');
 Route::post('/Perfil/disable-2fa', [PerfilController::class, 'disableTwoFactorAuthentication'])->name('Perfil.disable2fa');
 Route::post('/Perfil/enable-2fa', [PerfilController::class, 'enable2fa'])->name('Perfil.enable2fa');
-
+Route::get('/aprobar-acceso/{Id_usuario}', [RegistrarUsuarioController::class, 'aprobarAcceso'])->name('aprobar-acceso');
 });
