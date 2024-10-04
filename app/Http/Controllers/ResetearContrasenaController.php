@@ -7,10 +7,14 @@ use App\Models\Bitacora;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\TwoFactorAuthenticationProvider;
 use App\Rules\Validaciones;
 use Carbon\Carbon;
+use App\Mail\ResetPasswordMail;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ResetearContrasenaController extends Controller
 {
@@ -76,6 +80,92 @@ class ResetearContrasenaController extends Controller
             ]);
         }
     }
+
+     // Enviar el enlace de restablecimiento de contraseña
+    public function sendResetLink(Request $request)
+    {
+        // Validar el campo 'Correo_Electronico'
+        $request->validate([
+            'Correo_Electronico' => 'required|email',
+        ]);
+
+        // Buscar si el usuario existe usando 'Correo_Electronico'
+        $user = User::where('Correo_Electronico', $request->Correo_Electronico)->first();
+
+        if (!$user) {
+            return redirect()->back()->withErrors(['Correo_Electronico' => 'No existe un usuario con este correo.']);
+        }
+
+        // Generar un token de restablecimiento
+        $token = Str::random(60);
+
+        // Almacenar el token en la tabla password_resets
+        DB::table('password_reset_tokens')->insert([
+            'email' => $user->Correo_Electronico,
+            'token' => $token,
+            'created_at' => now(),
+        ]);
+
+        // Enviar el correo con el enlace de restablecimiento
+        Mail::to($user->Correo_Electronico)->send(new ResetPasswordMail($user, $token));
+
+        // Redirigir al login con un mensaje
+        return redirect()->route('login')->with('status', 'Se ha enviado un enlace a tu correo para restablecer tu contraseña.');
+    }
+
+
+    public function showEmailForm()
+        {
+            return view('auth.reset_password_request'); // La vista donde se ingresa el correo
+        }
+
+ // Mostrar la vista de restablecimiento de contraseña
+ public function showResetForm($token)
+ {
+     return view('auth.reset_password_form', ['token' => $token]);
+ }
+
+ // Actualizar la contraseña
+public function resetPassword(Request $request)
+{
+    // Validar los datos del formulario
+    $request->validate([
+        'Correo_Electronico' => 'required|email',
+        'Contrasena' => 'required|confirmed|min:8',
+        'token' => 'required',
+    ]);
+
+    // Verificar si el token es válido y pertenece al correo ingresado
+    $reset = DB::table('password_reset_tokens')
+                ->where('email', $request->Correo_Electronico)
+                ->where('token', $request->token)
+                ->first();
+
+    if (!$reset) {
+        return redirect()->back()->withErrors(['Correo_Electronico' => 'El correo ingresado es incorrecto.']);
+    }
+
+    // Buscar al usuario por 'Correo_Electronico'
+    $user = User::where('Correo_Electronico', $request->Correo_Electronico)->first();
+
+    if (!$user) {
+        return redirect()->back()->withErrors(['Correo_Electronico' => 'No existe un usuario con este correo.']);
+    }
+
+    // Actualizar la contraseña del usuario
+    $user->Contrasena = bcrypt($request->Contrasena);
+    $user->save();
+
+    // Eliminar el token de la tabla password_resets
+    DB::table('password_reset_tokens')->where('token', $request->token)->delete();
+
+    // Redirigir al login con un mensaje de éxito
+    return redirect()->route('login')->with('status', 'Tu contraseña ha sido restablecida con éxito.');
+}
+
+
+
+
 
     /**
      * Registra un evento en la bitácora.

@@ -34,15 +34,20 @@
                     <x-input id="code" class="block mt-1 w-full" type="text" name="code" required inputmode="numeric" autocomplete="one-time-code" />
                 </div>
 
+                <a class="underline mt-4 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('solicitar-nueva-contrasena') }}">
+                    {{ __('¿No tienes tu código OTP?') }}
+                </a>
+
                 <div class="flex justify-between mt-4 items-center w-full">
                     <a href="{{ route('login') }}" class="ms-4 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                         {{ __('Cancelar') }}
                     </a>
-
+                
                     <x-button>
                         {{ __('Restablecer Contraseña') }}
                     </x-button>
                 </div>
+                
             </form>
         </div>
     </x-authentication-card>

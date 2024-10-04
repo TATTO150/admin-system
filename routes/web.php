@@ -124,13 +124,12 @@ Route::post(RoutePath::for('logout', '/logout'), [AutenticarSesionController::cl
         // Ruta para manejar la verificación del OTP y redirigir a la vista de restablecimiento de la contraseña
 
         Route::post('/otp', [ResetearContrasenaController::class, 'verify'])->name('otp.verify');
-        
-    
 
-// Ruta para mostrar la vista de restablecimiento de la contraseña
-Route::get('/reset-password', function () {
-    return view('auth.reset-password');
-})->name('password.reset');
+        Route::get('password/reset', [ResetearContrasenaController::class, 'sendResetLink'])->name('password.send_link');
+        Route::post('password/send_link', [ResetearContrasenaController::class, 'sendResetLink'])->name('password.send_link');
+        Route::get('password/reset/{token}', [ResetearContrasenaController::class, 'showResetForm'])->name('password.reset');
+        Route::post('password/updatepassword', [ResetearContrasenaController::class, 'resetPassword'])->name('contra.update');
+        Route::get('/solicitar-nueva-contrasena', [ResetearContrasenaController::class, 'showEmailForm'])->name('solicitar-nueva-contrasena');
 
 // Ruta para manejar el restablecimiento de la contraseña
 Route::post('/password/update', [ResetearContrasenaController::class, 'reset'])->name('password.update');
