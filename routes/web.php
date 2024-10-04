@@ -324,6 +324,8 @@ Route::get('/email/verify', function () {
   Route::get('/equipos/{COD_EQUIPO}/editar', [EquipoControlador::class, 'edit'])->name('equipos.edit');
   // Actualizar un equipo existente
   Route::put('/equipos/{COD_EQUIPO}', [EquipoControlador::class, 'update'])->name('equipos.update');
+  Route::put('/equipos/restaurar/{id}', [EquipoControlador::class, 'restaurar'])->name('equipos.restaurar');
+
 // Generar PDF de equipos (general y por estado)
 // Rutas para reportes de equipos
 // Rutas para reportes
