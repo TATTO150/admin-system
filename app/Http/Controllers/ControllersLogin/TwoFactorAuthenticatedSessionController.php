@@ -78,6 +78,11 @@ class TwoFactorAuthenticatedSessionController extends Controller
         }
     }
 
+    if($user->Verificacion_Usuario == 0){
+        $user->Verificacion_Usuario = 1;
+            $user->save();
+    }
+
     $this->guard->login($user, $request->remember());
 
     $request->session()->regenerate();

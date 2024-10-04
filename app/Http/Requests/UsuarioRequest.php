@@ -20,7 +20,7 @@ class UsuarioRequest extends FormRequest
 
         return [
             'Usuario' => [
-                (new Validaciones)->requerirSinEspacios()->requerirTodoMayusculas(),
+                (new Validaciones)->requerirSinEspacios()->requerirTodoMayusculas()->requerirlongitudMinima(4)->requerirlongitudMaxima(15),
                 function($attribute, $value, $fail) use ($isUpdate, $currentUsuario) {
                     if (preg_match('/^\d/', $value)) {
                         $fail('El campo "Usuario" no puede comenzar con un número. Has ingresado: ' . $value);
