@@ -90,6 +90,9 @@ Route::get('/autoregistro-notificacion', function () {
     return view('auth.autoregistro-notificacion');
 })->name('autoregistro-notificacion');
 
+Route::get('/confirmación-restablecimiento-contraseña', function () {
+    return view('auth.password-reset-confirmation');
+})->name('password.reset.confirmation');
 
 Route::get('/bloqueo', [BlockedController::class, 'show'])->name('bloqueo');
 
@@ -629,6 +632,7 @@ Route::post('/solicitudes/reportes/general', [SolicitudesControlador::class, 're
     Route::delete('/equipos/{COD_EQUIPO}', [EquipoControlador::class, 'destroy'])->name('equipos.destroy');
     Route::get('/equipos/{COD_EQUIPO}', [EquipoControlador::class, 'edit'])->name('equipos.edit');
     Route::put('/equipos/{COD_EQUIPO}', [EquipoControlador::class, 'update'])->name('equipos.update');
+    Route::put('/equipos/restaurar/{id}', [EquipoControlador::class, 'restaurar'])->name('equipos.restaurar');
 
     ///////////////////////////////////////////////////////////////*MANTENIMIENTO*////////////////////////////////////////////////////
     Route::middleware(['web'])->group(function () {

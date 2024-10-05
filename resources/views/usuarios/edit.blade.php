@@ -58,14 +58,16 @@
                         <label for="Estado_Usuario" class="form-label">ESTADO USUARIO</label>
                         <select id="Estado_Usuario" class="form-control" name="Estado_Usuario" required>
                             @foreach($estados as $estado)
-                                <option value="{{ $estado->ESTADO }}" 
-                                    {{ ($usuario['Estado_Usuario'] == $estado->ESTADO) ? 'selected' : '' }}>
-                                    {{ $estado->ESTADO }}
-                                </option>
+                                @if($estado->ESTADO !== 'RESETEO' && $estado->ESTADO !== '5')
+                                    <option value="{{ $estado->ESTADO }}" 
+                                        {{ ($usuario['Estado_Usuario'] == $estado->ESTADO) ? 'selected' : '' }}>
+                                        {{ $estado->ESTADO }}
+                                    </option>
+                                @endif
                             @endforeach
                     
                             <!-- Mostrar el estado actual si no coincide con ningún estado en la tabla de estados -->
-                            @if(!in_array($usuario['Estado_Usuario'], $estados->pluck('ESTADO')->toArray()))
+                            @if(!in_array($usuario['Estado_Usuario'], $estados->pluck('ESTADO')->toArray()) && $usuario['Estado_Usuario'] !== 'RESETEAR' && $usuario['Estado_Usuario'] !== '5')
                                 <option value="{{ $usuario['Estado_Usuario'] }}" selected>{{ $usuario['Estado_Usuario'] }}</option>
                             @endif
                         </select>

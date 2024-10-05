@@ -112,6 +112,10 @@ class AutenticarSesionController extends Controller
                 if (is_null($user->two_factor_secret) && $user->Verificacion_Usuario == 1) {
                     return redirect()->route('dashboard');
                 }
+                if ($user->Estado_Usuario === 'RESETEO' || $user->Estado_Usuario == 5 && $user->Id_usuario != 1) {
+                    // Redirigir a la vista de confirmación de restablecimiento de contraseña
+                    return redirect()->route('password.reset.confirmation');
+                }
 
                 // Verificar si la verificación en dos pasos está activa
                 if (!is_null($user->two_factor_secret)) {
