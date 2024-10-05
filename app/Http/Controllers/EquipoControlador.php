@@ -131,57 +131,90 @@ class EquipoControlador extends Controller
         ], $messages);
     }
 
-    public function index()
+    public function index(Request $request)
+{
+    $user = Auth::user();
+    $roleId = $user->Id_Rol;
+
+    // Verificar si el rol del usuario tiene el permiso de consulta en el objeto EQUIPO
+    $permisoConsultar = Permisos::where('Id_Rol', $roleId)
+        ->where('Id_Objeto', function ($query) {
+            $query->select('Id_Objetos')
+                ->from('tbl_objeto')
+                ->where('Objeto', 'EQUIPO')
+                ->limit(1);
+        })
+        ->where('Permiso_Consultar', 'PERMITIDO')
+        ->exists();
+
+    if (!$permisoConsultar) {
+        $this->bitacora->registrarEnBitacora(18, 'Intento de ingreso a la ventana de equipo sin permisos', 'Ingreso');
+        return redirect()->route('dashboard')->withErrors('No tiene permiso para ingresar a la ventana de equipos');
+    }
+
+    // Obtener los datos de la API (Equipos, Tipos, y Estados)
+    $equipos = collect($this->fetchApiData('Equipos'));
+    $tipos = collect($this->fetchApiData('TiposEquipo'));
+    $estados = collect($this->fetchApiData('EstadosEquipo'));
+
+    // Filtrar equipos según el parámetro show_inactivos
+    if ($request->has('show_inactivos') && $request->input('show_inactivos') === 'true') {
+        // Mostrar solo los inactivos (COD_ESTADO_EQUIPO = 3)
+        $equipos = $equipos->filter(function ($equipo) {
+            return $equipo['COD_ESTADO_EQUIPO'] == 3; // Mostrar solo los inactivos
+        });
+    } else {
+        // Mostrar todos los equipos excepto los inactivos
+        $equipos = $equipos->filter(function ($equipo) {
+            return $equipo['COD_ESTADO_EQUIPO'] != 3; // Excluir los inactivos
+        });
+    }
+
+    // Mapear los nombres de los tipos y estados de los equipos para evitar información "Desconocida"
+    $equipos = $equipos->map(function ($equipo) use ($tipos, $estados) {
+        $equipo['TIPO_EQUIPO_NOMBRE'] = $tipos->firstWhere('COD_TIP_EQUIPO', $equipo['COD_TIP_EQUIPO'])['TIPO_EQUIPO'] ?? 'Desconocido';
+        $equipo['ESTADO_EQUIPO_NOMBRE'] = $estados->firstWhere('COD_ESTADO_EQUIPO', $equipo['COD_ESTADO_EQUIPO'])['DESC_ESTADO_EQUIPO'] ?? 'Desconocido';
+        return $equipo;
+    });
+
+    // Ordenar los equipos por la fecha de compra (FECHA_COMPRA) de manera descendente
+    $equipos = $equipos->sortByDesc(function ($equipo) {
+        return \Carbon\Carbon::parse($equipo['FECHA_COMPRA']);
+    });
+
+    // Asegurar que el estado del equipo se haya actualizado correctamente
+    return view('equipos.index', compact('equipos', 'estados'));
+}
+
+    public function restaurar($id)
     {
-        $user = Auth::user();
-        $roleId = $user->Id_Rol;
+        // Obtener el equipo específico de la API
+        $response = Http::get("http://localhost:3000/Equipos/{$id}");
     
-        // Verificar si el rol del usuario tiene el permiso de consulta en el objeto EQUIPO
-        $permisoConsultar = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'EQUIPO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Consultar', 'PERMITIDO')
-            ->exists();
-    
-        if (!$permisoConsultar) {
-            $this->bitacora->registrarEnBitacora(18, 'Intento de ingreso a la ventana de equipo sin permisos', 'Ingreso');
-            return redirect()->route('dashboard')->withErrors('No tiene permiso para ingresar a la ventana de equipos');
+        if (!$response->successful()) {
+            return redirect()->route('equipos.index')->with('error', 'El equipo no se encontró');
         }
     
-        $equipos = collect($this->fetchApiData('Equipos'));
-        $tipos = collect($this->fetchApiData('TiposEquipo'));
-        $estados = collect($this->fetchApiData('EstadosEquipo'));
+        $equipo = $response->json();
     
-        // Mapear los nombres de los tipos y estados de los equipos
-        $equipos = $equipos->map(function ($equipo) use ($tipos, $estados) {
-            $equipo['TIPO_EQUIPO_NOMBRE'] = $tipos->firstWhere('COD_TIP_EQUIPO', $equipo['COD_TIP_EQUIPO'])['TIPO_EQUIPO'] ?? 'Desconocido';
-            $equipo['ESTADO_EQUIPO_NOMBRE'] = $estados->firstWhere('COD_ESTADO_EQUIPO', $equipo['COD_ESTADO_EQUIPO'])['DESC_ESTADO_EQUIPO'] ?? 'Desconocido';
-            return $equipo;
-        });
+        // Actualizar el estado del equipo a "Sin Asignar" (estado = 1) y otros campos importantes
+        $response = Http::put("http://localhost:3000/Equipos/{$id}", [
+            'NOM_EQUIPO' => $equipo['NOM_EQUIPO'],
+            'COD_TIP_EQUIPO' => $equipo['COD_TIP_EQUIPO'],
+            'DESC_EQUIPO' => $equipo['DESC_EQUIPO'],
+            'COD_ESTADO_EQUIPO' => 1, // Estado "Sin Asignar"
+            'FECHA_COMPRA' => $equipo['FECHA_COMPRA'],
+            'VALOR_EQUIPO' => $equipo['VALOR_EQUIPO'],
+            
+        ]);
     
-        // Ordenar los equipos por estado: Asignado (1), Sin Asignar (2), Inactivo (4)
-        $equipos = $equipos->sortBy(function ($equipo) {
-            switch ($equipo['COD_ESTADO_EQUIPO']) {
-                case 1:
-                    return 2; // Asignado
-                case 2:
-                    return 1; // Sin Asignar
-                case 4:
-                    return 3; // Inactivo
-                default:
-                    return 4; // Otros estados si existen
-            }
-        })->values(); // `values()` para resetear las claves después de ordenar
-    
-        $this->bitacora->registrarEnBitacora(18, 'Ingreso a la ventana de equipo', 'Ingreso');
-    
-        return view('equipos.index', compact('equipos', 'estados'));
+        if ($response->successful()) {
+            $this->bitacora->registrarEnBitacora(18, 'Restauración de equipo a Sin Asignar', 'Actualización');
+            return redirect()->route('equipos.index')->with('success', 'El equipo ha sido restaurado correctamente y ahora está en estado sin asignar');
+        } else {
+            return redirect()->route('equipos.index')->with('error', 'Error al intentar restaurar el equipo.');
+        }
     }
-    
     
     public function crear()
     {

@@ -15,6 +15,8 @@ use Carbon\Carbon;
 use App\Mail\ResetPasswordMail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Mail\PasswordResetNotification;
+
 
 class ResetearContrasenaController extends Controller
 {
@@ -31,9 +33,14 @@ class ResetearContrasenaController extends Controller
             $request->validate([
                 'email' => 'required|email|exists:tbl_ms_usuario,Correo_Electronico',
                 'code' => 'required|string',
-                'password' => [(new Validaciones)->requerirSinEspacios()->requerirSimbolo()->requerirMinuscula()->requerirMayuscula()->requerirNumero()->requerirlongitudMinima(8)->requerirlongitudMaxima(12)->requerirCampo()],
+                'password' => [
+                    'required',
+                    (new Validaciones)->requerirSinEspacios()->requerirSimbolo()->requerirMinuscula()->requerirMayuscula()->requerirNumero()->requerirlongitudMinima(8)->requerirlongitudMaxima(12)->requerirCampo(),
+                    'confirmed', // Agrega la validación de confirmación de contraseña
+                ],
+            ], [
+                'password.confirmed' =>'Las contraseñas no son iguales. Asegúrese de que la confirmación coincida con la nueva contraseña.' // Mensaje personalizado
             ]);
-
             $user = User::where('Correo_Electronico', $request->input('email'))->first();
 
             if (!$user) {
@@ -55,26 +62,35 @@ class ResetearContrasenaController extends Controller
             $user->Contrasena = Hash::make($request->input('password'));
             $user->save();
 
-            // Cambiar el Estado_Usuario dependiendo del Id_Rol
-            if ($user->Id_Rol == 3) {
-                $user->Estado_Usuario = 'NUEVO';
-            } else {
-                $user->Estado_Usuario = 'ACTIVO';
-            }
+           // Verificar y actualizar el estado del usuario
+           if ($user->Estado_Usuario == 'BLOQUEADO' || $user->Estado_Usuario == 3) {
+            $user->Estado_Usuario = 'RESETEO';
+        } elseif ($user->Id_Rol == 3) {
+            $user->Estado_Usuario = 'NUEVO';
+        } else {
+            $user->Estado_Usuario = 'RESETEO';
+        }
+
 
             $user->Intentos_Login = 0;
             $user->save();
-            $this->registrarEnBitacora($user->Id_usuario, 3, 'Usuario desbloqueado correctamente', 'Update');
-                
+             // Obtener todos los correos de los administradores con Id_Rol = 1
+        $adminEmails = User::where('Id_Rol', 1)->pluck('Correo_Electronico')->toArray();
 
-            $this->registrarEnBitacora($user->Id_usuario, 3, 'Contraseña restablecida correctamente', 'Actualización');
+        // Verificar que existan correos antes de enviar
+        if (count($adminEmails) > 0) {
+            // Enviar el correo a los administradores
+            Mail::to($adminEmails)->send(new PasswordResetNotification($user));
+        }
+
+        $this->registrarEnBitacora($user->Id_usuario, 3, 'Usuario desbloqueado correctamente y contraseña restablecida', 'Update');
 
             // Redirigir a la misma vista o a donde sea necesario
             return redirect()->route('login')->with('status', __('Contraseña restablecida correctamente. Inicie sesión con su nueva contraseña.'));
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
-            $this->registrarEnBitacora(null, 3, 'Error desconocido al intentar restablecer la contraseña', 'Error');
+            $this->registrarEnBitacora($user->Id_usuario, 3, 'Error desconocido al intentar restablecer la contraseña', 'Error');
             throw ValidationException::withMessages([
                 'error' => [__('Hubo un error al intentar restablecer la contraseña.')],
             ]);
