@@ -8,7 +8,7 @@ Tu registro ha sido exitoso. Aquí tienes tu contraseña temporal de acceso:
 **Contraseña:** {{ $detalles['contraseña_temporal'] }}
 @endcomponent
 
-@component('mail::button', ['url' => url('/login')])
+@component('mail::button', ['url' => $detalles['url']])
 Iniciar Sesión
 @endcomponent
 

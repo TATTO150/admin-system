@@ -71,11 +71,30 @@
                         @enderror
                     </div>
                 </div>
-                <div class="card-footer">
+            
+            <div class="flex justify-between mt-4 items-center w-full">
+                <div class="card-footer text-center">
                     <button type="submit" class="btn btn-primary">Actualizar Perfil</button>
                 </div>
             </form>
+
+            <div class="mb-2 ml-4 text-center">
+                <!-- Botón para activar la autenticación de dos factores -->
+                @if(is_null($user->two_factor_secret))
+                <form action="{{ route('Perfil.enable2fa') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="btn btn-primary">Activar Autenticación en Dos Factores</button>
+                </form>
+                @else
+                    <form action="{{ route('Perfil.disable2fa') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-danger">Desactivar Autenticación en Dos Factores</button>
+                    </form>
+                @endif
+            </div>
         </div>
+        </div>
+
          {{-- Formulario de cambio de contraseña --}}
 <div class="card mt-4">
     <div class="card-header">
@@ -143,20 +162,11 @@
             <button type="submit" class="btn btn-primary">Actualizar Contraseña</button>
         </div>
     </form>
+
+     
 </div>
 
-         <!-- Botón para activar la autenticación de dos factores -->
-    @if(is_null($user->two_factor_secret))
-    <form action="{{ route('Perfil.enable2fa') }}" method="POST">
-        @csrf
-        <button type="submit" class="btn btn-primary">Activar Autenticación en Dos Factores</button>
-    </form>
-    @else
-        <form action="{{ route('Perfil.disable2fa') }}" method="POST">
-            @csrf
-            <button type="submit" class="btn btn-danger">Desactivar Autenticación en Dos Factores</button>
-        </form>
-    @endif
+        
     </div>
 </div>
 @endsection

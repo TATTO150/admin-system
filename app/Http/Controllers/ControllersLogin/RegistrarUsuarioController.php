@@ -203,11 +203,24 @@ if ($response->successful()) {
             'Contrasena' => $contraseña, // Usa la contraseña en texto plano aquí
         ]);
 
+        // Generar un token de restablecimiento
+        $token = Str::random(60);
+
+        // Almacenar el token en la tabla password_resets
+        DB::table('password_reset_tokens')->insert([
+            'email' => $request->Correo_Electronico,
+            'token' => $token,
+            'created_at' => now(),
+        ]);
+
+
         // Enviar el correo con la contraseña temporal
         $detalles = [
             'nombre' => $request->Nombre_Usuario,
             'usuario' => $request->Usuario,
+            'token' => $token,
             'contraseña_temporal' => $contraseña,
+            'url' => route('password.reset', ['token' => $token]),
         ];
 
         Mail::to($request->Correo_Electronico)->send(new EnviarContraseñaTemporal($detalles));

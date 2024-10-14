@@ -18,11 +18,6 @@
 
             <input type="hidden" name="token" value="{{ $token }}">
 
-            <div>
-                <x-label for="Correo_Electronico" value="{{ __('Correo Electrónico') }}" />
-                <x-input id="Correo_Electronico" class="block mt-1 w-full" type="email" name="Correo_Electronico" :value="old('Correo_Electronico')" required autofocus />
-            </div>
-
             <div class="mt-4">
                 <x-label for="Contrasena" value="{{ __('Nueva Contraseña') }}" />
                 <x-input id="Contrasena" class="block mt-1 w-full" type="password" name="Contrasena" required autocomplete="new-password" />
