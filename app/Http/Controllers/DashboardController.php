@@ -28,13 +28,64 @@ class DashboardController extends Controller
     public function index()
 {
     $user = Auth::user();
+    $fechaVencimiento = $user->Fecha_Vencimiento ? Carbon::parse($user->Fecha_Vencimiento) : null; // Aseguramos que sea un objeto Carbon si existe
+    $mostrarAlerta = false;
+    $ahora = Carbon::now(); // Fecha actual
 
     // Validar si el usuario tiene pendiente la autenticación de dos factores
    // Validar si el usuario tiene pendiente la autenticación de dos factores
    if (!is_null($user->two_factor_secret) && ($user->two_factor_status === 0 || is_null($user->two_factor_status))) {
         return redirect()->route('two-factor.login');
     }
+ // Verificar si el usuario ya cambió la contraseña
+ if ($user->password_updated_at && $user->password_updated_at->gt($fechaVencimiento)) {
+    // Si el usuario ya cambió la contraseña, no mostrar alerta
+    $mostrarAlerta = false;
+} else {
+    // Asegurarse de que la fecha de vencimiento es válida
+    if ($fechaVencimiento) {
+        // Calcular la diferencia en días entre la fecha actual y la fecha de vencimiento
+        $diasRestantes = (int) $ahora->diffInDays($fechaVencimiento, false); // Obtener la diferencia como entero
 
+        if ($diasRestantes === 0) {
+            // Calcular la diferencia de tiempo entre ahora y la fecha de vencimiento en minutos
+            $totalMinutosRestantes = $ahora->diffInMinutes($fechaVencimiento, false);
+        
+            // Si los minutos restantes son negativos, significa que ya ha pasado la fecha de vencimiento
+            if ($totalMinutosRestantes < 0) {
+                $mostrarAlerta = false;
+            } else {
+                // Calcular horas y minutos restantes
+                $horasRestantes = floor($totalMinutosRestantes / 60);
+                $minutosRestantes = $totalMinutosRestantes % 60;
+        
+                $mostrarAlerta = true;
+                session()->flash('alert', 'Su contraseña expirará en ' . $horasRestantes . ' horas y ' . $minutosRestantes . ' minutos. Debe cambiar su contraseña o su cuenta será bloqueada.');
+            }
+        }
+   
+        // Mostrar alerta si faltan entre 1 y 15 días
+        elseif ($diasRestantes > 0 && $diasRestantes <= 15) {
+            $mostrarAlerta = true;
+            session()->flash('alert', 'Su contraseña expirará en ' . $diasRestantes . ' días. Debe cambiar su contraseña o su cuenta será bloqueada.');
+        }
+         // Si la fecha de vencimiento ya pasó y el usuario no ha cambiado la contraseña
+         elseif ($diasRestantes < 0 && !$user->password_updated_at) {
+            // Bloquear al usuario (Estado_Usuario = 3 para indicar bloqueado)
+            DB::table('tbl_ms_usuario')
+    ->where('Id_usuario', $user->Id_usuario)
+    ->update([
+        'Estado_Usuario' => 3,       // Estado bloqueado numérico
+        'Estado_Usuario' => 'BLOQUEADO'      // Estado textual (si tienes una columna que almacena "BLOQUEADO")
+    ]);
+
+      // Cerrar la sesión del usuario
+      Auth::logout();
+
+            // Redirigir al usuario a una página bloqueada o mostrar un mensaje
+            return redirect()->route('bloqueado-por-no-cambiar')->with('alert', 'Tu cuenta ha sido bloqueada por no cambiar tu contraseña a tiempo.');
+        }
+    }
     // Cantidad de proyectos por estado
     $proyectosActivosCount = Proyectos::where('ESTADO_PROYECTO', 'ACTIVO')->count();
     $proyectosSuspendidosCount = Proyectos::where('ESTADO_PROYECTO', 'SUSPENDIDO')->count();
@@ -102,7 +153,9 @@ $mantenimientoFinalizadoCount = Equipos::whereHas('estadoEquipo', function($quer
         'asignacionesFinalizadasCount' => $asignacionesFinalizadasCount,
         'mantenimientoActivoCount' => $mantenimientoActivoCount,
         'mantenimientoFinalizadoCount' => $mantenimientoFinalizadoCount,
-        'equiposTotalCount' => $equiposTotalCount, // Nuevo dato agregado
+        'equiposTotalCount' => $equiposTotalCount,
+        'mostrarAlerta' => $mostrarAlerta, // Nuevo dato agregado
     ]);
+}
 }
 }

@@ -709,5 +709,11 @@ Route::post('/solicitudes/reportes/general', [SolicitudesControlador::class, 're
 Route::post('/Perfil', [PerfilController::class, 'updateProfile'])->name('Perfil.update');
 Route::post('/Perfil/disable-2fa', [PerfilController::class, 'disableTwoFactorAuthentication'])->name('Perfil.disable2fa');
 Route::post('/Perfil/enable-2fa', [PerfilController::class, 'enable2fa'])->name('Perfil.enable2fa');
+Route::post('/perfil/update-password', [PerfilController::class, 'updatePassword'])->name('Perfil.updatePassword');
+
+
+Route::get('/Bloqueado', function () {
+    return view('auth.bloqueado-por-no-cambiar');
+})->name('bloqueado-por-no-cambiar');
 
 });

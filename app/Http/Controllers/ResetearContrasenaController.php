@@ -42,7 +42,10 @@ class ResetearContrasenaController extends Controller
                 'password.confirmed' =>'Las contraseñas no son iguales. Asegúrese de que la confirmación coincida con la nueva contraseña.' // Mensaje personalizado
             ]);
             $user = User::where('Correo_Electronico', $request->input('email'))->first();
-
+            
+            if (Hash::check($request->input('password'), $user->Contrasena)) {
+                return redirect()->back()->withErrors(['password' => 'La nueva contraseña no puede ser la misma que la contraseña anterior.']);
+            }
             if (!$user) {
                 $this->registrarEnBitacora(null, 3, 'Intento de reseteo de contraseña fallido - usuario no encontrado', 'Error');
                 throw ValidationException::withMessages([
@@ -62,15 +65,17 @@ class ResetearContrasenaController extends Controller
             $user->Contrasena = Hash::make($request->input('password'));
             $user->save();
 
-           // Verificar y actualizar el estado del usuario
-           if ($user->Estado_Usuario == 'BLOQUEADO' || $user->Estado_Usuario == 3) {
-            $user->Estado_Usuario = 'RESETEO';
-        } elseif ($user->Id_Rol == 3) {
-            $user->Estado_Usuario = 'NUEVO';
-        } else {
-            $user->Estado_Usuario = 'RESETEO';
-        }
-
+            if ($user->Id_usuario == 1 && $user->Estado_Usuario == 'BLOQUEADO') {
+                // Cambiar el estado a 'ACTIVO' para el usuario con Id_usuario 1 si estaba bloqueado
+                $user->Estado_Usuario = 'ACTIVO';
+                $user->Fecha_Vencimiento = \Carbon\Carbon::now()->addMonths(6);
+            } elseif ($user->Estado_Usuario == 'BLOQUEADO' || $user->Estado_Usuario == 3) {
+                $user->Estado_Usuario = 'RESETEO';
+            } elseif ($user->Id_Rol == 3) {
+                $user->Estado_Usuario = 'NUEVO';
+            } else {
+                $user->Estado_Usuario = 'RESETEO';
+            }
 
             $user->Intentos_Login = 0;
             $user->save();
