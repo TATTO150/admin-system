@@ -7,6 +7,16 @@
 @stop
 
 @section('content')
+@if ($mostrarAlerta)
+    <div class="alert alert-danger alert-dismissible fade show" role="alert" style="font-size: 1.2rem; font-weight: bold;">
+        <strong style="font-size: 1.5rem; text-transform: uppercase;">⚠️ Advertencia:</strong> 
+        {{ session('alert') }}
+        <a href="{{ route('Perfil.edit') }}" class="alert-link" style="text-decoration: underline; font-weight: bold;">Actualizar contraseña</a>.
+        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+@endif
 
      <!-- Mostrar mensajes de éxito -->
     @if (session('success'))

@@ -76,6 +76,74 @@
                 </div>
             </form>
         </div>
+         {{-- Formulario de cambio de contraseña --}}
+<div class="card mt-4">
+    <div class="card-header">
+        <h3 class="card-title">Cambiar Contraseña</h3>
+    </div>
+    <form action="{{ route('Perfil.updatePassword') }}" method="POST">
+        @csrf
+        <div class="card-body">
+            {{-- Contraseña actual --}}
+            <div class="form-group">
+                <label for="current_password">Contraseña Actual</label>
+                <div class="input-group">
+                    <input type="password" name="current_password" id="current_password" class="form-control @error('current_password') is-invalid @enderror" required>
+                    <div class="input-group-append">
+                        <span class="input-group-text" onclick="togglePasswordVisibility('current_password', this)">
+                            <i class="fa fa-eye"></i>
+                        </span>
+                    </div>
+                </div>
+                @error('current_password')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+
+            {{-- Nueva contraseña --}}
+            <div class="form-group">
+                <label for="new_password">Nueva Contraseña</label>
+                <div class="input-group">
+                    <input type="password" name="new_password" id="new_password" class="form-control @error('new_password') is-invalid @enderror" required>
+                    <div class="input-group-append">
+                        <span class="input-group-text" onclick="togglePasswordVisibility('new_password', this)">
+                            <i class="fa fa-eye"></i>
+                        </span>
+                    </div>
+                </div>
+                @error('nueva contraseña')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+
+            {{-- Confirmar nueva contraseña --}}
+            <div class="form-group">
+                <label for="new_password_confirmation">Confirmar Nueva Contraseña</label>
+                <div class="input-group">
+                    <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="form-control @error('new_password_confirmation') is-invalid @enderror" required>
+                    <div class="input-group-append">
+                        <span class="input-group-text" onclick="togglePasswordVisibility('new_password_confirmation', this)">
+                            <i class="fa fa-eye"></i>
+                        </span>
+                    </div>
+                </div>
+                @error('new_password_confirmation')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <button type="submit" class="btn btn-primary">Actualizar Contraseña</button>
+        </div>
+    </form>
+</div>
 
          <!-- Botón para activar la autenticación de dos factores -->
     @if(is_null($user->two_factor_secret))
@@ -110,9 +178,22 @@
 @endsection
 
 @section('js')
-    <script>
-        $(document).ready(function() {
-            // Opcional: Código JavaScript adicional
-        });
-    </script>
+    {{-- Script para alternar la visibilidad de las contraseñas --}}
+<script>
+    function togglePasswordVisibility(fieldId, eyeIcon) {
+        var passwordField = document.getElementById(fieldId);
+        var icon = eyeIcon.querySelector('i');
+
+        // Cambiar entre tipo 'password' y 'text'
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+</script>
 @endsection
