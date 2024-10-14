@@ -151,28 +151,30 @@ public function resetPassword(Request $request)
 {
     // Validar los datos del formulario
     $request->validate([
-        'Correo_Electronico' => 'required|email',
         'Contrasena' => 'required|confirmed|min:8',
         'token' => 'required',
     ]);
 
-    // Verificar si el token es válido y pertenece al correo ingresado
-    $reset = DB::table('password_reset_tokens')
-                ->where('email', $request->Correo_Electronico)
-                ->where('token', $request->token)
-                ->first();
+    // Buscar el registro que coincide con el token
+    $resetRecord = DB::table('password_reset_tokens')
+    ->where('token', $request->token)
+    ->first();
 
-    if (!$reset) {
-        return redirect()->back()->withErrors(['Correo_Electronico' => 'El correo ingresado es incorrecto.']);
+    // Verificar si existe el token
+    if (!$resetRecord) {
+    return back()->withErrors(['error' => 'Token inválido o expirado.']);
     }
 
-    // Buscar al usuario por 'Correo_Electronico'
-    $user = User::where('Correo_Electronico', $request->Correo_Electronico)->first();
+    // Obtener el correo electrónico asociado al token
+    $email = $resetRecord->email;
 
+    // Buscar el usuario en la tabla tbl_ms_usuario usando el correo electrónico obtenido
+    $user = user::where('Correo_Electronico', $email)->first();
+
+    // Verificar si existe el usuario
     if (!$user) {
-        return redirect()->back()->withErrors(['Correo_Electronico' => 'No existe un usuario con este correo.']);
+    return back()->withErrors(['error' => 'No se encontró un usuario con ese correo electrónico.']);
     }
-
     // Actualizar la contraseña del usuario
     $user->Contrasena = bcrypt($request->Contrasena);
     $user->save();
