@@ -56,6 +56,7 @@
                                 <th>Usuario</th>
                                 <th>Nombre Usuario</th>
                                 <th>Estado Usuario</th>
+                                <th>Fecha Ingreso</th>
                                 <th>Rol</th>
                                 <th>Fecha Última Conexión</th>
                                 <th>Cantidad Ingresos</th>
@@ -80,6 +81,7 @@
                                                 {{ $usuario->Estado_Usuario }}
                                             @endif
                                         </td>
+                                        <td>{{ $usuario['fecha_creacion'] }}</td>
                                         <td>{{ $usuario->rol ? $usuario->rol->Rol : 'Sin rol asignado' }}</td>
                                         <td>{{ \Carbon\Carbon::parse($usuario['Fecha_Ultima_Conexion'])->format('Y/m/d') }}</td>
                                         <td>{{ $usuario['Primer_Ingreso'] }}</td>

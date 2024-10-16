@@ -71,8 +71,7 @@
                                 <option value="{{ $usuario['Estado_Usuario'] }}" selected>{{ $usuario['Estado_Usuario'] }}</option>
                             @endif
                         </select>
-                    </div>
-                    
+                    </div>                            
                     
                     <div class="mb-3">
                         <label for="Id_Rol" class="form-label">ROL</label>
@@ -87,16 +86,23 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="Fecha_Vencimiento" class="form-label">FECHA VENCIMIENTO</label>
-                        <input type="text" class="form-control" id="Fecha_Vencimiento" name="Fecha_Vencimiento"
-                               value="{{ $usuario['Fecha_Vencimiento'] }}" readonly>
-                    </div>
-                    
-                    <div class="mb-3">
                         <label for="Correo_Electronico" class="form-label">CORREO ELECTRÓNICO</label>
                         <input type="email" class="form-control" id="Correo_Electronico" name="Correo_Electronico"
                                value="{{ old('Correo_Electronico', $usuario['Correo_Electronico']) }}" required>
                     </div>
+                    
+                    <div class="mb-3">
+                        <label for="fecha_creacion" class="form-label">FECHA DE CREACIÓN</label>
+                        <input type="text" class="form-control" id="fecha_creacion" name="fecha_creacion"
+                               value="{{ \Carbon\Carbon::parse($usuario['fecha_creacion'])->format('m/d/Y') }}" readonly>
+                    </div>    
+
+                    <div class="mb-3">
+                        <label for="Fecha_Vencimiento" class="form-label">FECHA VENCIMIENTO</label>
+                        <input type="text" class="form-control" id="Fecha_Vencimiento" name="Fecha_Vencimiento"
+                               value="{{ $usuario['Fecha_Vencimiento'] }}">
+                    </div>
+                    
 
                     <div class="d-grid gap-2 d-md-block">
                         <button type="button" id="submit-button" class="btn btn-primary">GUARDAR</button>

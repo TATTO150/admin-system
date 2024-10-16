@@ -20,7 +20,7 @@ class UsuarioRequest extends FormRequest
 
         return [
             'Usuario' => [
-                (new Validaciones)->requerirSinEspacios()->requerirTodoMayusculas()->requerirlongitudMinima(4)->requerirlongitudMaxima(15),
+                (new Validaciones)->requerirSinEspacios()->requerirTodoMayusculas()->requerirlongitudMinima(3)->requerirlongitudMaxima(15)->prohibirNumerosSimbolos(),
                 function($attribute, $value, $fail) use ($isUpdate, $currentUsuario) {
                     if (preg_match('/^\d/', $value)) {
                         $fail('El campo "Usuario" no puede comenzar con un número. Has ingresado: ' . $value);
@@ -42,9 +42,6 @@ class UsuarioRequest extends FormRequest
                     }
                     if (!preg_match('/[AEIOU]/', $value) || !preg_match('/[BCDFGHJKLMNPQRSTVWXYZ]/', $value)) {
                         $fail('El campo "Usuario" debe contener al menos una vocal y una consonante. Has ingresado: ' . $value);
-                    }
-                    if (preg_match('/[0-9]$/', $value)) {
-                        $fail('El campo "Usuario" no puede terminar con un número. Has ingresado: ' . $value);
                     }
 
                     if (!$isUpdate) {
@@ -72,12 +69,21 @@ class UsuarioRequest extends FormRequest
             'Correo_Electronico' => [
                 (new Validaciones)->requerirSinEspacios()->requerirArroba()->requerirCampo(),
                 'unique:tbl_ms_usuario,Correo_Electronico' . ($isUpdate ? ',' . $userId . ',Id_usuario' : ''),
-            
+                'regex:/^[^@]+@[^@]+\.[^@]+$/', // Validación para verificar que haya un punto después del @
+                'not_regex:/^[^@]+@(empresa\.com|institucion\.edu|otro\.org)$/i', // Bloquear dominios de correos institucionales
             ],
             'Fecha_Ultima_Conexion' => [(new Validaciones)->requerirCampo()],
             'Primer_Ingreso' => [(new Validaciones)->requerirCampo()],
-            'Fecha_Vencimiento' => [(new Validaciones)->requerirCampo()],
+            'Fecha_Vencimiento' => [(new Validaciones)->requerirCampo()->validarFechaNoMenorVencimientoActual($userId)],
+        ]; [
+                'Correo_Electronico.regex' => 'El correo electrónico debe contener un punto (.) después del arroba (@).',
+                'Correo_Electronico.not_regex' => 'No se permiten correos electrónicos institucionales como @empresa.com, @institucion.edu, @otro.org.',
+                'Correo_Electronico.unique' => 'El correo electrónico ya está registrado en el sistema.',
+                'regex' => 'El formato del campo :attribute es inválido.', // Sobrescribir el mensaje general para cualquier regex
         ];
+
+
+
     }
 
     public function messages()
