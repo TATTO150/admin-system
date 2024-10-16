@@ -15,14 +15,42 @@
                 @csrf
 
                 <div>
-                    <x-label for="email" value="{{ __('Correo Electrónico') }}" />
-                    <x-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
+                    <x-label for="email" value="{{ __('Usuario o Correo Electrónico') }}" />
+                    <x-input id="email" class="block mt-1 w-full" type="text" name="email" :value="old('email')" required autofocus />
                 </div>
 
                 <div class="mt-4">
                     <x-label for="password" value="{{ __('Nueva Contraseña') }}" />
                     <x-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
+                    <div class="flex justify-end">
+                        <button id="copy-password" class="underline mt-4 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" type="button">
+                            Copiar Contraseña
+                        </button>
+                    </div>
                 </div>
+                
+                <script>
+                    document.getElementById('copy-password').addEventListener('click', function() {
+                        const passwordInput = document.getElementById('password');
+                
+                        // Verifica si el navegador soporta la API del portapapeles
+                        if (navigator.clipboard) {
+                            // Copia el valor del campo de entrada al portapapeles
+                            navigator.clipboard.writeText(passwordInput.value)
+                                .then(() => {
+                                    // Muestra un mensaje de confirmación
+                                    alert('Contraseña copiada al portapapeles.');
+                                })
+                                .catch(err => {
+                                    console.error('Error al copiar: ', err);
+                                });
+                        } else {
+                            // Si la API no es soportada, muestra un mensaje
+                            alert('La funcionalidad de copiar al portapapeles no es soportada en este navegador.');
+                        }
+                    });
+                </script>
+                
 
                 <div class="mt-4">
                     <x-label for="password_confirmation" value="{{ __('Confirmar Nueva Contraseña') }}" />

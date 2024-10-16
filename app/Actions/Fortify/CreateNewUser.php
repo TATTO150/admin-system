@@ -42,6 +42,7 @@ class CreateNewUser implements CreatesNewUsers
             'Fecha_Vencimiento' => Carbon::now()->addMonths(3),
             'Verificacion_Usuario' => false,
             'Intentos_Login' => 0,
+            'fecha_creacion' => Carbon::now(),
         ];
 
         // Encriptar la contraseña

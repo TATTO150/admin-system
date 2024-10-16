@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;   //PARA CORREO
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Validator;
+use App\Models\User;
 
 
 class Validaciones implements Rule
@@ -150,6 +151,37 @@ public function validarFechaFutura()
         }
     };
 }
+
+public function validarFechaNoMenorVencimientoActual($userId)
+    {
+        return function ($attribute, $value, $fail) use ($userId) {
+            // Buscar el usuario por su ID
+            $usuario = User::find($userId);
+
+            // Asegurarse de que el usuario exista
+            if (!$usuario) {
+                $fail('Usuario no encontrado.');
+                return;
+            }
+
+            // Obtener la fecha de vencimiento actual del usuario
+            $fechaVencimientoActual = Carbon::parse($usuario->Fecha_Vencimiento);
+            // Obtener la fecha de hoy
+            $fechaHoy = Carbon::now()->startOfDay();
+            // Obtener la nueva fecha de vencimiento
+            $fechaVencimientoNueva = Carbon::parse($value);
+
+            // Comparar las fechas
+            if ($fechaVencimientoNueva->lessThan($fechaHoy)) {
+                $fail('La nueva fecha de vencimiento no puede ser menor que la fecha de hoy.');
+                return;
+            }
+
+            if ($fechaVencimientoNueva->lessThan($fechaVencimientoActual)) {
+                $fail('La nueva fecha de vencimiento no puede ser menor que la fecha de vencimiento actual.');
+            }
+        };
+    }
 
 
 //FECHA INICIO NO PUEDE SER MENOR QUE HOY 

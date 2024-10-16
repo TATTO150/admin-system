@@ -31,7 +31,6 @@ class ResetearContrasenaController extends Controller
     {
         try {
             $request->validate([
-                'email' => 'required|email|exists:tbl_ms_usuario,Correo_Electronico',
                 'code' => 'required|string',
                 'password' => [
                     'required',
@@ -41,7 +40,10 @@ class ResetearContrasenaController extends Controller
             ], [
                 'password.confirmed' =>'Las contraseñas no son iguales. Asegúrese de que la confirmación coincida con la nueva contraseña.' // Mensaje personalizado
             ]);
-            $user = User::where('Correo_Electronico', $request->input('email'))->first();
+            
+            $user = User::where('Correo_Electronico', $request->input('email'))
+            ->orWhere('Usuario', $request->input('email'))
+            ->first();
             
             if (Hash::check($request->input('password'), $user->Contrasena)) {
                 return redirect()->back()->withErrors(['password' => 'La nueva contraseña no puede ser la misma que la contraseña anterior.']);
@@ -53,13 +55,33 @@ class ResetearContrasenaController extends Controller
                 ]);
             }
 
+            // Supongamos que ya tienes la lógica de obtener el usuario
             if (empty($user->two_factor_secret) || 
-                !$this->provider->verify(decrypt($user->two_factor_secret), $request->input('code'))) {
-                $this->registrarEnBitacora($user->Id_usuario, 3, 'Intento de reseteo de contraseña fallido - código OTP incorrecto', 'Error');
-                throw ValidationException::withMessages([
-                    'code' => [__('El código OTP ingresado es incorrecto.')],
-                ]);
+            !$this->provider->verify(decrypt($user->two_factor_secret), $request->input('code'))) {
+
+            // Incrementar los intentos
+            $user->Intentos_OTP += 1;
+            $user->save(); // Guardar los cambios en la base de datos
+
+            // Verificar si los intentos alcanzan el límite
+            if ($user->Intentos_OTP >= 3) {
+                // Cambiar el estado del usuario a 'Bloqueado'
+                $user->Estado_Usuario = 'BLOQUEADO';
+                $user->save(); // Guardar el cambio de estado
+
+                // Redirigir a la ruta de bloqueo
+                return redirect()->route('bloqueo')->with('error', __('Su cuenta ha sido bloqueada por demasiados intentos fallidos.'));
             }
+
+            // Registrar en la bitácora el intento fallido
+            $this->registrarEnBitacora($user->Id_usuario, 3, 'Intento de reseteo de contraseña fallido - código OTP incorrecto', 'Error');
+
+            // Lanzar excepción de validación
+            throw ValidationException::withMessages([
+                'code' => [__('El código OTP ingresado es incorrecto.')],
+            ]);
+            }
+
 
             // Actualizar la contraseña del usuario
             $user->Contrasena = Hash::make($request->input('password'));
@@ -78,6 +100,7 @@ class ResetearContrasenaController extends Controller
             }
 
             $user->Intentos_Login = 0;
+            $user->Intentos_OTP = 0;
             $user->save();
              // Obtener todos los correos de los administradores con Id_Rol = 1
         $adminEmails = User::where('Id_Rol', 1)->pluck('Correo_Electronico')->toArray();
@@ -177,7 +200,24 @@ public function resetPassword(Request $request)
     }
     // Actualizar la contraseña del usuario
     $user->Contrasena = bcrypt($request->Contrasena);
+    $user->Intentos_OTP = 0;
     $user->save();
+
+    if ($user->Id_usuario == 1 && $user->Estado_Usuario == 'BLOQUEADO') {
+        // Cambiar el estado a 'ACTIVO' para el usuario con Id_usuario 1 si estaba bloqueado
+        $user->Estado_Usuario = 'ACTIVO';
+        $user->Fecha_Vencimiento = \Carbon\Carbon::now()->addMonths(6);
+        $user->save();
+    } elseif ($user->Estado_Usuario == 'BLOQUEADO' || $user->Estado_Usuario == 3) {
+        $user->Estado_Usuario = 'RESETEO';
+        $user->save();
+    } elseif ($user->Id_Rol == 3) {
+        $user->Estado_Usuario = 'NUEVO';
+        $user->save();
+    } else {
+        $user->Estado_Usuario = 'RESETEO';
+        $user->save();
+    }
 
     // Eliminar el token de la tabla password_resets
     DB::table('password_reset_tokens')->where('token', $request->token)->delete();

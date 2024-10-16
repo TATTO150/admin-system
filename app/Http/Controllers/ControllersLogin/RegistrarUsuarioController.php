@@ -189,6 +189,7 @@ $response = Http::post('http://127.0.0.1:3000/INS_USUARIOS', [
     'Primer_Ingreso' => Carbon::now(),
     'Fecha_Vencimiento' => Carbon::now()->addMonth(3),
     'Correo_Electronico' => $request->Correo_Electronico,
+    'fecha_creacion' => Carbon::now(),
 ]);
 
 if ($response->successful()) {
@@ -343,7 +344,7 @@ public function update(UsuarioRequest $request, $Id_usuario)
             'Nombre_Usuario' => $request->Nombre_Usuario,
             'Estado_Usuario' => $request->Estado_Usuario,
             'Id_Rol' => $request->Id_Rol,
-            'Fecha_Vencimiento' => Carbon::now()->addMonth(3)->format('Y-m-d H:i:s'), // Formatear la fecha de vencimiento
+            'Fecha_Vencimiento' => $request->Fecha_Vencimiento,
             'Correo_Electronico' => $request->Correo_Electronico,
             'Fecha_Ultima_Conexion' => $fechaUltimaConexion,
         ]);
