@@ -165,14 +165,12 @@ class RegistrarUsuarioController extends Controller
         return view('usuarios.crear', compact('roles', 'estados'));
     }
     
-
-    
+  
 
     public function insertar(UsuarioRequest $request)
     {
-         // Generar una nueva contraseña aleatoria
-$contraseña = Str::random(8); // Ajusta la longitud según sea necesario
-
+ // Generar una nueva contraseña robusta de 12 caracteres
+ $contraseña = $this->generarContraseñaRobusta(12); // Corregido: Se usa $this-> para llamar a la función
 // Encriptar la contraseña
 $contraseñaHasheada = Hash::make($contraseña);
 Log::info('Contraseña Generada: ' . $contraseña); // Depuración
@@ -362,6 +360,28 @@ public function update(UsuarioRequest $request, $Id_usuario)
     }
 }
     
-
+  private function generarContraseñaRobusta($longitud = 12)
+    {
+        $mayusculas = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $minusculas = 'abcdefghijklmnopqrstuvwxyz';
+        $numeros = '0123456789';
+        $simbolos = '!@#$%^&*()-_=+{}[]|;:<>,.?';
+    
+        // Asegúrate de incluir al menos uno de cada tipo de carácter
+        $contraseña = $mayusculas[rand(0, strlen($mayusculas) - 1)] .
+                      $minusculas[rand(0, strlen($minusculas) - 1)] .
+                      $numeros[rand(0, strlen($numeros) - 1)] .
+                      $simbolos[rand(0, strlen($simbolos) - 1)];
+    
+        // Completa el resto de la contraseña con caracteres aleatorios de todos los conjuntos
+        $todosCaracteres = $mayusculas . $minusculas . $numeros . $simbolos;
+        for ($i = 4; $i < $longitud; $i++) {
+            $contraseña .= $todosCaracteres[rand(0, strlen($todosCaracteres) - 1)];
+        }
+    
+        // Mezcla los caracteres para que no sigan el patrón predecible
+        return str_shuffle($contraseña);
+    }
+    
     
 }
