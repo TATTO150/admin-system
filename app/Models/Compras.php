@@ -16,10 +16,16 @@ class Compras extends Model
         'COD_COMPRA', 
         'DESC_COMPRA',
         'COD_PROYECTO', 
-        'FEC_REGISTRO', 
-        'TIP_COMPRA', 
-        'PRECIO_VALOR',
-        
+        'FEC_REGISTRO',
+        'ESTADO_COMPRA', 
+        'TIPO_COMPRA', 
+        'PRECIO_COMPRA',
+        'PRECIO_CUOTA',
+        'PRECIO_NETO',
+        'CUOTAS_PAGADAS',
+        'TOTAL_CUOTAS',
+        'FECHA_PAGO',
+        'LIQUIDEZ_COMPRA'
     ]; 
 
     protected $dates = ['FEC_REGISTRO'];
