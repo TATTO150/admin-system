@@ -473,13 +473,13 @@ public function prohibirMultiplesEspacios()
 
         // Validación de longitud mínima
         if ($this->longitudMinima > 0 && strlen($value) < $this->longitudMinima) {
-            $this->mensaje = 'El :attribute debe tener al menos ' . $this->longitudMinima . ' caracteres.';
+            $this->mensaje = 'El :attribute debe tener minimo ' . $this->longitudMinima . ' caracteres.';
             return false;
         }
 
         // Validación de longitud máxima
         if ($this->longitudMaxima > 0 && strlen($value) > $this->longitudMaxima) {
-            $this->mensaje = 'El :attribute no debe tener más de ' . $this->longitudMaxima . ' caracteres.';
+            $this->mensaje = 'El :attribute debe tener máximo de ' . $this->longitudMaxima . ' caracteres.';
             return false;
         }
 

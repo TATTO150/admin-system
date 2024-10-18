@@ -172,39 +172,50 @@ class ResetearContrasenaController extends Controller
  // Actualizar la contraseña
 public function resetPassword(Request $request)
 {
-    // Validar los datos del formulario
     $request->validate([
-        'Contrasena' => 'required|confirmed|min:8',
+        'Contrasena' => [
+            'required',
+            'confirmed',
+            (new Validaciones)->requerirSinEspacios()->requerirSimbolo()->requerirMinuscula()->requerirMayuscula()->requerirNumero()->requerirlongitudMinima(8)->requerirlongitudMaxima(12)->requerirCampo(),
+        ],
         'token' => 'required',
+    ], [
+        'Contrasena.confirmed' => 'La confirmación de la contraseña no coincide.', // Mensaje personalizado
     ]);
 
     // Buscar el registro que coincide con el token
     $resetRecord = DB::table('password_reset_tokens')
-    ->where('token', $request->token)
-    ->first();
+        ->where('token', $request->token)
+        ->first();
 
     // Verificar si existe el token
     if (!$resetRecord) {
-    return back()->withErrors(['error' => 'Token inválido o expirado.']);
+        return back()->withErrors(['error' => 'Token inválido o expirado.']);
     }
 
     // Obtener el correo electrónico asociado al token
     $email = $resetRecord->email;
 
     // Buscar el usuario en la tabla tbl_ms_usuario usando el correo electrónico obtenido
-    $user = user::where('Correo_Electronico', $email)->first();
+    $user = User::where('Correo_Electronico', $email)->first();
 
     // Verificar si existe el usuario
     if (!$user) {
-    return back()->withErrors(['error' => 'No se encontró un usuario con ese correo electrónico.']);
+        return back()->withErrors(['error' => 'No se encontró un usuario con ese correo electrónico.']);
     }
+
+    // Validar que la nueva contraseña no sea igual a la anterior
+    if (Hash::check($request->Contrasena, $user->Contrasena)) {
+        return back()->withErrors(['error' => 'La nueva contraseña no puede ser igual a la anterior.']);
+    }
+
     // Actualizar la contraseña del usuario
     $user->Contrasena = bcrypt($request->Contrasena);
     $user->Intentos_OTP = 0;
     $user->save();
 
+    // Lógica para cambiar el estado del usuario si es necesario
     if ($user->Id_usuario == 1 && $user->Estado_Usuario == 'BLOQUEADO') {
-        // Cambiar el estado a 'ACTIVO' para el usuario con Id_usuario 1 si estaba bloqueado
         $user->Estado_Usuario = 'ACTIVO';
         $user->Fecha_Vencimiento = \Carbon\Carbon::now()->addMonths(6);
         $user->save();
@@ -219,12 +230,13 @@ public function resetPassword(Request $request)
         $user->save();
     }
 
-    // Eliminar el token de la tabla password_resets
+    // Eliminar el token de la tabla password_reset_tokens
     DB::table('password_reset_tokens')->where('token', $request->token)->delete();
 
     // Redirigir al login con un mensaje de éxito
     return redirect()->route('login')->with('status', 'Tu contraseña ha sido restablecida con éxito.');
 }
+
 
 
 

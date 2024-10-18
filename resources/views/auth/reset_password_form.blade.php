@@ -1,4 +1,3 @@
-<!-- resources/views/auth/reset_password_form.blade.php -->
 <x-guest-layout>
     <x-authentication-card>
         <x-slot name="logo">
@@ -18,14 +17,22 @@
 
             <input type="hidden" name="token" value="{{ $token }}">
 
+            <!-- Campo de nueva contraseña con ícono de ojo a la derecha -->
             <div class="mt-4">
                 <x-label for="Contrasena" value="{{ __('Nueva Contraseña') }}" />
-                <x-input id="Contrasena" class="block mt-1 w-full" type="password" name="Contrasena" required autocomplete="new-password" />
+                <div class="relative">
+                    <x-input id="Contrasena" class="block mt-1 w-full pr-10" type="password" name="Contrasena" required autocomplete="new-password" />
+                    <span toggle="#Contrasena" class="fa fa-fw fa-eye toggle-password absolute inset-y-0 right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"></span>
+                </div>
             </div>
 
+            <!-- Campo de confirmación de nueva contraseña con ícono de ojo a la derecha -->
             <div class="mt-4">
                 <x-label for="Contrasena_confirmation" value="{{ __('Confirmar Nueva Contraseña') }}" />
-                <x-input id="Contrasena_confirmation" class="block mt-1 w-full" type="password" name="Contrasena_confirmation" required />
+                <div class="relative">
+                    <x-input id="Contrasena_confirmation" class="block mt-1 w-full pr-10" type="password" name="Contrasena_confirmation" required />
+                    <span toggle="#Contrasena_confirmation" class="fa fa-fw fa-eye toggle-password absolute inset-y-0 right-3 top-1/2 transform -translate-y-1/2 cursor-pointer"></span>
+                </div>
             </div>
 
             <div class="flex items-center justify-end mt-4">
@@ -35,4 +42,22 @@
             </div>
         </form>
     </x-authentication-card>
+
+    <!-- Script para mostrar/ocultar la contraseña -->
+    <script>
+        document.querySelectorAll('.toggle-password').forEach(item => {
+            item.addEventListener('click', function() {
+                let input = document.querySelector(this.getAttribute('toggle'));
+                if (input.getAttribute('type') === 'password') {
+                    input.setAttribute('type', 'text');
+                    this.classList.remove('fa-eye');
+                    this.classList.add('fa-eye-slash');
+                } else {
+                    input.setAttribute('type', 'password');
+                    this.classList.remove('fa-eye-slash');
+                    this.classList.add('fa-eye');
+                }
+            });
+        });
+    </script>
 </x-guest-layout>
