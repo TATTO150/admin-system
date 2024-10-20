@@ -20,7 +20,7 @@ class UsuarioRequest extends FormRequest
 
         return [
             'Usuario' => [
-                (new Validaciones)->requerirSinEspacios()->requerirTodoMayusculas()->requerirlongitudMinima(3)->requerirlongitudMaxima(15)->prohibirNumerosSimbolos(),
+                (new Validaciones)->requerirSinEspacios()->requerirTodoMayusculas()->requerirlongitudMinima(4)->requerirlongitudMaxima(15)->prohibirNumerosSimbolos(),
                 function($attribute, $value, $fail) use ($isUpdate, $currentUsuario) {
                     if (preg_match('/^\d/', $value)) {
                         $fail('El campo "Usuario" no puede comenzar con un número. Has ingresado: ' . $value);
@@ -31,6 +31,11 @@ class UsuarioRequest extends FormRequest
                     if (preg_match('/([A-Z])\1{2,}/', $value)) {
                         $fail('El campo "Usuario" no puede tener más de dos letras seguidas. Has ingresado: ' . $value);
                     }
+                      // Prohibir caracteres especiales consecutivos
+                    if (preg_match('/[\W_]{1,}/', $value)) {
+                    $fail('El campo "Usuario" no puede contener caracteres especiales. Has ingresado: ' . $value);
+                     }
+
                     if (preg_match('/[\W_]{2,}/', $value)) {
                         $fail('El campo "Usuario" no puede tener símbolos especiales consecutivos. Has ingresado: ' . $value);
                     }
@@ -53,10 +58,18 @@ class UsuarioRequest extends FormRequest
                 },
             ],
             'Nombre_Usuario' => [
-                (new Validaciones)->requerirUnEspacio()->requerirTodoMayusculas(),
+                (new Validaciones)->requerirUnEspacio()->requerirTodoMayusculas()->requerirlongitudMinima(5)->requerirlongitudMaxima(15),
                 function($attribute, $value, $fail) {
                     if (preg_match('/\b(\w+)\s+\1\b/', $value)) {
                         $fail('El campo "Nombre de Usuario" no puede contener la misma palabra dos veces consecutivas. Has ingresado: ' . $value);
+                    }
+                    if (strlen($value) < 5 || strlen($value) > 15) {
+                        $fail('El campo "Nombre de Usuario" debe tener entre 5 y 15 caracteres. Has ingresado: ' . $value);
+                    }
+            
+                    // Prohibir caracteres especiales y números
+                    if (preg_match('/[^A-Z\s]/', $value)) {
+                        $fail('El campo "Nombre de Usuario" solo puede contener letras mayúsculas y espacios. Has ingresado: ' . $value);
                     }
                 },
                 
@@ -66,12 +79,33 @@ class UsuarioRequest extends FormRequest
                 (new Validaciones)->requerirSinEspacios()->requerirSimbolo()->requerirMinuscula()->requerirMayuscula()->requerirNumero()->requerirlongitudMinima(8)->requerirlongitudMaxima(12)->requerirCampo(),
                 // Otras validaciones personalizadas para la contraseña pueden agregarse aquí
             ],
-            'Correo_Electronico' => [
-                (new Validaciones)->requerirSinEspacios()->requerirArroba()->requerirCampo(),
-                'unique:tbl_ms_usuario,Correo_Electronico' . ($isUpdate ? ',' . $userId . ',Id_usuario' : ''),
-                'regex:/^[^@]+@[^@]+\.[^@]+$/', // Validación para verificar que haya un punto después del @
-                'not_regex:/^[^@]+@(empresa\.com|institucion\.edu|otro\.org)$/i', // Bloquear dominios de correos institucionales
-            ],
+           'Correo_Electronico' => [
+    (new Validaciones)
+        ->requerirSinEspacios() // Prohíbe espacios
+        ->requerirArroba() // Requiere que tenga un '@'
+        ->requerirCampo(), // Asegura que el campo esté presente
+    
+    // Validación de unicidad
+    'unique:tbl_ms_usuario,Correo_Electronico' . ($isUpdate ? ',' . $userId . ',Id_usuario' : ''),
+    
+    // Validar que tenga un punto después de la arroba
+    'regex:/^[^@]+@[^@]+\.[^@]+$/', 
+
+
+    // Validar tamaño mínimo y máximo
+    function ($attribute, $value, $fail) {
+        // Validar tamaño mínimo de 5 y máximo de 50 caracteres
+        if (strlen($value) < 5 || strlen($value) > 30) {
+            $fail('El campo "Correo Electrónico" debe tener entre 5 y 30 caracteres. Has ingresado: ' . $value);
+        }
+
+        // Validar que el correo tenga un punto después de la arroba
+        if (!preg_match('/^[^@]+@[^@]+\.[^@]+$/', $value)) {
+            $fail('El campo "Correo Electrónico" debe contener un punto (.) después del símbolo @. Has ingresado: ' . $value);
+        }
+
+    }
+],
             'Fecha_Ultima_Conexion' => [(new Validaciones)->requerirCampo()],
             'Primer_Ingreso' => [(new Validaciones)->requerirCampo()],
             'Fecha_Vencimiento' => [(new Validaciones)->requerirCampo()->validarFechaNoMenorVencimientoActual($userId)],
