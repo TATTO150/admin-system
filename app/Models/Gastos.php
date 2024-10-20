@@ -18,7 +18,7 @@ class Gastos extends Model
         'COD_PROYECTO', 
         'FEC_REGISTRO', 
         'SUBTOTAL',
-        'TOTAL'
+        'TOTAL',
     ]; 
     
     public $timestamps = false; 

@@ -63,46 +63,66 @@
     </form>
 </div>
 
-                <table id="mitabla" class="table table-hover table-bordered">
-                    <thead class="thead-dark">
+            <table id="mitabla" class="table table-hover table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>SOLICITANTE</th>
+                        <th>DESCRIPCIÓN COMPRA</th>
+                        <th>PROYECTO</th>
+                        <th>ESTADO SOLICITUD</th>
+                        <th>TIPO COMPRA</th>
+                        <th>TOTAL CUOTAS</th>
+                        <th>PRECIO CUOTA</th>
+                        <th>PRECIO COMPRA</th>
+                        <th>ACCIÓN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($compras as $compra)
                         <tr>
-                            <th>EMPLEADO</th>
-                            <th>DESCRIPCIÓN SOLICITUD</th>
-                            <th>ÁREA</th>
-                            <th>PROYECTO</th>
-                            <th>ESTADO SOLICITUD</th>
-                            <th>PRESUPUESTO SOLICITUD</th>
-                            <th>ACCIÓN</th>
+                            <td>{{ $usuarios[$compra->Id_usuario]->Usuario ?? 'N/A' }}</td>
+                            <td>{{ $compra->DESC_COMPRA }}</td>
+                            <td>{{ $proyectos[$compra->COD_PROYECTO]->NOM_PROYECTO ?? 'N/A' }}</td>
+                            <td>{{ $estados[$compra->COD_ESTADO]->DESC_ESTADO ?? 'N/A' }}</td>
+                            <td>{{ $tipos[$compra->COD_TIPO]->DESC_TIPO ?? 'N/A' }}</td>
+                            <td>{{ $compra->TOTAL_CUOTAS }}</td>
+                            <td>{{ $compra->PRECIO_CUOTA }}</td>
+                            <td>{{ $compra->PRECIO_COMPRA }}</td>
+
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $compra->COD_COMPRA }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Acciones
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $compra->COD_COMPRA }}">
+                                        <li><a class="dropdown-item" href="{{ route('solicitudes.edit', $compra->COD_COMPRA) }}">EDITAR</a></li>
+                                        <li>
+                                            <form class="dropdown-item" action="{{ route('solicitudes.destroy', $compra->COD_COMPRA) }}" method="POST">
+                                                @csrf
+                                                @method('DELETE') <!-- Este campo oculta el método DELETE -->
+                                                <button type="submit">ELIMINAR</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($solicitudes as $solicitud)
-                            <tr>
-                                <td>{{ $empleados[$solicitud->COD_EMPLEADO]->NOM_EMPLEADO ?? 'N/A' }}</td>
-                                <td>{{ $solicitud->DESC_SOLICITUD }}</td>
-                                <td>{{ $solicitud->area->NOM_AREA ?? 'No asignado' }}</td>
-                                <td>{{ $proyectos[$solicitud->COD_PROYECTO]->NOM_PROYECTO ?? 'N/A' }}</td>
-                                <td>{{ $solicitud->ESTADO_SOLICITUD }}</td>
-                                <td>{{ $solicitud->PRESUPUESTO_SOLICITUD }}</td>
-                                <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $solicitud->COD_SOLICITUD }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                            Acciones
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $solicitud->COD_SOLICITUD }}">
-                                            <li><a class="dropdown-item" href="{{ route('solicitudes.edit', $solicitud->COD_SOLICITUD) }}">EDITAR</a></li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center">No se encontraron solicitudes.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center">No se encontraron compras.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
             </div>
+
+             <!-- Paginación -->
+            <nav id="paginationExample" class="d-flex justify-content-center mt-3">
+                <button id="prevPage" class="btn btn-outline-primary me-2">Anterior</button>
+                <span id="currentPage" class="align-self-center"></span>
+                <button id="nextPage" class="btn btn-outline-primary ms-2">Siguiente</button>
+            </nav>
         </div>
     </div>
 
@@ -174,6 +194,51 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+         // Función para paginar la tabla
+    function paginateTable(tableId, rowsPerPage) {
+        const table = document.getElementById(tableId);
+        const rows = table.querySelectorAll('tbody tr');
+        const prevButton = document.getElementById('prevPage');
+        const nextButton = document.getElementById('nextPage');
+        const currentPageLabel = document.getElementById('currentPage');
+
+        let currentPage = 1;
+        const rowCount = rows.length;
+        const pageCount = Math.ceil(rowCount / rowsPerPage);
+
+        // Función para mostrar solo las filas de la página actual
+        function showPage(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            rows.forEach((row, index) => {
+                row.style.display = (index >= start && index < end) ? '' : 'none';
+            });
+            currentPageLabel.textContent = 'Pág. ' + page;
+        }
+
+        // Eventos de navegación
+        prevButton.addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage(currentPage);
+            }
+        });
+
+        nextButton.addEventListener('click', function() {
+            if (currentPage < pageCount) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        });
+
+        // Mostrar la primera página al cargar
+        showPage(currentPage);
+    }
+
+    // Llamar a la función de paginación al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        paginateTable('mitabla', 6); // Cambiar el número de filas por página si es necesario
+    });
            // Script de búsqueda mejorado
       $(document).ready(function() {
           // Guardar las filas originales para poder restaurarlas

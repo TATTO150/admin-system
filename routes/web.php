@@ -543,27 +543,27 @@ Route::get('estado_proyecto/{id}/check', [EstadoProyectoControllador::class, 'ch
     Route::post('/proyectos/{proyecto}/gestionar-empleados', [ProyectoControlador::class, 'gestionarEmpleados'])->name('proyectos.gestionarEmpleados');
 
     ////////////////////////////////////////////*SOLICITUDES*///////////////////////////////////////////////////
-Route::post('/solicitudes/generateReport', [SolicitudesControlador::class, 'generateReport'])->name('solicitudes.generateReport');
-Route::get('/solicitudes/generateReport', [SolicitudesControlador::class, 'generateReport'])->name('solicitudes.generateReport');
-Route::get('/solicitudes/reportes/estado', [SolicitudesControlador::class, 'reportePorEstado'])->name('solicitudes.reportePorEstado');
-Route::get('/solicitudes/reportes/proyecto', [SolicitudesControlador::class, 'reportePorProyecto'])->name('solicitudes.reportePorProyecto');
-Route::get('/solicitudes/reportes/area', [SolicitudesControlador::class, 'reportePorArea'])->name('solicitudes.reportePorArea');
-Route::get('/solicitudes/reportes/general', [SolicitudesControlador::class, 'reporteGeneral'])->name('solicitudes.reporteGeneral');
-Route::post('/solicitudes/reportes/estado', [SolicitudesControlador::class, 'reportePorEstadoPost'])->name('solicitudes.reportePorEstadoPost');
-Route::post('/solicitudes/reportes/proyecto', [SolicitudesControlador::class, 'reportePorProyectoPost'])->name('solicitudes.reportePorProyectoPost');
-Route::post('/solicitudes/reportes/area', [SolicitudesControlador::class, 'reportePorAreaPost'])->name('solicitudes.reportePorAreaPost');
-Route::post('/solicitudes/reportes/general', [SolicitudesControlador::class, 'reporteGeneralPost'])->name('solicitudes.reporteGeneralPost');
+    Route::post('/solicitudes/generateReport', [SolicitudesControlador::class, 'generateReport'])->name('solicitudes.generateReport');
+    Route::get('/solicitudes/generateReport', [SolicitudesControlador::class, 'generateReport'])->name('solicitudes.generateReport');
+    Route::get('/solicitudes/reportes/estado', [SolicitudesControlador::class, 'reportePorEstado'])->name('solicitudes.reportePorEstado');
+    Route::get('/solicitudes/reportes/proyecto', [SolicitudesControlador::class, 'reportePorProyecto'])->name('solicitudes.reportePorProyecto');
+    Route::get('/solicitudes/reportes/area', [SolicitudesControlador::class, 'reportePorArea'])->name('solicitudes.reportePorArea');
+    Route::get('/solicitudes/reportes/general', [SolicitudesControlador::class, 'reporteGeneral'])->name('solicitudes.reporteGeneral');
+    Route::post('/solicitudes/reportes/estado', [SolicitudesControlador::class, 'reportePorEstadoPost'])->name('solicitudes.reportePorEstadoPost');
+    Route::post('/solicitudes/reportes/proyecto', [SolicitudesControlador::class, 'reportePorProyectoPost'])->name('solicitudes.reportePorProyectoPost');
+    Route::post('/solicitudes/reportes/area', [SolicitudesControlador::class, 'reportePorAreaPost'])->name('solicitudes.reportePorAreaPost');
+    Route::post('/solicitudes/reportes/general', [SolicitudesControlador::class, 'reporteGeneralPost'])->name('solicitudes.reporteGeneralPost');
     Route::get('/solicitudes/pdf', [SolicitudesControlador::class, 'pdf'])->name('solicitudes.pdf');
     Route::get('/solicitudes', [SolicitudesControlador::class, 'index'])->name('solicitudes.index');
     Route::get('/solicitudes/crear', [SolicitudesControlador::class, 'crear'])->name('solicitudes.crear');
     Route::post('/solicitudes', [SolicitudesControlador::class, 'insertar'])->name('solicitudes.insertar');
-    Route::delete('/solicitudes/{COD_SOLICITUD}', [SolicitudesControlador::class, 'destroy'])->name('solicitudes.destroy');
-    Route::get('solicitudes/{COD_SOLICITUD}/edit', [SolicitudesControlador::class, 'edit'])->name('solicitudes.edit');
-    Route::put('/solicitudes/{COD_SOLICITUD}', [SolicitudesControlador::class, 'update'])->name('solicitudes.update');
+    Route::delete('/solicitudes/{COD_COMPRA}/destroy', [SolicitudesControlador::class, 'destroy'])->name('solicitudes.destroy');
+    Route::get('solicitudes/{COD_COMPRA}/edit', [SolicitudesControlador::class, 'edit'])->name('solicitudes.edit');
+    Route::put('/solicitudes/{COD_COMPRA}', [SolicitudesControlador::class, 'update'])->name('solicitudes.update');
     Route::get('/gestionSolicitudes', [GestionSolicitudesControlador::class, 'index'])->name('gestionSolicitudes.index');
-    Route::get('/gestionSolicitudes/gestionar/{COD_SOLICITUD}', [GestionSolicitudesControlador::class, 'gestionar'])->name('gestionSolicitudes.gestionar');
-    Route::patch('/gestionSolicitudes/aprobar/{COD_SOLICITUD}', [GestionSolicitudesControlador::class, 'aprobar'])->name('gestionSolicitudes.aprobar');
-    Route::patch('/gestionSolicitudes/rechazar/{COD_SOLICITUD}', [GestionSolicitudesControlador::class, 'rechazar'])->name('gestionSolicitudes.rechazar');
+    Route::get('/gestionSolicitudes/gestionar/{COD_COMPRA}', [GestionSolicitudesControlador::class, 'gestionar'])->name('gestionSolicitudes.gestionar');
+    Route::patch('/gestionSolicitudes/aprobar/{COD_COMPRA}', [GestionSolicitudesControlador::class, 'aprobar'])->name('gestionSolicitudes.aprobar');
+    Route::patch('/gestionSolicitudes/rechazar/{COD_COMPRA}', [GestionSolicitudesControlador::class, 'rechazar'])->name('gestionSolicitudes.rechazar');
    
     //////////////////////////////////////////////////*PLANILLAS*///////////////////////////////////////////////////
     Route::get('/planillas/pdf', [PlanillaControlador::class, 'pdf'])->name('planillas.pdf');

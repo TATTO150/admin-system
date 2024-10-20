@@ -3,7 +3,7 @@
 @section('title', 'Gestionar Solicitud')
 
 @section('content_header')
-    <h1 class="text-center">Gestionar Solicitud</h1>
+    <h1 class="text-center">GESTIONAR SOLICITUD</h1>
 @stop
 
 @section('content')
@@ -55,19 +55,15 @@
                         <tbody>
                             <tr>
                                 <td>Código Solicitud</td>
-                                <td>{{ $solicitud->COD_SOLICITUD }}</td>
+                                <td>{{ $solicitud->COD_COMPRA}}</td>
                             </tr>
                             <tr>
-                                <td>Nombre Empleado</td>
-                                <td>{{ $solicitud->empleado->NOM_EMPLEADO ?? 'No disponible' }}</td>
+                                <td>Solicitante</td>
+                                <td>{{ $usuarios[$solicitud->Id_usuario]->Usuario ?? 'N/A' }}</td>
                             </tr>
                             <tr>
                                 <td>Descripción</td>
-                                <td>{{ $solicitud->DESC_SOLICITUD }}</td>
-                            </tr>
-                            <tr>
-                                <td>Área</td>
-                                <td>{{ $solicitud->area->NOM_AREA ?? 'No disponible' }}</td>
+                                <td>{{ $solicitud->DESC_COMPRA }}</td>
                             </tr>
                             <tr>
                                 <td>Proyecto</td>
@@ -75,26 +71,26 @@
                             </tr>
                             <tr>
                                 <td>Estado Actual</td>
-                                <td>{{ $solicitud->ESTADO_SOLICITUD }}</td>
+                                <td>{{ $estados[$solicitud->COD_ESTADO]->DESC_ESTADO ?? 'N/A' }}</td>
                             </tr>
                             <tr>
                                 <td>Presupuesto</td>
-                                <td>{{ $solicitud->PRESUPUESTO_SOLICITUD }}</td>
+                                <td>{{ $solicitud->PRECIO_COMPRA }}</td>
                             </tr>
                         </tbody>
                     </table>
 
                     <!-- Botones para aprobar o rechazar -->
-                    <form action="{{ route('gestionSolicitudes.aprobar', $solicitud->COD_SOLICITUD) }}" method="POST" style="display: inline-block;">
+                    <form action="{{ route('gestionSolicitudes.aprobar', $solicitud->COD_COMPRA) }}" method="POST" style="display: inline-block;">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" class="btn btn-success btn-sm">Aprobar</button>
+                        <button type="submit" class="btn btn-success btn-sm">APROBAR</button>
                     </form>
 
-                    <form action="{{ route('gestionSolicitudes.rechazar', $solicitud->COD_SOLICITUD) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('¿Estás seguro de que deseas rechazar esta solicitud?');">
+                    <form action="{{ route('gestionSolicitudes.rechazar', $solicitud->COD_COMPRA) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('¿Estás seguro de que deseas rechazar esta solicitud?');">
                         @csrf
                         @method('PATCH')
-                        <button type="submit" class="btn btn-danger btn-sm">Rechazar</button>
+                        <button type="submit" class="btn btn-danger btn-sm">RECHAZAR</button>
                     </form>
                 </div>
             </main>
