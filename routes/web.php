@@ -557,7 +557,7 @@ Route::get('estado_proyecto/{id}/check', [EstadoProyectoControllador::class, 'ch
     Route::get('/solicitudes', [SolicitudesControlador::class, 'index'])->name('solicitudes.index');
     Route::get('/solicitudes/crear', [SolicitudesControlador::class, 'crear'])->name('solicitudes.crear');
     Route::post('/solicitudes', [SolicitudesControlador::class, 'insertar'])->name('solicitudes.insertar');
-    Route::delete('/solicitudes/{COD_SOLICITUD}', [SolicitudesControlador::class, 'destroy'])->name('solicitudes.destroy');
+    Route::delete('/solicitudes/{COD_COMPRA}/destroy', [SolicitudesControlador::class, 'destroy'])->name('solicitudes.destroy');
     Route::get('solicitudes/{COD_COMPRA}/edit', [SolicitudesControlador::class, 'edit'])->name('solicitudes.edit');
     Route::put('/solicitudes/{COD_COMPRA}', [SolicitudesControlador::class, 'update'])->name('solicitudes.update');
     Route::get('/gestionSolicitudes', [GestionSolicitudesControlador::class, 'index'])->name('gestionSolicitudes.index');

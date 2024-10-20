@@ -270,40 +270,41 @@ class SolicitudesControlador extends Controller
     
 
 
-    public function destroy($COD_SOLICITUD)
-    {
-        $user = Auth::user();
-        $roleId = $user->Id_Rol;
+public function destroy($COD_COMPRA)
+{
+    $user = Auth::user();
+    $roleId = $user->Id_Rol;
 
-        // Verificar si el rol del usuario tiene el permiso de eliminación en el objeto SOLICITUD
-        $permisoEliminacion = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'SOLICITUD')
-                    ->limit(1);
-            })
-            ->where('Permiso_Eliminacion', 'PERMITIDO')
-            ->exists();
+    // Nueva validación de permisos para eliminar compras
+    $this->permisoService->tienePermiso('COMPRA', 'Eliminacion', true);
 
-        if (!$permisoEliminacion) {
-            $this->bitacora->registrarEnBitacora(22, 'Intento de eliminar solicitudes sin permisos', 'ingreso');
-            return redirect()->route('dashboard')->withErrors('No tiene permiso para eliminar solicitudes');
-        }
-
-        try {
-            // Llamada al procedimiento almacenado para eliminar la solicitud
-            DB::statement('CALL ELI_SOLICITUDES(?)', [$COD_SOLICITUD]);
-            $this->bitacora->registrarEnBitacora(22, 'solicitudes eliminada', 'eliminada');
-            // Registro en bitácora (si se utiliza)
-            // $this->bitacora->registrarEnBitacora(Auth::id(), 5, 'Solicitud eliminada', 'Delete'); // ID_objetos 5: 'solicitudes'
-
-            return redirect()->route('solicitudes.index')->with('success', 'Solicitud eliminada correctamente');
-        } catch (\Exception $e) {
-            $this->bitacora->registrarEnBitacora(22, 'Error al eliminar solicitudes', 'eliminada');
-            return redirect()->route('solicitudes.index')->with('error', 'Error al eliminar solicitud: ' . $e->getMessage());
-        }
+    // Obtener la compra a través del modelo Compras
+    $compra = Compras::where('COD_COMPRA', $COD_COMPRA)->first();
+    
+    if (!$compra) {
+        return redirect()->route('solicitudes.index')->withErrors('Compra no encontrada');
     }
+
+    // Verificar si la compra ya ha sido liquidada
+    if ($compra->LIQUIDEZ_COMPRA == 1) {
+        return redirect()->back()->with('error', 'Una compra ya liquidada no puede ser eliminada.');
+    }
+
+    try {
+        // Eliminar la compra usando Eloquent
+        $compra->delete();
+
+        // Registrar en la bitácora la eliminación de la compra
+        $this->bitacora->registrarEnBitacora(22, 'compra eliminada', 'eliminada');
+        
+        return redirect()->route('solicitudes.index')->with('success', 'Compra eliminada correctamente');
+    } catch (\Exception $e) {
+        // Registrar en la bitácora el error al eliminar la compra
+        $this->bitacora->registrarEnBitacora(22, 'Error al eliminar compra', 'eliminada');
+        return redirect()->route('solicitudes.index')->with('error', 'Error al eliminar compra: ' . $e->getMessage());
+    }
+}
+
 
     public function edit($COD_COMPRA)
     {
