@@ -13,8 +13,12 @@ use App\Rules\Validaciones;
 use App\Models\Area;
 use App\Models\Empleados;
 use App\Models\Permisos;
+use App\Models\Compras;
+use App\Models\TipoCompra;
 use Illuminate\Support\Facades\Cache;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Providers\PermisoService;
+
 class SolicitudesControlador extends Controller
 {
     protected $guard;
@@ -23,13 +27,15 @@ class SolicitudesControlador extends Controller
     protected $proyectos;
     protected $empleados;
     protected $bitacora;
+    protected $permisoService;
 
-    public function __construct(BitacoraController $bitacora)
+    public function __construct(BitacoraController $bitacora, PermisoService $permisoService)
     {
         $this->areas = Area::all();
         $this->proyectos = proyectos::all();
         $this->empleados = Empleados::all();
         $this->bitacora = $bitacora;
+        $this->permisoService = $permisoService;
 
     }
     
@@ -96,37 +102,30 @@ class SolicitudesControlador extends Controller
 
 
     public function index()
-{
-    $user = Auth::user();
-    $roleId = $user->Id_Rol;
+    {
+        $user = Auth::user();
 
-    // Verificar si el rol del usuario tiene el permiso de consulta en el objeto SOLICITUD
-    $permisoConsultar = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'SOLICITUD')
-                ->limit(1);
-        })
-        ->where('Permiso_Consultar', 'PERMITIDO')
-        ->exists();
+        // Nueva validación de permisos
+        $this->permisoService->tienePermiso('COMPRA', 'Consultar', true);
 
-    if (!$permisoConsultar) {
-        $this->bitacora->registrarEnBitacora(22, 'Intento de ingreso a la ventana de solicitudes sin permisos', 'Ingreso');
-        return redirect()->route('dashboard')->withErrors('No tiene permiso para consultar solicitudes');
+        // Obtener compras con relaciones
+        $compras = Compras::with(['proyecto'])->get();
+
+        // Obtener todos los usuarios, proyectos, estados y tipos
+        $usuarios = \App\Models\User::all()->keyBy('Id_usuario');
+        $proyectos = \App\Models\Proyectos::all()->keyBy('COD_PROYECTO');
+        $estados = \App\Models\EstadoCompra::all()->keyBy('COD_ESTADO');
+        $tipos = \App\Models\TipoCompra::all()->keyBy('COD_TIPO');
+        $areas = \App\Models\Area::all();
+
+        // Registrar en bitácora
+        $this->bitacora->registrarEnBitacora(22, 'Ingreso a la ventana de compras', 'Ingreso');
+
+        // Retornar la vista con los datos necesarios
+        return view('solicitudes.index', compact('compras', 'areas', 'usuarios', 'proyectos', 'estados', 'tipos'));
     }
 
-    $response = Http::get('http://127.0.0.1:3000/Solicitudes');
-    $solicitudes = solitudes::with(['empleado', 'area', 'proyecto'])->get();
 
-    $empleados = \App\Models\Empleados::all()->keyBy('COD_EMPLEADO');
-    $proyectos = \App\Models\Proyectos::all()->keyBy('COD_PROYECTO');
-    $areas = \App\Models\Area::all()->keyBy('COD_AREA');
-    $this->bitacora->registrarEnBitacora(22, 'Ingreso a la ventana de solicitudes', 'Ingreso');
-
-    // Asegúrate de usar el nombre correcto de las variables
-    return view('solicitudes.index', compact('solicitudes', 'empleados', 'proyectos', 'areas'));
-}
 
 
     public function pdf()
@@ -160,24 +159,12 @@ class SolicitudesControlador extends Controller
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
-        // Verificar si el rol del usuario tiene el permiso de inserción en el objeto SOLICITUD
-        $permisoInsercion = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'SOLICITUD')
-                    ->limit(1);
-            })
-            ->where('Permiso_Insercion', 'PERMITIDO')
-            ->exists();
-
-        if (!$permisoInsercion) {
-            return redirect()->route('solicitudes.index')->withErrors('No tiene permiso para crear solicitudes');
-        }
+        // Nueva validación de permisos
+        $this->permisoService->tienePermiso('COMPRA', 'Insercion', true);
 
         $proyectos = Proyectos::whereNotIn('ESTADO_PROYECTO', ['SUSPENDIDO', 'FINALIZADO', 'INACTIVO'])->get();
         $empleados = empleados::where('ESTADO_EMPLEADO', 'ACTIVO')->get();
-        $areas = Area::all();
+        $tiposCompra = TipoCompra::all();
 
          // Concatenar DNI con nombre del empleado
         $empleados = $empleados->map(function ($empleado) {
@@ -185,72 +172,101 @@ class SolicitudesControlador extends Controller
         return $empleado;
     });
 
-        return view('solicitudes.crear', compact('areas', 'proyectos', 'empleados'));
+        return view('solicitudes.crear', compact('proyectos', 'empleados', 'tiposCompra'));
     }
 
     public function insertar(Request $request)
-    {
-        // Validación de datos
-        $validator = Validator::make($request->all(), [
-            'COD_EMPLEADO' => [
-                (new Validaciones)->requerirCampo()->requerirSoloNumeros(),
-            ],
-            'DESC_SOLICITUD' => [
-                (new Validaciones)->requerirCampo()->requerirTodoMayusculas()->prohibirMultiplesEspacios()->prohibirEspaciosInicioFin(),
-                function($attribute, $value, $fail) {
-                    if (preg_match('/\b\w+[^\w\s]+/', $value)) {
-                        $fail('El campo "Descripción de Solicitud" no puede contener símbolos después de una palabra.');
-                    }
-                    if (preg_match('/([A-Z])\1{2,}/', $value)) {
-                        $fail('"Descripción Solicitud" no puede tener más de dos letras seguidas. Has ingresado: ' . $value);
-                    }
-                    if (preg_match('/\s{2,}/', $value)) {
-                        $fail('"Descripción Solicitud" no puede tener más de un espacio seguido. Has ingresado: ' . $value);
-                    }
-                    if (preg_match('/[BCDFGHJKLMNPQRSTVWXYZ]{5}/i', $value)) {
-                        $fail('"Descripción Solicitud" no puede tener más de cuatro consonantes seguidas en una palabra. Has ingresado: ' . $value);
-                    }
-                },
-            ],
-            'COD_AREA' => [
-                (new Validaciones)->requerirCampo()->requerirSoloNumeros(),
-            ],
-            'COD_PROYECTO' => [
-                (new Validaciones)->requerirCampo()->requerirSoloNumeros()->requerirEstadoValidoProyecto(),
-            ],
-            'PRESUPUESTO_SOLICITUD' => [
-                (new Validaciones)->requerirCampo()->prohibirCeroYNegativos()->requerirSinEspacios()->prohibirSimbolosSalvoDecimal(),
-            ],
-        ], [
-            'COD_EMPLEADO.required' => 'El "Código de Empleado" es obligatorio.',
-            'DESC_SOLICITUD.required' => 'La "Descripción de Solicitud" es obligatoria.',
-            'COD_AREA.required' => 'El "Código de Área" es obligatorio.',
-            'COD_PROYECTO.required' => 'El "Código de Proyecto" es obligatorio.',
-            'PRESUPUESTO_SOLICITUD.required' => 'El "Presupuesto de Solicitud" es obligatorio.',
-        ], [
-            'COD_EMPLEADO' => 'Código de Empleado',
-            'DESC_SOLICITUD' => 'Descripción de Solicitud',
-            'COD_AREA' => 'Código de Área',
-            'COD_PROYECTO' => 'Código de Proyecto',
-            'PRESUPUESTO_SOLICITUD' => 'Presupuesto de Solicitud',
-        ]);
-    
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-    
-        $response = Http::post('http://127.0.0.1:3000/INS_SOLICITUDES', [
-            'COD_EMPLEADO' => $request->COD_EMPLEADO,
-            'DESC_SOLICITUD' => $request->DESC_SOLICITUD,
-            'COD_AREA' => $request->COD_AREA,
-            'COD_PROYECTO' => $request->COD_PROYECTO,
-            'ESTADO_SOLICITUD' => 'ESPERA',
-            'PRESUPUESTO_SOLICITUD' => $request->PRESUPUESTO_SOLICITUD,
-        ]);
-    
-        $this->bitacora->registrarEnBitacora(22, 'Nueva solicitudes creada', 'insertar');
-        return redirect()->route('solicitudes.index');
+{
+    // Validación de datos
+    $validator = Validator::make($request->all(), [
+        'DESC_COMPRA' => [
+            (new Validaciones)->requerirCampo()->requerirTodoMayusculas()->prohibirMultiplesEspacios()->prohibirEspaciosInicioFin(),
+            function($attribute, $value, $fail) {
+                if (preg_match('/\b\w+[^\w\s]+/', $value)) {
+                    $fail('El campo "Descripción de Compra" no puede contener símbolos después de una palabra.');
+                }
+                if (preg_match('/([A-Z])\1{2,}/', $value)) {
+                    $fail('"Descripción de Compra" no puede tener más de dos letras seguidas. Has ingresado: ' . $value);
+                }
+                if (preg_match('/\s{2,}/', $value)) {
+                    $fail('"Descripción de Compra" no puede tener más de un espacio seguido. Has ingresado: ' . $value);
+                }
+                if (preg_match('/[BCDFGHJKLMNPQRSTVWXYZ]{5}/i', $value)) {
+                    $fail('"Descripción de Compra" no puede tener más de cuatro consonantes seguidas en una palabra. Has ingresado: ' . $value);
+                }
+            },
+        ],
+        'COD_PROYECTO' => [
+            (new Validaciones)->requerirCampo()->requerirSoloNumeros()->requerirEstadoValidoProyecto(),
+        ],
+        'COD_TIPO' => [
+            (new Validaciones)->requerirCampo()->requerirSoloNumeros(), // Validación para tipo de compra
+        ],
+        'PRECIO_COMPRA' => [
+            'nullable', // Este campo será opcional, dependiendo de si se ingresa por cuotas o precio total
+            'numeric',
+            'min:0',
+        ],
+        'PRECIO_CUOTA' => [
+            'nullable', // Este campo también será opcional
+            'numeric',
+            'min:0',
+        ],
+        'TOTAL_CUOTAS' => [
+            (new Validaciones)->requerirCampo()->requerirSoloNumeros(),
+        ],
+    ]);
+
+    // Si la validación falla, redirigir con errores
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
     }
+
+    // Capturar el usuario actual
+    $id_usuario = auth()->user()->Id_usuario;
+
+    // Calcular la fecha de pago a un mes a partir de hoy
+    $fecha_pago = now()->addMonth();
+
+    // Calcular precios según los campos llenados
+    $precio_compra = $request->PRECIO_COMPRA;
+    $precio_cuota = $request->PRECIO_CUOTA;
+    $total_cuotas = $request->TOTAL_CUOTAS;
+
+    if (!$precio_compra && $precio_cuota) {
+        // Si el usuario ingresó el precio por cuota, calcular el precio de compra
+        $precio_compra = $precio_cuota * $total_cuotas;
+    } elseif ($precio_compra && !$precio_cuota) {
+        // Si el usuario ingresó el precio total, calcular el precio por cuota
+        $precio_cuota = $precio_compra / $total_cuotas;
+    }
+
+    // Crear una nueva instancia del modelo `Compra`
+    $compra = new Compras();
+    $compra->Id_usuario = $id_usuario;
+    $compra->DESC_COMPRA = $request->DESC_COMPRA;
+    $compra->COD_PROYECTO = $request->COD_PROYECTO;
+    $compra->COD_TIPO = $request->COD_TIPO;
+    $compra->FEC_REGISTRO = now(); // Fecha de registro es la fecha actual
+    $compra->COD_ESTADO = 1; // Estado inicial
+    $compra->PRECIO_COMPRA = $precio_compra;
+    $compra->PRECIO_CUOTA = $precio_cuota;
+    $compra->PRECIO_NETO = $precio_compra; // Aquí puedes agregar lógica adicional si necesitas calcular otro valor neto
+    $compra->TOTAL_CUOTAS = $total_cuotas;
+    $compra->CUOTAS_PAGADAS = 0; // Inicialmente sin cuotas pagadas
+    $compra->FECHA_PAGO = $fecha_pago;
+    $compra->LIQUIDEZ_COMPRA = 0; // Liquidez inicial en cero
+
+    // Guardar en la base de datos
+    $compra->save();
+
+    // Registrar en la bitácora
+    $this->bitacora->registrarEnBitacora(22, 'Nueva compra creada', 'insertar');
+
+    // Redirigir a la lista de compras
+    return redirect()->route('solicitudes.index');
+}
+
     
 
 
@@ -289,56 +305,47 @@ class SolicitudesControlador extends Controller
         }
     }
 
-    public function edit($COD_SOLICITUD)
-{
-    $user = Auth::user();
-    $roleId = $user->Id_Rol;
+    public function edit($COD_COMPRA)
+    {
+        $user = Auth::user();
+        $roleId = $user->Id_Rol;
+    
+        // Verificación de permisos
+        $this->permisoService->tienePermiso('COMPRA', 'Actualizacion', true);
+    
+        // Obtener datos necesarios
+        $areas = Area::all();
+        $proyectos = Proyectos::all();
+        $empleados = Empleados::all();
+        
+        // Cambiar el modelo de 'Solitudes' a 'Compras'
+        $compra = Compras::where('COD_COMPRA', $COD_COMPRA)->first();
+    
+        if (!$compra) {
+            return redirect()->route('solicitudes.index')->withErrors('Compra no encontrada');
+        }
+        // Verificar si la compra ya ha sido liquidada
+        if ($compra->LIQUIDEZ_COMPRA == 1) {
+            return redirect()->back()->with('error', 'Una compra ya liquidada no puede ser editada.');
+        }
 
-    // Verificar permiso
-    $permisoActualizacion = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'SOLICITUD')
-                ->limit(1);
-        })
-        ->where('Permiso_Actualizacion', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoActualizacion) {
-        return redirect()->route('solicitudes.index')->withErrors('No tiene permiso para editar solicitudes');
+    
+        // Concatenar DNI con nombre del empleado
+        $empleados = $empleados->map(function ($empleado) {
+            $empleado->nombre_con_dni = $empleado->DNI_EMPLEADO . ' - ' . $empleado->NOM_EMPLEADO;
+            return $empleado;
+        });
+    
+        return view('solicitudes.edit', compact('compra', 'areas', 'proyectos', 'empleados'));
     }
-
-    // Obtener datos del formulario
-    $areas = Area::all();
-    $proyectos = Proyectos::all();
-    $empleados = Empleados::all();
-    $solicitud = Solitudes::where('COD_SOLICITUD', $COD_SOLICITUD)->first(); // Usar first() para obtener un único modelo
-
-    if (!$solicitud) {
-        return redirect()->route('solicitudes.index')->withErrors('Solicitud no encontrada');
-    }
-
-    // Concatenar DNI con nombre del empleado
-    $empleados = $empleados->map(function ($empleado) {
-        $empleado->nombre_con_dni = $empleado->DNI_EMPLEADO. ' - ' . $empleado->NOM_EMPLEADO;
-        return $empleado;
-    });
-
-    return view('solicitudes.edit', compact('solicitud', 'areas', 'proyectos', 'empleados'));
-}
+    
 
 
-    public function update(Request $request, $COD_SOLICITUD)
+    public function update(Request $request, $COD_COMPRA)
 {
     // Validación de datos
     $validator = Validator::make($request->all(), [
-        'COD_EMPLEADO' => [
-            (new Validaciones)->requerirCampo()->requerirSoloNumeros(),
-            'required',
-            'integer',
-        ],
-        'DESC_SOLICITUD' => [
+        'DESC_COMPRA' => [
             (new Validaciones)->requerirCampo()->requerirTodoMayusculas()
                 ->prohibirMultiplesEspacios()
                 ->prohibirEspaciosInicioFin(),
@@ -347,67 +354,74 @@ class SolicitudesControlador extends Controller
             'min:10',
             function($attribute, $value, $fail) {
                 if (preg_match('/([A-Z])\1{2,}/', $value)) {
-                    $fail('"Descripción Solicitud" no puede tener más de dos letras seguidas. Has ingresado: ' . $value);
+                    $fail('"Descripción Compra" no puede tener más de dos letras seguidas. Has ingresado: ' . $value);
                 }
                 if (preg_match('/\s{2,}/', $value)) {
-                    $fail('"Descripción Solicitud" no puede tener más de un espacio seguido. Has ingresado: ' . $value);
+                    $fail('"Descripción Compra" no puede tener más de un espacio seguido. Has ingresado: ' . $value);
                 }
                 if (preg_match('/[BCDFGHJKLMNPQRSTVWXYZ]{5}/i', $value)) {
-                    $fail('"Descripción Solicitud" no puede tener más de cuatro consonantes seguidas en una palabra. Has ingresado: ' . $value);
+                    $fail('"Descripción Compra" no puede tener más de cuatro consonantes seguidas en una palabra. Has ingresado: ' . $value);
                 }
                 if (preg_match('/\b\w+\b[\W_]+$/', $value)) {
-                    $fail('"Descripción Solicitud" no puede contener símbolos después de una palabra. Has ingresado: ' . $value);
+                    $fail('"Descripción Compra" no puede contener símbolos después de una palabra. Has ingresado: ' . $value);
                 }
             },
         ],
-        'COD_AREA' => [
+        'COD_PROYECTO' => [
             (new Validaciones)->requerirCampo()->requerirSoloNumeros(),
             'required',
             'integer',
         ],
-        'COD_PROYECTO' => [
-            (new Validaciones)->requerirCampo()->requerirSoloNumeros()
-                ->requerirEstadoValidoProyecto(),
+        'TOTAL_CUOTAS' => [
             'required',
             'integer',
-        ],
-        'PRESUPUESTO_SOLICITUD' => [
-            (new Validaciones)->requerirCampo()->requerirSoloNumeros()
-                ->prohibirCeroYNegativos()
-                ->requerirSinEspacios()
-                ->prohibirSimbolosSalvoDecimal(),
-            'required',
-            'numeric',
-            'min:0',
-            'max:100000000',
+            'min:1',
+            'max:999',
         ],
     ], [], [
         'COD_EMPLEADO' => 'Código de Empleado',
-        'DESC_SOLICITUD' => 'Descripción de Solicitud',
-        'COD_AREA' => 'Código de Área',
+        'DESC_COMPRA' => 'Descripción de Compra',
         'COD_PROYECTO' => 'Código de Proyecto',
-        'PRESUPUESTO_SOLICITUD' => 'Presupuesto de Solicitud',
+        'PRECIO_COMPRA' => 'Precio de Compra',
+        'CUOTAS_PAGADAS' => 'Cuotas Pagadas',
+        'TOTAL_CUOTAS' => 'Total de Cuotas',
     ]);
 
     if ($validator->fails()) {
         return redirect()->back()->withErrors($validator)->withInput();
     }
 
-    $response = Http::put("http://127.0.0.1:3000/Solicitudes/{$COD_SOLICITUD}", [
-        'COD_EMPLEADO' => $request->COD_EMPLEADO,
-        'DESC_SOLICITUD' => $request->DESC_SOLICITUD,
-        'COD_AREA' => $request->COD_AREA,
-        'COD_PROYECTO' => $request->COD_PROYECTO,
-        'ESTADO_SOLICITUD' => 'ESPERA',
-        'PRESUPUESTO_SOLICITUD' => $request->PRESUPUESTO_SOLICITUD,
-    ]);
+    // Buscar la compra en el modelo
+    $compra = Compras::find($COD_COMPRA);
+    if (!$compra) {
+        return redirect()->back()->with('error', 'Compra no encontrada.');
+    }
 
-    /* if ($response->successful()) {
-        $this->bitacora->registrarEnBitacora(Auth::id(), 5, 'Solicitud actualizada', 'Update'); // ID_objetos 5: 'solicitudes'
-    */
+    if($request->COD_TIPO == 1 && $request->TOTAL_CUOTAS > 1){
+        return redirect()->back()->withErrors('Una compra al contado no puede tener mas de una cuota');
+    }
 
-    return redirect()->route('solicitudes.index');
+    // Actualizar los campos del modelo
+    $compra->DESC_COMPRA = $request->DESC_COMPRA;
+    $compra->COD_PROYECTO = $request->COD_PROYECTO;
+
+    // Calcular el nuevo precio compra y el precio neto
+    $compra->PRECIO_COMPRA = $request->TOTAL_CUOTAS * $request->PRECIO_CUOTA;
+    $compra->PRECIO_NETO = $compra->PRECIO_COMPRA; // Aquí puedes añadir otros cálculos si es necesario
+
+    // Actualizar cuotas pagadas y total de cuotas
+    $compra->CUOTAS_PAGADAS = $compra->CUOTAS_PAGADAS;
+    $compra->TOTAL_CUOTAS = $request->TOTAL_CUOTAS;
+
+    // Guardar los cambios
+    $compra->save();
+
+    // Registrar en bitácora si es necesario
+    // $this->bitacora->registrarEnBitacora(Auth::id(), 5, 'Compra actualizada', 'Update'); // ID_objetos 5: 'compras'
+
+    return redirect()->route('solicitudes.index')->with('success', 'Compra actualizada exitosamente.');
 }
+
 
 public function generateReport(Request $request)
 {

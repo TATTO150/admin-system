@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Crear Solicitud')
+@section('title', 'Crear Compra')
 
 @section('content_header')
-    <h1 class="text-center">CREAR NUEVA SOLICITUD</h1>
+    <h1 class="text-center">CREAR NUEVA SOLICITUD DE COMPRA</h1>
 @stop
 
 @section('content')
@@ -38,40 +38,18 @@
                     </div>
                 @endif
 
-                <form action="{{ route('solicitudes.insertar') }}" method="POST">
+                <form action="{{ route('solicitudes.insertar') }}" method="POST" id="compraForm">
                     @csrf
 
+                    <!-- Descripción de la Compra -->
                     <div class="mb-3">
-                        <label for="COD_EMPLEADO" class="form-label">{{ __('NOMBRE EMPLEADO') }}</label>
-                        <select class="form-select select2" id="COD_EMPLEADO" name="COD_EMPLEADO" required>
-                            <option value="">{{ __('Seleccione un empleado') }}</option>
-                            @foreach ($empleados as $empleado)
-                                <option value="{{ $empleado->COD_EMPLEADO }}" {{ old('COD_EMPLEADO') == $empleado->COD_EMPLEADO ? 'selected' : '' }}>
-                                {{ $empleado->nombre_con_dni }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <label for="DESC_COMPRA" class="form-label">{{ __('Descripción de la Solicitud') }}</label>
+                        <textarea class="form-control" id="DESC_COMPRA" name="DESC_COMPRA" rows="3" required>{{ old('DESC_COMPRA') }}</textarea>
                     </div>
 
+                    <!-- Proyecto -->
                     <div class="mb-3">
-                        <label for="DESC_SOLICITUD" class="form-label">{{ __('DESCRIPCIÓN SOLICITUD') }}</label>
-                        <textarea class="form-control" id="DESC_SOLICITUD" name="DESC_SOLICITUD" rows="3" required>{{ old('DESC_SOLICITUD') }}</textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="COD_AREA" class="form-label">{{ __('NOMBRE AREA') }}</label>
-                        <select class="form-select select2" id="COD_AREA" name="COD_AREA" required>
-                            <option value="">{{ __('Seleccione un área') }}</option>
-                            @foreach ($areas as $area)
-                                <option value="{{ $area->COD_AREA }}" {{ old('COD_AREA') == $area->COD_AREA ? 'selected' : '' }}>
-                                    {{ $area->NOM_AREA }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="COD_PROYECTO" class="form-label">{{ __('NOMBRE PROYECTO') }}</label>
+                        <label for="COD_PROYECTO" class="form-label">{{ __('Proyecto Asociado') }}</label>
                         <select class="form-select select2" id="COD_PROYECTO" name="COD_PROYECTO" required>
                             <option value="">{{ __('Seleccione un proyecto') }}</option>
                             @foreach ($proyectos as $proyecto)
@@ -82,9 +60,48 @@
                         </select>
                     </div>
 
+                    <!-- Tipo de Compra -->
                     <div class="mb-3">
-                        <label for="PRESUPUESTO_SOLICITUD" class="form-label">{{ __('PRESUPUESTO SOLICITUD') }}</label>
-                        <input type="number" step="0.01" class="form-control" id="PRESUPUESTO_SOLICITUD" name="PRESUPUESTO_SOLICITUD" value="{{ old('PRESUPUESTO_SOLICITUD') }}" required>
+                        <label for="COD_TIPO" class="form-label">{{ __('Tipo de Compra') }}</label>
+                        <select class="form-select select2" id="COD_TIPO" name="COD_TIPO" required>
+                            <option value="">{{ __('Seleccione un tipo de compra') }}</option>
+                            <option value="1">Contado</option>
+                            <option value="2">Crédito</option>
+                        </select>
+                    </div>
+
+                    <!-- Campos dinámicos (Ocultos por defecto) -->
+                    <div id="camposCreditoContado" style="display: none;">
+                        <!-- Total de Cuotas -->
+                        <div class="mb-3" id="totalCuotasDiv" style="display: none;">
+                            <label for="TOTAL_CUOTAS" class="form-label">{{ __('Número Total de Cuotas') }}</label>
+                            <input type="number" class="form-control" id="TOTAL_CUOTAS" name="TOTAL_CUOTAS" value="{{ old('TOTAL_CUOTAS', 1) }}" min="1">
+                        </div>
+
+                        <!-- Método de Ingreso -->
+                        <div class="mb-3" id="metodoIngresoDiv" style="display: none;">
+                            <label class="form-label">{{ __('Seleccionar Método de Ingreso') }}</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="metodoIngreso" id="precioCompraRadio" value="precioCompra">
+                                <label class="form-check-label" for="precioCompraRadio">{{ __('Ingresar Precio Total') }}</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="metodoIngreso" id="precioCuotaRadio" value="precioCuota">
+                                <label class="form-check-label" for="precioCuotaRadio">{{ __('Ingresar Precio por Cuota') }}</label>
+                            </div>
+                        </div>
+
+                        <!-- Precio Total -->
+                        <div class="mb-3" id="precioCompraDiv" style="display: none;">
+                            <label for="PRECIO_COMPRA" class="form-label">{{ __('Precio Total de la Compra') }}</label>
+                            <input type="number" step="0.01" class="form-control" id="PRECIO_COMPRA" name="PRECIO_COMPRA" value="{{ old('PRECIO_COMPRA') }}">
+                        </div>
+
+                        <!-- Precio por Cuota -->
+                        <div class="mb-3" id="precioCuotaDiv" style="display: none;">
+                            <label for="PRECIO_CUOTA" class="form-label">{{ __('Precio por Cuota') }}</label>
+                            <input type="number" step="0.01" class="form-control" id="PRECIO_CUOTA" name="PRECIO_CUOTA" value="{{ old('PRECIO_CUOTA') }}">
+                        </div>
                     </div>
 
                     <div class="d-grid gap-2 d-md-block">
@@ -98,7 +115,6 @@
 @stop
 
 @section('css')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css">
     <style>
         .card {
@@ -116,29 +132,41 @@
 @section('js')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         $(document).ready(function() {
             $('.select2').select2();
 
-            // Manejar la selección de datos
-            $('#empleadoTable').DataTable({
-                language: {
-                    url: '//cdn.datatables.net/plug-ins/1.10.21/i18n/Spanish.json'
-                },
-                pageLength: 15
+            $('#COD_TIPO').on('change', function() {
+                const tipo = $(this).val();
+                $('#camposCreditoContado').toggle(tipo !== '');
+                $('#totalCuotasDiv, #metodoIngresoDiv, #precioCompraDiv, #precioCuotaDiv').hide();
+
+                if (tipo === '1') { // Contado
+                    $('#precioCompraDiv').show();
+                } else if (tipo === '2') { // Crédito
+                    $('#totalCuotasDiv, #metodoIngresoDiv').show();
+                }
             });
 
-            // Manejar la selección de empleados desde el modal
-            $('.select-empleado').click(function() {
-                var selectedEmpleado = $(this).data('id');
-                var selectedEmpleadoText = $(this).data('name');
+            $('input[name="metodoIngreso"]').on('change', function() {
+                const metodo = $(this).val();
+                $('#precioCompraDiv').toggle(metodo === 'precioCompra');
+                $('#precioCuotaDiv').toggle(metodo === 'precioCuota');
+            });
 
-                $('#COD_EMPLEADO').append(new Option(selectedEmpleadoText, selectedEmpleado, true, true)).trigger('change');
-                $('#empleadoModal').modal('hide');
+            $('#compraForm').on('submit', function(e) {
+                e.preventDefault();
+                let metodo = $('input[name="metodoIngreso"]:checked').val();
+                let totalCuotas = parseInt($('#TOTAL_CUOTAS').val()) || 1;
+
+                if (metodo === 'precioCuota') {
+                    let precioCuota = parseFloat($('#PRECIO_CUOTA').val()) || 0;
+                    $('#PRECIO_COMPRA').val((precioCuota * totalCuotas).toFixed(2));
+                }
+
+                this.submit();
             });
         });
     </script>

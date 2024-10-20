@@ -23,29 +23,33 @@
         <main class="mt-3">
             <h2>Solicitudes en Espera</h2>
             @if($solicitudesEspera->isNotEmpty())
-                <table id="tablaEspera" class="table table-striped table-bordered table-hover">
-                    <thead>
+                <table id="tablaEspera" class="table table-hover table-bordered dt-responsive nowrap">
+                    <thead class="thead-dark">
                         <tr>
-                            <th>EMPLEADO</th>
+                            <th>SOLICITANTE</th>
                             <th>DESCRIPCIÓN SOLICITUD</th>
-                            <th>CÓDIGO ÁREA</th>
-                            <th>CÓDIGO PROYECTO</th>
+                            <th>PROYECTO ASOCIADO</th>
+                            <th>TIPO COMPRA</th>
+                            <th>CANTIDAD CUOTAS</th>
+                            <th>PRECIO CUOTA</th>
+                            <th>PRECIO TOTAL</th>
                             <th>ESTADO SOLICITUD</th>
-                            <th>PRESUPUESTO SOLICITUD</th>
                             <th>ACCIÓN</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($solicitudesEspera as $solicitud)
                             <tr>
-                                <td>{{ $empleados[$solicitud->COD_EMPLEADO]->NOM_EMPLEADO ?? 'N/A' }}</td>
-                                <td>{{ $solicitud->DESC_SOLICITUD }}</td>
-                                <td>{{ $solicitud->area->NOM_AREA ?? 'No asignado' }}</td>
+                                <td>{{ $usuarios[$solicitud->Id_usuario]->Usuario ?? 'N/A' }}</td>
+                                <td>{{ $solicitud->DESC_COMPRA }}</td>
                                 <td>{{ $proyectos[$solicitud->COD_PROYECTO]->NOM_PROYECTO ?? 'N/A' }}</td>
-                                <td>{{ $solicitud->ESTADO_SOLICITUD }}</td>
-                                <td>{{ $solicitud->PRESUPUESTO_SOLICITUD }}</td>
+                                <td>{{ $tipos[$solicitud->COD_TIPO]->DESC_TIPO ?? 'N/A' }}</td>
+                                <td>{{ $solicitud->PRECIO_CUOTA }}</td>
+                                <td>{{ $solicitud->TOTAL_CUOTAS }}</td>
+                                <td>{{ $solicitud->PRECIO_COMPRA }}</td>
+                                <td>{{ $estados[$solicitud->COD_ESTADO]->DESC_ESTADO ?? 'N/A' }}</td>
                                 <td>
-                                    <a href="{{ route('gestionSolicitudes.gestionar', $solicitud->COD_SOLICITUD) }}" class="btn btn-info btn-sm">GESTIONAR</a>
+                                    <a href="{{ route('gestionSolicitudes.gestionar', $solicitud->COD_COMPRA) }}" class="btn btn-warning btn-sm">GESTIONAR</a>
                                 </td>
                             </tr>
                         @endforeach
@@ -55,30 +59,37 @@
                 <p>No hay solicitudes en espera.</p>
             @endif
 
-            <h2>Otras Solicitudes</h2>
-            <table id="tablaOtras" class="table table-striped table-bordered table-hover">
-                <thead>
+            <div class="mb-4 mt-4">
+                <h2 class="text-center">Otras Solicitudes</h2>
+            </div>
+            
+            <table id="tablaOtras" class="table table-hover table-bordered dt-responsive nowrap">
+                <thead class="thead-dark">
                     <tr>
-                        <th>EMPLEADO</th>
+                        <th>SOLICITANTE</th>
                         <th>DESCRIPCIÓN SOLICITUD</th>
-                        <th>CÓDIGO ÁREA</th>
-                        <th>CÓDIGO PROYECTO</th>
+                        <th>PROYECTO ASOCIADO</th>
+                        <th>TIPO COMPRA</th>
+                        <th>CANTIDAD CUOTAS</th>
+                        <th>PRECIO CUOTA</th>
+                        <th>PRECIO TOTAL</th>
                         <th>ESTADO SOLICITUD</th>
-                        <th>PRESUPUESTO SOLICITUD</th>
                         <th>ACCIÓN</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($otrasSolicitudes as $solicitud)
                         <tr>
-                            <td>{{ $empleados[$solicitud->COD_EMPLEADO]->NOM_EMPLEADO ?? 'N/A' }}</td>
-                            <td>{{ $solicitud->DESC_SOLICITUD }}</td>
-                            <td>{{ $solicitud->area->NOM_AREA ?? 'No asignado' }}</td>
+                            <td>{{ $usuarios[$solicitud->Id_usuario]->Usuario ?? 'N/A' }}</td>
+                            <td>{{ $solicitud->DESC_COMPRA }}</td>
                             <td>{{ $proyectos[$solicitud->COD_PROYECTO]->NOM_PROYECTO ?? 'N/A' }}</td>
-                            <td>{{ $solicitud->ESTADO_SOLICITUD }}</td>
-                            <td>{{ $solicitud->PRESUPUESTO_SOLICITUD }}</td>
+                            <td>{{ $tipos[$solicitud->COD_TIPO]->DESC_TIPO ?? 'N/A' }}</td>
+                            <td>{{ $solicitud->PRECIO_CUOTA }}</td>
+                            <td>{{ $solicitud->TOTAL_CUOTAS }}</td>
+                            <td>{{ $solicitud->PRECIO_COMPRA }}</td>
+                            <td>{{ $estados[$solicitud->COD_ESTADO]->DESC_ESTADO ?? 'N/A' }}</td>
                             <td>
-                                <a href="{{ route('gestionSolicitudes.gestionar', $solicitud->COD_SOLICITUD) }}" class="btn btn-info btn-sm">GESTIONAR</a>
+                                <a href="{{ route('gestionSolicitudes.gestionar', $solicitud->COD_COMPRA) }}" class="btn btn-warning btn-sm">GESTIONAR</a>
                             </td>
                         </tr>
                     @endforeach

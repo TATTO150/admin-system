@@ -63,45 +63,51 @@
     </form>
 </div>
 
-                <table id="mitabla" class="table table-hover table-bordered">
-                    <thead class="thead-dark">
+            <table id="mitabla" class="table table-hover table-bordered">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>SOLICITANTE</th>
+                        <th>DESCRIPCIÓN COMPRA</th>
+                        <th>PROYECTO</th>
+                        <th>ESTADO SOLICITUD</th>
+                        <th>TIPO COMPRA</th>
+                        <th>TOTAL CUOTAS</th>
+                        <th>PRECIO CUOTA</th>
+                        <th>PRECIO COMPRA</th>
+                        <th>ACCIÓN</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($compras as $compra)
                         <tr>
-                            <th>EMPLEADO</th>
-                            <th>DESCRIPCIÓN SOLICITUD</th>
-                            <th>ÁREA</th>
-                            <th>PROYECTO</th>
-                            <th>ESTADO SOLICITUD</th>
-                            <th>PRESUPUESTO SOLICITUD</th>
-                            <th>ACCIÓN</th>
+                            <td>{{ $usuarios[$compra->Id_usuario]->Usuario ?? 'N/A' }}</td>
+                            <td>{{ $compra->DESC_COMPRA }}</td>
+                            <td>{{ $proyectos[$compra->COD_PROYECTO]->NOM_PROYECTO ?? 'N/A' }}</td>
+                            <td>{{ $estados[$compra->COD_ESTADO]->DESC_ESTADO ?? 'N/A' }}</td>
+                            <td>{{ $tipos[$compra->COD_TIPO]->DESC_TIPO ?? 'N/A' }}</td>
+                            <td>{{ $compra->TOTAL_CUOTAS }}</td>
+                            <td>{{ $compra->PRECIO_CUOTA }}</td>
+                            <td>{{ $compra->PRECIO_COMPRA }}</td>
+
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $compra->COD_COMPRA }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Acciones
+                                    </button>
+                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $compra->COD_COMPRA }}">
+                                        <li><a class="dropdown-item" href="{{ route('solicitudes.edit', $compra->COD_COMPRA) }}">EDITAR</a></li>
+                                    </ul>
+                                </div>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($solicitudes as $solicitud)
-                            <tr>
-                                <td>{{ $empleados[$solicitud->COD_EMPLEADO]->NOM_EMPLEADO ?? 'N/A' }}</td>
-                                <td>{{ $solicitud->DESC_SOLICITUD }}</td>
-                                <td>{{ $solicitud->area->NOM_AREA ?? 'No asignado' }}</td>
-                                <td>{{ $proyectos[$solicitud->COD_PROYECTO]->NOM_PROYECTO ?? 'N/A' }}</td>
-                                <td>{{ $solicitud->ESTADO_SOLICITUD }}</td>
-                                <td>{{ $solicitud->PRESUPUESTO_SOLICITUD }}</td>
-                                <td>
-                                    <div class="dropdown">
-                                        <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $solicitud->COD_SOLICITUD }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                            Acciones
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $solicitud->COD_SOLICITUD }}">
-                                            <li><a class="dropdown-item" href="{{ route('solicitudes.edit', $solicitud->COD_SOLICITUD) }}">EDITAR</a></li>
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="text-center">No se encontraron solicitudes.</td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="text-center">No se encontraron compras.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+
             </div>
         </div>
     </div>
