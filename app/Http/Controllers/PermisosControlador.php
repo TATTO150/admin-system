@@ -11,14 +11,18 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
 use App\Models\Rol;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Providers\PermisoService;
 
 class PermisosControlador extends Controller
 {
     protected $bitacora;
+    protected $permisoService;
 
-    public function __construct(BitacoraController $bitacora)
+    public function __construct(BitacoraController $bitacora, PermisoService $permisoService)
     {
         $this->bitacora = $bitacora;
+        $this->permisoService = $permisoService;
+
     }
 
     public function index()
@@ -26,21 +30,9 @@ class PermisosControlador extends Controller
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     
-        // Verificar si el rol del usuario tiene el permiso de consulta en el objeto SOLICITUD
-        $permisoConsultar = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'PERMISO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Consultar', 'PERMITIDO')
-            ->exists();
-    
-        if (!$permisoConsultar) {
-            $this->bitacora->registrarEnBitacora(11, 'Intento de ingreso a la ventana de permisos sin permisos', 'Ingreso');
-            return redirect()->route('dashboard')->withErrors('No tiene permiso para consultar permisos');
-        }
+        // Nueva validación de permisos
+        $this->permisoService->tienePermiso('PERMISO', 'Consultar', true);
+
         $response = Http::get("http://localhost:3000/Permisos");
         $permisos = $response->json();
 
@@ -77,21 +69,9 @@ class PermisosControlador extends Controller
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
-        // Verificar si el rol del usuario tiene el permiso de inserción en el objeto SOLICITUD
-        $permisoInsercion = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'PERMISO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Insercion', 'PERMITIDO')
-            ->exists();
-
-        if (!$permisoInsercion) {
-            $this->bitacora->registrarEnBitacora(11, 'Intento de ingreso a la ventana de crear de permisos sin permisos', 'Ingreso');
-            return redirect()->route('estado_usuarios.index')->withErrors('No tiene permiso para crear solicitudes');
-        }
+        // Nueva validación de permisos
+        $this->permisoService->tienePermiso('PERMISO', 'Insercion', true);
+        
         // Obtén los roles desde la base de datos
         $roles = Rol::all(); // Asegúrate de importar el modelo Rol si no lo has hecho
         $objetos = \App\Models\Objeto::all();
@@ -111,12 +91,13 @@ class PermisosControlador extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $response = Http::post('http://127.0.0.1:3000/INS_PERMISOS', [
+        // Inserta los permisos utilizando el modelo
+        Permisos::create([
             'Id_Rol' => $request->Id_Rol,
             'Id_Objeto' => $request->Id_Objeto,
-            'Permiso_Insercion' => $request->Permiso_Insercion ,
-            'Permiso_Eliminacion' => $request->Permiso_Eliminacion ,
-            'Permiso_Actualizacion' => $request->Permiso_Actualizacion ,
+            'Permiso_Insercion' => $request->Permiso_Insercion,
+            'Permiso_Eliminacion' => $request->Permiso_Eliminacion,
+            'Permiso_Actualizacion' => $request->Permiso_Actualizacion,
             'Permiso_Consultar' => $request->Permiso_Consultar,
         ]);
 
@@ -130,21 +111,9 @@ class PermisosControlador extends Controller
         $user = Auth::user();
     $roleId = $user->Id_Rol;
 
-    // Verificar si el rol del usuario tiene el permiso de eliminación en el objeto SOLICITUD
-    $permisoEliminacion = Permisos::where('Id_Rol', $roleId)
-        ->where('Id_Objeto', function ($query) {
-            $query->select('Id_Objetos')
-                ->from('tbl_objeto')
-                ->where('Objeto', 'PERMISO')
-                ->limit(1);
-        })
-        ->where('Permiso_Eliminacion', 'PERMITIDO')
-        ->exists();
-
-    if (!$permisoEliminacion) {
-        $this->bitacora->registrarEnBitacora(18, 'Intento de eliminar permisos sin permisos', 'ingreso');
-        return redirect()->route('estado_usuarios.index')->withErrors('No tiene permiso para eliminar solicitudes');
-    }
+   // Nueva validación de permisos
+   $this->permisoService->tienePermiso('PERMISO', 'Eliminacion', true);
+   
     // Obtén el parámetro PROTEGER_PERMISOS
     $parametro = \App\Models\Parametros::where('Parametro', 'PROTEGER_PERMISOS')->first();
 
@@ -160,11 +129,12 @@ class PermisosControlador extends Controller
     }
 
     try {
-        // Si no está protegido, procede con la eliminación
-        DB::statement('CALL ELI_PERMISOS(?)', [$COD_PERMISOS]);
+        // Si se encuentra, se elimina
+        $permiso->delete();
 
         return response()->json(['success' => 'Permiso eliminado correctamente']);
     } catch (\Exception $e) {
+        // Captura cualquier excepción que ocurra y responde con un error
         return response()->json(['error' => 'Error al eliminar permisos'], 500);
     }
     }
@@ -174,35 +144,11 @@ class PermisosControlador extends Controller
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     
-        // Verificar permiso
-        $permisoActualizacion = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'PERMISO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Actualizacion', 'PERMITIDO')
-            ->exists();
-    
-        if (!$permisoActualizacion) {
-            $this->bitacora->registrarEnBitacora(11, 'Intento actualuzar permisos sin permisos', 'actualizar');
-            return redirect()->route('estado_usuarios.index')->withErrors('No tiene permiso para editar tipoe equipo');
-        }
-        $response = Http::get("http://localhost:3000/Permisos/{$COD_PERMISOS}");  
-        $permisos = $response->json();
+        // Nueva validación de permisos
+        $this->permisoService->tienePermiso('PERMISO', 'Actualizacion', true);
 
-        // Verificar si la respuesta es un array y no está vacío
-        if (empty($permisos)) {
-            dd('La respuesta de la API está vacía', $permisos);
-        }
-
-        // Verificar si el primer elemento tiene la clave COD_PERMISOS
-        if (!isset($permisos[0]['COD_PERMISOS'])) {
-            dd('COD_PERMISOS no está definido en la respuesta de la API', $permisos);
-        }
-
-        $permisos = $permisos[0]; // Accede al primer elemento del array
+       // Busca los permisos usando el modelo Permisos
+       $permisos = Permisos::findOrFail($COD_PERMISOS);
 
         // Obtener los roles y objetos desde la base de datos
         $roles = \App\Models\Rol::all();
@@ -222,17 +168,25 @@ class PermisosControlador extends Controller
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $response = Http::put("http://127.0.0.1:3000/Permisos/{$COD_PERMISOS}", [
-            'Id_Rol' => $request->Id_Rol,
-            'Id_Objeto' => $request->Id_Objeto,
-            'Permiso_Insercion' => $request->Permiso_Insercion ,
-            'Permiso_Eliminacion' => $request->Permiso_Eliminacion ,
-            'Permiso_Actualizacion' => $request->Permiso_Actualizacion ,
-            'Permiso_Consultar' => $request->Permiso_Consultar ,
-        ]);
+        try {
+            // Buscar el permiso por su ID
+            $permiso = Permisos::findOrFail($COD_PERMISOS);
+    
+            // Actualizar los campos con los datos del request
+            $permiso->update([
+                'Id_Rol' => $request->Id_Rol,
+                'Id_Objeto' => $request->Id_Objeto,
+                'Permiso_Insercion' => $request->Permiso_Insercion,
+                'Permiso_Eliminacion' => $request->Permiso_Eliminacion,
+                'Permiso_Actualizacion' => $request->Permiso_Actualizacion,
+                'Permiso_Consultar' => $request->Permiso_Consultar,
+            ]);
 
         $this->bitacora->registrarEnBitacora(11 , 'Permiso actualizado', 'Update'); // ID_objetos 13: 'permisos'
 
         return redirect()->route('permisos.index');
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al actualizar permisos'], 500);
+        }
     }
 }
