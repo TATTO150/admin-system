@@ -79,12 +79,13 @@
             <thead class="cabecera">
                 <tr>
                <th>#</th> <!-- Columna de numeración -->
-                <th>Empleado</th>
-                <th>Proyecto</th>
-                <th>Área</th>
-                <th>Estado Solicitud</th>
+                <th>Solicitante</th>
                 <th>Descripción Solicitud</th>
-                <th>Presupuesto Solicitud</th>
+                <th>Proyecto</th>
+                <th>Tipo</th>
+                <th>Total Cuotas</th>
+                <th>Precio Cuota</th>
+                <th>Precio Total</th>
             </tr>
         </thead>
         <tbody>
@@ -93,12 +94,14 @@
                     @foreach ($solicitudes as $solicitud)
                 <tr>
                     <td>{{ $contador++ }}</td>
-                    <td>{{ $solicitud->empleado->NOM_EMPLEADO ?? 'N/A' }}</td>
+                    <td>{{ $usuarios[$solicitud->Id_usuario]->Usuario ?? 'N/A' }}</td>
+                    <td>{{ $solicitud->DESC_COMPRA }}</td>
                     <td>{{ $solicitud->proyecto->NOM_PROYECTO ?? 'N/A' }}</td>
-                    <td>{{ $solicitud->area->NOM_AREA ?? 'N/A' }}</td>
-                    <td>{{ $solicitud->ESTADO_SOLICITUD }}</td>
-                    <td>{{ $solicitud->DESC_SOLICITUD }}</td>
-                    <td>${{ number_format($solicitud->PRESUPUESTO_SOLICITUD, 2) }}</td>
+                    <td>{{ $tipos[$solicitud->COD_TIPO]->DESC_TIPO ?? 'N/A' }}</td>
+                    <td>{{ $estados[$solicitud->COD_ESTADO]->DESC_ESTADO ?? 'N/A' }}</td>
+                    <td>{{ $solicitud->TOTAL_CUOTAS }}</td>
+                    <td>{{ $solicitud->PRECIO_CUOTA }}</td>
+                    <td>{{ $solicitud->PRECIO_COMPRA }}</td>
                     </tr>
                     @endforeach
                 @else

@@ -77,6 +77,12 @@
                 </table>
             </div>
         </div>
+         <!-- Paginación -->
+         <nav id="paginationExample" class="d-flex justify-content-center mt-3 mb-5">
+            <button id="prevPage" class="btn btn-outline-primary me-2">Anterior</button>
+            <span id="currentPage" class="align-self-center"></span>
+            <button id="nextPage" class="btn btn-outline-primary ms-2">Siguiente</button>
+        </nav>
     </div>
 @stop
 
@@ -90,6 +96,53 @@
 @section('js')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+
+    // Función para paginar la tabla
+    function paginateTable(tableId, rowsPerPage) {
+        const table = document.getElementById(tableId);
+        const rows = table.querySelectorAll('tbody tr');
+        const prevButton = document.getElementById('prevPage');
+        const nextButton = document.getElementById('nextPage');
+        const currentPageLabel = document.getElementById('currentPage');
+
+        let currentPage = 1;
+        const rowCount = rows.length;
+        const pageCount = Math.ceil(rowCount / rowsPerPage);
+
+        // Función para mostrar solo las filas de la página actual
+        function showPage(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            rows.forEach((row, index) => {
+                row.style.display = (index >= start && index < end) ? '' : 'none';
+            });
+            currentPageLabel.textContent = 'Pág. ' + page;
+        }
+
+        // Eventos de navegación
+        prevButton.addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage(currentPage);
+            }
+        });
+
+        nextButton.addEventListener('click', function() {
+            if (currentPage < pageCount) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        });
+
+        // Mostrar la primera página al cargar
+        showPage(currentPage);
+    }
+
+    // Llamar a la función de paginación al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        paginateTable('mitabla', 6); // Cambiar el número de filas por página si es necesario
+    });
+
 $(document).ready(function() {
     $('#buscar').on('keyup', function() {
         var query = $(this).val().toLowerCase();

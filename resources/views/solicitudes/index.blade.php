@@ -146,7 +146,7 @@
                                 <option value="">Seleccione un tipo de reporte</option>
                                 <option value="general">General</option>
                                 <option value="proyecto">Por Proyecto</option>
-                                <option value="area">Por Área</option>
+                                <option value="area">Por Estado</option>
                             </select>
                         </div>
                         <div id="filtrosAdicionales">
