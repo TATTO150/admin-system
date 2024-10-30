@@ -4,7 +4,7 @@
 @section('plugins.Sweetalert2', true)
 
 @section('content_header')
-    <h1>PROYECTO</h1>
+    <h1 class="text-white">PROYECTOS</h1>
 @stop
 
 @section('content')

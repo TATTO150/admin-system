@@ -202,6 +202,8 @@ return [
     'classes_topnav_nav' => 'navbar-expand',
     'classes_topnav_container' => 'container',
 
+
+
     /*
     |--------------------------------------------------------------------------
     | Sidebar

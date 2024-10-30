@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use Laravel\Fortify\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
 
 class AutenticarSesionController extends Controller
 {
@@ -45,6 +46,11 @@ class AutenticarSesionController extends Controller
      */
     public function create(Request $request): LoginViewResponse
     {
+        // Verifica si el usuario ya está autenticado
+        if (Auth::check()) {
+            // Si está autenticado, redirige a la vista de advertencia de sesión activa
+            return redirect()->route('unica.sesion');
+        }
         $user = $this->guard->user();
         
         $this->guard->logout();
@@ -93,7 +99,7 @@ class AutenticarSesionController extends Controller
                 $this->actualizarUltimoLogin($user);
                 $this->Primer_Ingreso($user);
                 $this->registrarEnBitacora($user, 2, 'Inicio de sesión exitoso', 'Ingreso'); // ID_objetos 2: 'login'
-
+                
                 // Guardar el Id_usuario en la sesión
                 Session::put('Id_usuario', $user->Id_usuario);
 
@@ -145,22 +151,26 @@ class AutenticarSesionController extends Controller
      * @return \Laravel\Fortify\Contracts\LogoutResponse
      */
     public function destroy(Request $request): LogoutResponse
-    {
-        $user = $this->guard->user();
-        
-        $this->registrarEnBitacora($user, 2, 'Cierre de sesión', 'Ingreso'); // ID_objetos 2: 'login'
+{
+    $user = $this->guard->user();
+    
+    $this->registrarEnBitacora($user, 2, 'Cierre de sesión', 'Ingreso'); // ID_objetos 2: 'login'
 
-        $this->guard->logout();
+    // Eliminar el registro de sesión en la tabla usuarios_logueados
+    $deleted = DB::table('usuarios_logueados')->where('user_id', $user->Id_usuario)->delete();
 
-        if ($request->hasSession()) {
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
-            // Eliminar el Id_usuario de la sesión
-            $request->session()->forget('Id_usuario');
-        }
+    $this->guard->logout();
 
-        return app(LogoutResponse::class);
+    if ($request->hasSession()) {
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        // Eliminar el Id_usuario de la sesión
+        $request->session()->forget('Id_usuario');
     }
+
+    return app(LogoutResponse::class);
+}
+
 
     /**
      * Actualiza la ultima fecha de conexion.

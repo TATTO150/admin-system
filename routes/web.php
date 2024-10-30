@@ -101,18 +101,23 @@ Route::get('/bloqueo', function () {
     return view('auth.bloqueo');
 })->name('bloqueo');
 
+Route::get('/unica-sesion', function () {
+    return view('auth.unica-sesion');
+})->name('unica.sesion');
 
-
-
-$limiter = config('fortify.limiters.login');
 $twoFactorLimiter = config('fortify.limiters.two-factor');
-$verificationLimiter = config('fortify.limiters.verification', '6,1');
+    $verificationLimiter = config('fortify.limiters.verification', '6,1');
 
-Route::post(RoutePath::for('login', '/login'), [AutenticarSesionController::class, 'store'])
+
+    $limiter = config('fortify.limiters.login');
+    
+    Route::post(RoutePath::for('login', '/login'), [AutenticarSesionController::class, 'store'])
     ->middleware(array_filter([
         'guest:'.config('fortify.guard'),
         $limiter ? 'throttle:'.$limiter : null,
     ]));
+
+
 
 Route::post(RoutePath::for('logout', '/logout'), [AutenticarSesionController::class, 'destroy'])
     ->middleware([config('fortify.auth_middleware', 'auth').':'.config('fortify.guard')])

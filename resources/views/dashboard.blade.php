@@ -39,7 +39,7 @@
     <div class="row">
     <!-- Card para la cantidad de usuarios -->
         <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
+            <div class="small-box" style="background-color: #2b13ef">
                 <div class="inner">
                     <h3>{{ $usuariosCount }}</h3>
                     <p>Usuarios Registrados</p>
@@ -55,7 +55,7 @@
 
         <!-- Card para las solicitudes pendientes de revisión -->
         <div class="col-lg-3 col-6">
-            <div class="small-box bg-success">
+            <div class="small-box" style="background-color: #603cf3">
                 <div class="inner">
                     <h3>{{ $solicitudesPendientesCount }}</h3>
                     <p>Solicitudes Pendientes de Revisión</p>
@@ -70,7 +70,7 @@
         </div>
         <!-- Card para los mantenimientos existentes -->
         <div class="col-lg-3 col-6">
-            <div class="small-box bg-secondary">
+            <div class="small-box" style="background-color: #9565f7">
                 <div class="inner">
                     <h3>{{ $equiposTotalCount }}</h3>
                     <p>Total de Equipos</p>
@@ -86,7 +86,7 @@
 
             <!-- Card para liquidacion de planillas -->
        <div class="col-lg-3 col-6">
-        <div class="small-box bg-primary">
+        <div class="small-box" style="background-color: #c98ffb">
             <div class="inner">
                 <h5><strong>Liquidación Mensual de Planilla</strong></h5>
                 @if (now()->endOfMonth()->isToday())
@@ -112,48 +112,57 @@
         </div>
     </div>
         
-   <!-- Card para la cantidad de proyectos con despliegue de detalles -->
-   <div class="col-lg-6 col-12">
-    <div class="small-box bg-warning">
-        <div class="inner">
-            <h3>{{ $proyectosCount }}</h3>
-            <p>Total de Proyectos</p>
-        </div>
-        <div class="icon">
-            <i class="fas fa-folder"></i>
-        </div>
-        <button class="small-box-footer" type="button" data-toggle="collapse" data-target="#projectDetails">
-            Ver detalles <i class="fas fa-arrow-circle-down"></i>
-        </button>
-        <div class="collapse show" id="projectDetails">
-            <ul class="list-group mt-2">
-                <li class="list-group-item">Activos: {{ $proyectosActivosCount }}</li>
-                <li class="list-group-item">Suspendidos: {{ $proyectosSuspendidosCount }}</li>
-                <li class="list-group-item">Finalizados: {{ $proyectosFinalizadosCount }}</li>
-                <li class="list-group-item">En Apertura: {{ $proyectosAperturaCount }}</li>
-            </ul>
-        </div>
-        <a href="{{ route('proyectos.index') }}" class="small-box-footer">
-            Más información <i class="fas fa-arrow-circle-right"></i>
-        </a>
+  <!-- Card para la cantidad de proyectos con despliegue de detalles -->
+<div class="col-lg-6 col-12">
+    <div class="small-box" style="background-color: #007BFF;">
+      <div class="inner">
+        <h3>{{ $proyectosCount }}</h3>
+        <p>Total de Proyectos</p>
+      </div>
+      <div class="icon">
+        <i class="fas fa-folder"></i>
+      </div>
+      <button class="small-box-footer" type="button" data-toggle="collapse" data-target="#projectDetails">
+        Ver detalles <i class="fas fa-arrow-circle-down"></i>
+      </button>
+      <div class="collapse show" id="projectDetails">
+        <ul class="list-group mt-2">
+          <li class="list-group-item" style="background-color: #343a40; color: #ffffff; border: 1px solid #ffffff;">
+            Activos: {{ $proyectosActivosCount }}
+          </li>
+          <li class="list-group-item" style="background-color: #343a40; color: #ffffff; border: 1px solid #ffffff;">
+            Suspendidos: {{ $proyectosSuspendidosCount }}
+          </li>
+          <li class="list-group-item" style="background-color: #343a40; color: #ffffff; border: 1px solid #ffffff;">
+            Finalizados: {{ $proyectosFinalizadosCount }}
+          </li>
+          <li class="list-group-item" style="background-color: #343a40; color: #ffffff; border: 1px solid #ffffff;">
+            En Apertura: {{ $proyectosAperturaCount }}
+          </li>
+        </ul>
+      </div>
+      <a href="{{ route('proyectos.index') }}" class="small-box-footer">
+        Más información <i class="fas fa-arrow-circle-right"></i>
+      </a>
     </div>
-</div>
-
+  </div>
+  
 <!-- Gráfico de proyectos por estado -->
 <div class="col-lg-6 col-12">
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Proyectos por Estado</h3>
-        </div>
-        <div class="card-body">
-            <canvas id="projectsChart"></canvas>
-        </div>
+  <div class="card bg-dark text-white">
+    <div class="card-header">
+      <h3 class="card-title">Proyectos por Estado</h3>
     </div>
+    <div class="card-body">
+      <canvas id="projectsChart"></canvas>
+    </div>
+  </div>
 </div>
+
 
 <!-- Gráfico de empleados por proyecto -->
 <div class="col-lg-6 col-12">
-    <div class="card">
+    <div class="card bg-dark text-white">
         <div class="card-header">
             <h3 class="card-title">Empleados por Proyecto</h3>
         </div>
