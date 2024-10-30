@@ -716,4 +716,7 @@ Route::get('/Bloqueado', function () {
     return view('auth.bloqueado-por-no-cambiar');
 })->name('bloqueado-por-no-cambiar');
 
+Route::get('/idioma', [App\Http\Controllers\LanguageController::class, 'showLanguageOptions'])->name('idioma');
+Route::post('/idioma/cambiar', [App\Http\Controllers\LanguageController::class, 'changeLanguage'])->name('cambiar-idioma');
+
 });
