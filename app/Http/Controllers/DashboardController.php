@@ -22,6 +22,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 class DashboardController extends Controller
 {
@@ -32,11 +33,24 @@ class DashboardController extends Controller
     $mostrarAlerta = false;
     $ahora = Carbon::now(); // Fecha actual
 
-    // Validar si el usuario tiene pendiente la autenticación de dos factores
    // Validar si el usuario tiene pendiente la autenticación de dos factores
    if (!is_null($user->two_factor_secret) && ($user->two_factor_status === 0 || is_null($user->two_factor_status))) {
         return redirect()->route('two-factor.login');
     }
+
+     // Comprobar si el usuario ya tiene una sesión activa
+     $existingSession = DB::table('usuarios_logueados')->where('user_id', $user->Id_usuario)->first();
+
+     if ($existingSession) {
+         return redirect()->route('unica.sesion'); // Ruta a la vista de advertencia
+     }
+
+     // Insertar el nuevo registro de sesión en la tabla usuarios_logueados
+     DB::table('usuarios_logueados')->insert([
+         'user_id' => $user->Id_usuario,
+         'session_id' => Session::getId(),
+     ]);
+
  // Verificar si el usuario ya cambió la contraseña
  if ($user->password_updated_at && $user->password_updated_at->gt($fechaVencimiento)) {
     // Si el usuario ya cambió la contraseña, no mostrar alerta

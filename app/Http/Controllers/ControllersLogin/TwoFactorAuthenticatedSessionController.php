@@ -13,6 +13,8 @@ use Laravel\Fortify\Http\Requests\TwoFactorLoginRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\DB;
 
 class TwoFactorAuthenticatedSessionController extends Controller
 {
@@ -122,6 +124,12 @@ class TwoFactorAuthenticatedSessionController extends Controller
 
     // Regenerar la sesión
     $request->session()->regenerate();
+
+    // Insertar el nuevo registro de sesión en la tabla usuarios_logueados
+    DB::table('usuarios_logueados')->insert([
+        'user_id' => $user->Id_usuario,
+        'session_id' => Session::getId(),
+    ]);
 
     return redirect()->route('dashboard');
 }
