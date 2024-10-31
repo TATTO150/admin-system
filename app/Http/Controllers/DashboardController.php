@@ -38,19 +38,6 @@ class DashboardController extends Controller
         return redirect()->route('two-factor.login');
     }
 
-     // Comprobar si el usuario ya tiene una sesión activa
-     $existingSession = DB::table('usuarios_logueados')->where('user_id', $user->Id_usuario)->first();
-
-     if ($existingSession) {
-         return redirect()->route('unica.sesion'); // Ruta a la vista de advertencia
-     }
-
-     // Insertar el nuevo registro de sesión en la tabla usuarios_logueados
-     DB::table('usuarios_logueados')->insert([
-         'user_id' => $user->Id_usuario,
-         'session_id' => Session::getId(),
-     ]);
-
  // Verificar si el usuario ya cambió la contraseña
  if ($user->password_updated_at && $user->password_updated_at->gt($fechaVencimiento)) {
     // Si el usuario ya cambió la contraseña, no mostrar alerta
