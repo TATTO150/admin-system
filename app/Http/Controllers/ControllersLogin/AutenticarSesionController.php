@@ -88,7 +88,7 @@ class AutenticarSesionController extends Controller
         }
 
         // Verificar si el usuario está bloqueado
-        if ($user->Estado_Usuario === 'BLOQUEADO') {
+        if ($user->Estado_Usuario === 'BLOQUEADO'|| $user->Estado_Usuario == 3) {
             $this->registrarEnBitacora($user, 4, 'Intento de inicio de sesión con usuario bloqueado', 'Consulta');
             return redirect()->route('bloqueo');
         }
@@ -254,7 +254,7 @@ class AutenticarSesionController extends Controller
      */
     protected function bloquearUsuario($user)
     {
-        $user->Estado_Usuario = 'BLOQUEADO';
+        $user->Estado_Usuario = 3;
         $user->save();
     }
 
