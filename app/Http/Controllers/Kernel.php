@@ -26,6 +26,7 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\ThrottleRequests::class . ':login',
             \Illuminate\Session\Middleware\StartSession::class,
             \App\Http\Middleware\RoleMiddleware::class,
+            \App\Http\Middleware\SetLocale::class,
         ],
         // Otros grupos de middleware...
     ];

@@ -70,6 +70,7 @@ use App\Models\Asignacion_Equipo;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\EstadoProyectoControllador;
+use App\Http\Controllers\RestoreController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -458,6 +459,20 @@ Route::get('/backups/download/{filename}', [BackupController::class, 'download']
 Route::delete('/backups/delete/{filename}', [BackupController::class, 'delete'])->name('backups.delete');
 
 
+
+
+
+/*RESTAURAR */
+Route::get('/test-exec', [RestoreController::class, 'testExec']);
+
+Route::get('/restore', [RestoreController::class, 'index'])->name('restore.index');
+
+
+Route::post('/restore-from-backup', [RestoreController::class, 'restoreFromBackup'])->middleware('auth');
+
+
+
+
 Route::get('/usuarios/depurar', function () {
     // Aquí puedes pasar cualquier dato adicional si es necesario
     return view('usuarios.depurar');
@@ -715,5 +730,8 @@ Route::post('/perfil/update-password', [PerfilController::class, 'updatePassword
 Route::get('/Bloqueado', function () {
     return view('auth.bloqueado-por-no-cambiar');
 })->name('bloqueado-por-no-cambiar');
+
+Route::get('/idioma', [App\Http\Controllers\LanguageController::class, 'showLanguageOptions'])->name('idioma');
+Route::post('/idioma/cambiar', [App\Http\Controllers\LanguageController::class, 'changeLanguage'])->name('cambiar-idioma');
 
 });

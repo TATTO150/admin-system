@@ -234,7 +234,7 @@ class EquipoControlador extends Controller
 
         if (!$permisoInsercion) {
             $this->bitacora->registrarEnBitacora(18, 'Intento de generar equipo sin permisos', 'Insert');
-            return redirect()->route('planillas.index')->withErrors('No tiene permiso para generar equipo');
+            return redirect()->route('equipos.index')->withErrors('No tiene permiso para generar equipo');
         }
 
         $tipos_equipo = $this->fetchApiData('TiposEquipo');
