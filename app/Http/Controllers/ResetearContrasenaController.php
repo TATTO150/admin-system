@@ -38,92 +38,84 @@ class ResetearContrasenaController extends Controller
                     'confirmed', // Agrega la validación de confirmación de contraseña
                 ],
             ], [
-                'password.confirmed' =>'Las contraseñas no son iguales. Asegúrese de que la confirmación coincida con la nueva contraseña.' // Mensaje personalizado
+                'password.confirmed' => 'Las contraseñas no son iguales. Asegúrese de que la confirmación coincida con la nueva contraseña.' // Mensaje personalizado
             ]);
             
             $user = User::where('Correo_Electronico', $request->input('email'))
-            ->orWhere('Usuario', $request->input('email'))
-            ->first();
+                ->orWhere('Usuario', $request->input('email'))
+                ->first();
             
-            if (Hash::check($request->input('password'), $user->Contrasena)) {
-                return redirect()->back()->withErrors(['password' => 'La nueva contraseña no puede ser la misma que la contraseña anterior.']);
-            }
             if (!$user) {
                 $this->registrarEnBitacora(null, 3, 'Intento de reseteo de contraseña fallido - usuario no encontrado', 'Error');
                 throw ValidationException::withMessages([
                     'email' => [__('No se pudo encontrar un usuario con ese correo electrónico.')],
                 ]);
             }
-
-            // Supongamos que ya tienes la lógica de obtener el usuario
+    
+            if (Hash::check($request->input('password'), $user->Contrasena)) {
+                return redirect()->back()->withErrors(['password' => 'La nueva contraseña no puede ser la misma que la contraseña anterior.']);
+            }
+    
             if (empty($user->two_factor_secret) || 
-            !$this->provider->verify(decrypt($user->two_factor_secret), $request->input('code'))) {
-
-            // Incrementar los intentos
-            $user->Intentos_OTP += 1;
-            $user->save(); // Guardar los cambios en la base de datos
-
-            // Verificar si los intentos alcanzan el límite
-            if ($user->Intentos_OTP >= 3) {
-                // Cambiar el estado del usuario a 'Bloqueado'
-                $user->Estado_Usuario = 'BLOQUEADO';
-                $user->save(); // Guardar el cambio de estado
-
-                // Redirigir a la ruta de bloqueo
-                return redirect()->route('bloqueo')->with('error', __('Su cuenta ha sido bloqueada por demasiados intentos fallidos.'));
+                !$this->provider->verify(decrypt($user->two_factor_secret), $request->input('code'))) {
+                
+                $user->Intentos_OTP += 1;
+                $user->save(); // Guardar los cambios en la base de datos
+    
+                if ($user->Intentos_OTP >= 3) {
+                    $user->Estado_Usuario = 'BLOQUEADO';
+                    $user->save(); // Guardar el cambio de estado
+    
+                    return redirect()->route('bloqueo')->with('error', __('Su cuenta ha sido bloqueada por demasiados intentos fallidos.'));
+                }
+    
+                $this->registrarEnBitacora($user->Id_usuario, 3, 'Intento de reseteo de contraseña fallido - código OTP incorrecto', 'Error');
+    
+                throw ValidationException::withMessages([
+                    'code' => [__('El código OTP ingresado es incorrecto.')],
+                ]);
             }
-
-            // Registrar en la bitácora el intento fallido
-            $this->registrarEnBitacora($user->Id_usuario, 3, 'Intento de reseteo de contraseña fallido - código OTP incorrecto', 'Error');
-
-            // Lanzar excepción de validación
-            throw ValidationException::withMessages([
-                'code' => [__('El código OTP ingresado es incorrecto.')],
-            ]);
-            }
-
-
+    
             // Actualizar la contraseña del usuario
             $user->Contrasena = Hash::make($request->input('password'));
             $user->save();
-
+    
+            // Actualizar estado del usuario según condiciones
             if ($user->Id_usuario == 1 && $user->Estado_Usuario == 'BLOQUEADO') {
-                // Cambiar el estado a 'ACTIVO' para el usuario con Id_usuario 1 si estaba bloqueado
                 $user->Estado_Usuario = 'ACTIVO';
                 $user->Fecha_Vencimiento = \Carbon\Carbon::now()->addMonths(6);
-            } elseif ($user->Estado_Usuario == 'BLOQUEADO' || $user->Estado_Usuario == 3) {
-                $user->Estado_Usuario = 'RESETEO';
+            } elseif ($user->Estado_Usuario === 'BLOQUEADO' || $user->Estado_Usuario === '3') {
+                $user->Estado_Usuario = 'ACTIVO'; // Cambia el estado de usuario bloqueado a 'ACTIVO'
             } elseif ($user->Id_Rol == 3) {
                 $user->Estado_Usuario = 'NUEVO';
             } else {
                 $user->Estado_Usuario = 'RESETEO';
             }
-
+    
             $user->Intentos_Login = 0;
             $user->Intentos_OTP = 0;
             $user->save();
-             // Obtener todos los correos de los administradores con Id_Rol = 1
-        $adminEmails = User::where('Id_Rol', 1)->pluck('Correo_Electronico')->toArray();
-
-        // Verificar que existan correos antes de enviar
-        if (count($adminEmails) > 0) {
-            // Enviar el correo a los administradores
-            Mail::to($adminEmails)->send(new PasswordResetNotification($user));
-        }
-
-        $this->registrarEnBitacora($user->Id_usuario, 3, 'Usuario desbloqueado correctamente y contraseña restablecida', 'Update');
-
-            // Redirigir a la misma vista o a donde sea necesario
+    
+            // Enviar notificación de restablecimiento a administradores
+            $adminEmails = User::where('Id_Rol', 1)->pluck('Correo_Electronico')->toArray();
+    
+            if (count($adminEmails) > 0) {
+                Mail::to($adminEmails)->send(new PasswordResetNotification($user));
+            }
+    
+            $this->registrarEnBitacora($user->Id_usuario, 3, 'Usuario desbloqueado correctamente y contraseña restablecida', 'Update');
+    
             return redirect()->route('login')->with('status', __('Contraseña restablecida correctamente. Inicie sesión con su nueva contraseña.'));
         } catch (ValidationException $e) {
             throw $e;
         } catch (\Exception $e) {
-            $this->registrarEnBitacora($user->Id_usuario, 3, 'Error desconocido al intentar restablecer la contraseña', 'Error');
+            $this->registrarEnBitacora($user->Id_usuario ?? null, 3, 'Error desconocido al intentar restablecer la contraseña', 'Error');
             throw ValidationException::withMessages([
                 'error' => [__('Hubo un error al intentar restablecer la contraseña.')],
             ]);
         }
     }
+    
 
      // Enviar el enlace de restablecimiento de contraseña
     public function sendResetLink(Request $request)
