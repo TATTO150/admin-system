@@ -612,8 +612,8 @@ public function prohibirMultiplesEspacios()
             }
 
             // Check for repeated sequences of 4 or more digits
-            if (preg_match('/(\d)\1{3,}/', $value)) {
-                $this->mensaje = 'El DNI no debe contener secuencias repetidas de 4 o más dígitos.';
+            if (preg_match('/(\d)\1{4,}/', $value)) {
+                $this->mensaje = 'El DNI no debe contener secuencias repetidas de 5 o más dígitos.';
                 return false;
             }
         }

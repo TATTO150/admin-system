@@ -39,7 +39,7 @@
     <div class="row">
     <!-- Card para la cantidad de usuarios -->
         <div class="col-lg-3 col-6">
-            <div class="small-box" style="background-color: #2b13ef">
+            <div class="small-box bg-info">
                 <div class="inner">
                     <h3>{{ $usuariosCount }}</h3>
                     <p>Usuarios Registrados</p>
@@ -55,7 +55,7 @@
 
         <!-- Card para las solicitudes pendientes de revisión -->
         <div class="col-lg-3 col-6">
-            <div class="small-box" style="background-color: #603cf3">
+            <div class="small-box bg-warning">
                 <div class="inner">
                     <h3>{{ $solicitudesPendientesCount }}</h3>
                     <p>Solicitudes Pendientes de Revisión</p>
@@ -160,22 +160,22 @@
 </div>
 
 
-<!-- Gráfico de empleados por proyecto -->
-<div class="col-lg-6 col-12">
-    <div class="card bg-dark text-white">
+<!-- Gráfico de asignación por estado -->
+<div class="col-lg-6 col-12 text-white">
+    <div class="card bg-dark">
         <div class="card-header">
-            <h3 class="card-title">Empleados por Proyecto</h3>
+            <h3 class="card-title">Asignación por Estado</h3>
         </div>
-        <div class="card-body" style="height: 400px;">
-            <canvas id="employeesChart"></canvas>
+        <div class="card-body">
+            <canvas id="assignmentChart"></canvas>
         </div>
     </div>
-</div>
+</div> 
 
 <div class="row">
     <!-- Card para la cantidad de empleados -->
     <div class="col-12 mb-4">
-        <div class="small-box bg-info" style="height: 100%;">
+        <div class="small-box bg-info text-white" style="height: 100%;">
             <div class="inner" style="padding: 25px;">
                 <h3 style="font-size: 2.75rem;">{{ $empleadosCount }}</h3>
                 <p style="font-size: 1.4rem;">Total de Empleados</p>
@@ -205,19 +205,6 @@
         </div>
     </div>
 </div>
-
-        
-               <!-- Gráfico de asignación por estado -->
-<div class="col-lg-6 col-12">
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">Asignación por Estado</h3>
-        </div>
-        <div class="card-body">
-            <canvas id="assignmentChart"></canvas>
-        </div>
-    </div>
-</div> 
        
     </div>
 @stop
