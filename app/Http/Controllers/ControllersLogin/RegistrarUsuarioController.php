@@ -335,6 +335,7 @@ public function update(UsuarioRequest $request, $Id_usuario)
     try {
         // Formatear la fecha de la última conexión
         $fechaUltimaConexion = \Carbon\Carbon::parse($request->Fecha_Ultima_Conexion)->format('Y-m-d H:i:s');
+        $fechaVencimiento = $request->Fecha_Vencimiento ? \Carbon\Carbon::parse($request->Fecha_Vencimiento)->format('Y-m-d') : $request->Fecha_Vencimiento;
 
         // Realizar la solicitud HTTP PUT para actualizar el usuario
         $response = Http::put("http://127.0.0.1:3000/Usuarios/{$Id_usuario}", [
@@ -342,7 +343,7 @@ public function update(UsuarioRequest $request, $Id_usuario)
             'Nombre_Usuario' => $request->Nombre_Usuario,
             'Estado_Usuario' => $request->Estado_Usuario,
             'Id_Rol' => $request->Id_Rol,
-            'Fecha_Vencimiento' => $request->Fecha_Vencimiento,
+            'Fecha_Vencimiento' => $fechaVencimiento,
             'Correo_Electronico' => $request->Correo_Electronico,
             'Fecha_Ultima_Conexion' => $fechaUltimaConexion,
         ]);

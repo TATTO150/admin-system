@@ -100,7 +100,7 @@
                     <div class="mb-3">
                         <label for="Fecha_Vencimiento" class="form-label">FECHA VENCIMIENTO</label>
                         <input type="text" class="form-control" id="Fecha_Vencimiento" name="Fecha_Vencimiento"
-                               value="{{ $usuario['Fecha_Vencimiento'] }}">
+                               value="{{ \Carbon\Carbon::parse($usuario['Fecha_Vencimiento'])->format('m/d/Y') }}">
                     </div>
                     
 

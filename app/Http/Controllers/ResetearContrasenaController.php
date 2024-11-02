@@ -91,7 +91,7 @@ class ResetearContrasenaController extends Controller
                 // Cambiar el estado a 'ACTIVO' para el usuario con Id_usuario 1 si estaba bloqueado
                 $user->Estado_Usuario = 'ACTIVO';
                 $user->Fecha_Vencimiento = \Carbon\Carbon::now()->addMonths(6);
-            } elseif ($user->Estado_Usuario == 'BLOQUEADO' || $user->Estado_Usuario == 3) {
+            } elseif ($user->Estado_Usuario == 'BLOQUEADO') {
                 $user->Estado_Usuario = 'RESETEO';
             } elseif ($user->Id_Rol == 3) {
                 $user->Estado_Usuario = 'NUEVO';
@@ -125,37 +125,53 @@ class ResetearContrasenaController extends Controller
         }
     }
 
-     // Enviar el enlace de restablecimiento de contraseña
-    public function sendResetLink(Request $request)
-    {
-        // Validar el campo 'Correo_Electronico'
-        $request->validate([
-            'Correo_Electronico' => 'required|email',
-        ]);
-
-        // Buscar si el usuario existe usando 'Correo_Electronico'
-        $user = User::where('Correo_Electronico', $request->Correo_Electronico)->first();
-
-        if (!$user) {
-            return redirect()->back()->withErrors(['Correo_Electronico' => 'No existe un usuario con este correo.']);
-        }
-
-        // Generar un token de restablecimiento
-        $token = Str::random(60);
-
-        // Almacenar el token en la tabla password_resets
-        DB::table('password_reset_tokens')->insert([
-            'email' => $user->Correo_Electronico,
-            'token' => $token,
-            'created_at' => now(),
-        ]);
-
-        // Enviar el correo con el enlace de restablecimiento
-        Mail::to($user->Correo_Electronico)->send(new ResetPasswordMail($user, $token));
-
-        // Redirigir al login con un mensaje
-        return redirect()->route('login')->with('status', 'Se ha enviado un enlace a tu correo para restablecer tu contraseña.');
-    }
+     public function sendResetLink(Request $request)
+     {
+         // Validar el campo 'Correo_Electronico'
+         $request->validate([
+             'Correo_Electronico' => 'required|email',
+         ]);
+     
+         // Buscar si el usuario existe usando 'Correo_Electronico'
+         $user = User::where('Correo_Electronico', $request->Correo_Electronico)->first();
+     
+         if (!$user) {
+             return redirect()->back()->withErrors(['Correo_Electronico' => 'No existe un usuario con este correo.']);
+         }
+     
+         // Verificar si ya existe un token de restablecimiento para este correo
+         $existingToken = DB::table('password_reset_tokens')
+             ->where('email', $user->Correo_Electronico)
+             ->first();
+     
+         if ($existingToken) {
+             // Comprobar si el token fue creado hace menos de una hora
+             $tokenCreatedAt = Carbon::parse($existingToken->created_at);
+             if ($tokenCreatedAt->diffInMinutes(now()) < 60) {
+                 return redirect()->back()->withErrors(['Correo_Electronico' => 'Ya has solicitado un cambio de contraseña recientemente. Por favor, revisa tu correo o intenta nuevamente más tarde.']);
+             }
+     
+             // Si el token tiene más de una hora, eliminar el registro existente
+             DB::table('password_reset_tokens')->where('email', $user->Correo_Electronico)->delete();
+         }
+     
+         // Generar un nuevo token de restablecimiento
+         $token = Str::random(60);
+     
+         // Almacenar el token en la tabla password_resets
+         DB::table('password_reset_tokens')->insert([
+             'email' => $user->Correo_Electronico,
+             'token' => $token,
+             'created_at' => now(),
+         ]);
+     
+         // Enviar el correo con el enlace de restablecimiento
+         Mail::to($user->Correo_Electronico)->send(new ResetPasswordMail($user, $token));
+     
+         // Redirigir al login con un mensaje
+         return redirect()->route('login')->with('status', 'Se ha enviado un enlace a tu correo para restablecer tu contraseña.');
+     }
+     
 
 
     public function showEmailForm()
@@ -211,6 +227,7 @@ public function resetPassword(Request $request)
 
     // Actualizar la contraseña del usuario
     $user->Contrasena = bcrypt($request->Contrasena);
+    $user->Intentos_Login = 0;
     $user->Intentos_OTP = 0;
     $user->save();
 
@@ -219,7 +236,7 @@ public function resetPassword(Request $request)
         $user->Estado_Usuario = 'ACTIVO';
         $user->Fecha_Vencimiento = \Carbon\Carbon::now()->addMonths(6);
         $user->save();
-    } elseif ($user->Estado_Usuario == 'BLOQUEADO' || $user->Estado_Usuario == 3) {
+    } elseif ($user->Estado_Usuario == 'BLOQUEADO') {
         $user->Estado_Usuario = 'RESETEO';
         $user->save();
     } elseif ($user->Id_Rol == 3) {

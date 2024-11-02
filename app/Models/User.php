@@ -127,16 +127,4 @@ class User extends Authenticatable
 {
     return $this->belongsTo(EstadoUsuario::class, 'Estado_Usuario', 'COD_ESTADO');
 }
-public function setEstadoUsuarioAttribute($estado)
-{
-    // Busca el estado en la tabla de estados
-    $estadoUsuario = EstadoUsuario::where('ESTADO', $estado)->first();
-
-    if ($estadoUsuario) {
-        // Asigna el COD_ESTADO correspondiente al campo Estado_Usuario
-        $this->attributes['Estado_Usuario'] = $estadoUsuario->COD_ESTADO;
-    } /*else {
-        throw new \Exception("El estado '{$estado}' no existe en la tabla tbl_estado_usuario.");
-    }*/
-}
 }
