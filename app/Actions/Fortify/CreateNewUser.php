@@ -39,7 +39,7 @@ class CreateNewUser implements CreatesNewUsers
             'Estado_Usuario' => 'NUEVO',
             'Id_Rol' => 3,
             'Primer_Ingreso' => 1,
-            'Fecha_Vencimiento' => Carbon::now()->addMonths(3),
+            'Fecha_Vencimiento' => Carbon::now()->addMonths(6),
             'Verificacion_Usuario' => false,
             'Intentos_Login' => 0,
             'fecha_creacion' => Carbon::now(),

@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 
+
 class AutenticarSesionController extends Controller
 {
     /**
@@ -60,7 +61,7 @@ class AutenticarSesionController extends Controller
      * @param  \Laravel\Fortify\Http\Requests\LoginRequest  $request
      * @return mixed
      */
-    public function store(LoginRequest $request)
+   public function store(LoginRequest $request)
 {
     // Buscar el usuario por correo o nombre de usuario
     $user = User::where('Correo_Electronico', $request->Correo_Electronico)
@@ -69,16 +70,11 @@ class AutenticarSesionController extends Controller
     $parametro = Parametros::where('Id_Parametro', 1)->first();
 
     if ($user) {
-        // Comprobar si el usuario ya tiene una sesión activa
-        $redirectToUniqueSession = $this->Sesion_Unica($user);
-        if ($redirectToUniqueSession) {
-            // Detener la ejecución del login y redirigir si ya hay una sesión activa
-            return $redirectToUniqueSession;
-        }
 
         // Reiniciar el estado de two_factor_status
         $user->two_factor_status = null;
         $user->save();
+        $user->refresh(); // Asegurarse de tener el valor actualizado del usuario
 
         // Verificar si la fecha de vencimiento es hoy
         if ($user->Fecha_Vencimiento && $user->Fecha_Vencimiento->isToday()) {
@@ -87,15 +83,18 @@ class AutenticarSesionController extends Controller
             return redirect()->route('bloqueo');
         }
 
-        // Verificar si el usuario está bloqueado
-        if ($user->Estado_Usuario === 'BLOQUEADO'|| $user->Estado_Usuario == 3) {
+        // Verificar si el usuario ya está bloqueado
+        if ($user->Estado_Usuario === 'BLOQUEADO') {
             $this->registrarEnBitacora($user, 4, 'Intento de inicio de sesión con usuario bloqueado', 'Consulta');
             return redirect()->route('bloqueo');
         }
 
         // Verificar la contraseña
         if (Hash::check($request->password, $user->Contrasena)) {
+            // Restablecer intentos fallidos en caso de inicio de sesión exitoso
             $this->resetearIntentosLogin($user);
+            $user->refresh();
+
             $this->guard->login($user);
             $this->actualizarUltimoLogin($user);
             $this->Primer_Ingreso($user);
@@ -115,28 +114,26 @@ class AutenticarSesionController extends Controller
             }
 
             // Redirigir si el usuario debe restablecer la contraseña
-            if ($user->Estado_Usuario === 'RESETEO' || $user->Estado_Usuario == 5 && $user->Id_usuario != 1) {
+            if ($user->Estado_Usuario === 'RESETEO' && $user->Id_usuario != 1) {
                 return redirect()->route('password.reset.confirmation');
             }
 
-            // Insertar el nuevo registro de sesión en la tabla `usuarios_logueados`
-            DB::table('usuarios_logueados')->insert([
-                'user_id' => $user->Id_usuario,
-                'session_id' => Session::getId(),
-            ]);
-
             // Verificar si la verificación en dos pasos está activa
             if (!is_null($user->two_factor_secret)) {
-                return redirect()->route('two-factor.login'); // Redirige a la vista de two-factor-challenge
+                return redirect()->route('two-factor.login');
             }
 
             return redirect()->route('dashboard');
         } else {
             // Manejo de intentos de inicio de sesión fallidos
             $this->incrementarIntentosLogin($user);
+            $user->refresh(); // Asegurarse de tener el valor actualizado de Intentos_Login
+
+            // Verificar si los intentos de inicio de sesión fallidos alcanzaron el límite y el usuario no es admin
             if ($user->Intentos_Login >= 3 && $user->Id_Rol != 1) {
                 $this->bloquearUsuario($user);
-                $this->registrarEnBitacora($user, 2, 'Usuario bloqueado por intentos fallidos', 'Update'); 
+                $this->registrarEnBitacora($user, 2, 'Usuario bloqueado por intentos fallidos', 'Update');
+                return redirect()->route('bloqueo');
             }
 
             $this->registrarEnBitacora($user, 2, 'Intento fallido de inicio de sesión', 'Consulta');
@@ -146,6 +143,7 @@ class AutenticarSesionController extends Controller
 
     return back()->withErrors(['email' => 'Usuario o contraseña incorrectos']);
 }
+
 
 
     /**
@@ -161,9 +159,6 @@ class AutenticarSesionController extends Controller
     $user = $this->guard->user();
     
     $this->registrarEnBitacora($user, 2, 'Cierre de sesión', 'Ingreso'); // ID_objetos 2: 'login'
-
-    // Eliminar el registro de sesión en la tabla usuarios_logueados
-    $deleted = DB::table('usuarios_logueados')->where('user_id', $user->Id_usuario)->delete();
 
     $this->guard->logout();
 
@@ -203,26 +198,6 @@ class AutenticarSesionController extends Controller
     }
 
     /**
-     * Agrega un nuevo ingreso al sistema.
-     *
-     * @param  \App\Models\User  $user
-     * @return void
-     */
-    protected function Sesion_Unica($user)
-    {
-        Log::info('Se llego a la funcion de comprobacion');
-        // Comprobar si el usuario ya tiene una sesión activa
-        $existingSession = DB::table('usuarios_logueados')->where('user_id', $user->Id_usuario)->first();
-
-        if ($existingSession) {
-            Log::info('Se esta redirijiendoJ');
-            return redirect()->route('unica.sesion'); // Ruta a la vista de advertencia
-        }
-
-        return null;
-    }
-
-    /**
      * Incrementa el intento de inicio de sesion para la usuario.
      *
      * @param  \App\Models\User  $user
@@ -254,7 +229,7 @@ class AutenticarSesionController extends Controller
      */
     protected function bloquearUsuario($user)
     {
-        $user->Estado_Usuario = 3;
+        $user->Estado_Usuario = 'BLOQUEADO';
         $user->save();
     }
 

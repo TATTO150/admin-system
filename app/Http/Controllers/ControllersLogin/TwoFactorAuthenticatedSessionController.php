@@ -69,40 +69,13 @@ class TwoFactorAuthenticatedSessionController extends Controller
     // Verificar el código OTP
     if ($code = $request->input('code')) {
         if (!$user->two_factor_secret || !$user->validateTwoFactorAuthenticationCode($code)) {
-            // Incrementar los intentos
-            $user->Intentos_OTP += 1;
-            $user->save(); // Guardar los cambios en la base de datos
-
-            // Verificar si los intentos alcanzan el límite
-            if ($user->Intentos_OTP >= 3) {
-                // Cambiar el estado del usuario a 'Bloqueado'
-                $user->Estado_Usuario = 'BLOQUEADO';
-                $user->save(); // Guardar el cambio de estado
-
-                // Redirigir a la ruta de bloqueo
-                return redirect()->route('bloqueo')->with('error', __('Su cuenta ha sido bloqueada por demasiados intentos fallidos.'));
-            }
-
             throw ValidationException::withMessages([
                 'code' => [__('El código OTP ingresado es inválido.')],
             ]);
         }
     } elseif ($recovery_code = $request->input('recovery_code')) {
         if (!$user->recoverTwoFactorAuthentication($recovery_code)) {
-            // Incrementar los intentos
-            $user->Intentos_OTP += 1;
-            $user->save(); // Guardar los cambios en la base de datos
-
-            // Verificar si los intentos alcanzan el límite
-            if ($user->Intentos_OTP >= 3) {
-                // Cambiar el estado del usuario a 'Bloqueado'
-                $user->Estado_Usuario = 'BLOQUEADO';
-                $user->save(); // Guardar el cambio de estado
-
-                // Redirigir a la ruta de bloqueo
-                return redirect()->route('bloqueo')->with('error', __('Su cuenta ha sido bloqueada por demasiados intentos fallidos.'));
-            }
-
+            
             throw ValidationException::withMessages([
                 'recovery_code' => [__('El código de recuperación ingresado es inválido.')],
             ]);
@@ -124,12 +97,6 @@ class TwoFactorAuthenticatedSessionController extends Controller
 
     // Regenerar la sesión
     $request->session()->regenerate();
-
-    // Insertar el nuevo registro de sesión en la tabla usuarios_logueados
-    DB::table('usuarios_logueados')->insert([
-        'user_id' => $user->Id_usuario,
-        'session_id' => Session::getId(),
-    ]);
 
     return redirect()->route('dashboard');
 }
