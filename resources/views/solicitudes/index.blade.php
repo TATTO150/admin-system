@@ -66,6 +66,7 @@
             <table id="mitabla" class="table table-hover table-bordered">
                 <thead class="thead-dark">
                     <tr>
+                        <th>ACCIÓN</th>
                         <th>SOLICITANTE</th>
                         <th>DESCRIPCIÓN COMPRA</th>
                         <th>PROYECTO</th>
@@ -74,21 +75,11 @@
                         <th>TOTAL CUOTAS</th>
                         <th>PRECIO CUOTA</th>
                         <th>PRECIO COMPRA</th>
-                        <th>ACCIÓN</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse ($compras as $compra)
                         <tr>
-                            <td>{{ $usuarios[$compra->Id_usuario]->Usuario ?? 'N/A' }}</td>
-                            <td>{{ $compra->DESC_COMPRA }}</td>
-                            <td>{{ $proyectos[$compra->COD_PROYECTO]->NOM_PROYECTO ?? 'N/A' }}</td>
-                            <td>{{ $estados[$compra->COD_ESTADO]->DESC_ESTADO ?? 'N/A' }}</td>
-                            <td>{{ $tipos[$compra->COD_TIPO]->DESC_TIPO ?? 'N/A' }}</td>
-                            <td>{{ $compra->TOTAL_CUOTAS }}</td>
-                            <td>{{ $compra->PRECIO_CUOTA }}</td>
-                            <td>{{ $compra->PRECIO_COMPRA }}</td>
-
                             <td>
                                 <div class="dropdown">
                                     <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $compra->COD_COMPRA }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -106,6 +97,14 @@
                                     </ul>
                                 </div>
                             </td>
+                            <td>{{ $usuarios[$compra->Id_usuario]->Usuario ?? 'N/A' }}</td>
+                            <td>{{ $compra->DESC_COMPRA }}</td>
+                            <td>{{ $proyectos[$compra->COD_PROYECTO]->NOM_PROYECTO ?? 'N/A' }}</td>
+                            <td>{{ $estados[$compra->COD_ESTADO]->DESC_ESTADO ?? 'N/A' }}</td>
+                            <td>{{ $tipos[$compra->COD_TIPO]->DESC_TIPO ?? 'N/A' }}</td>
+                            <td>{{ $compra->TOTAL_CUOTAS }}</td>
+                            <td>{{ $compra->PRECIO_CUOTA }}</td>
+                            <td>{{ $compra->PRECIO_COMPRA }}</td>
                         </tr>
                     @empty
                         <tr>

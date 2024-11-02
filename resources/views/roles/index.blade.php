@@ -54,17 +54,15 @@
                     <table id="mitabla" class="table table-hover table-bordered" style="width: 75%; margin: auto;">
                         <thead class="thead-dark">
                             <tr>
+                                <th>Accion</th>
                                 <th>Rol</th>
                                 <th>Descripción</th>
-                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tablaRoles">
                             @if(is_array($roles) || is_object($roles))
                                 @foreach ($roles as $rol)
                                     <tr>
-                                        <td>{{ $rol['Rol'] }}</td>
-                                        <td>{{ $rol['Descripcion'] }}</td>
                                         <td>
                                             <div class="dropdown">
                                                 <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $rol['Id_Rol'] }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -82,6 +80,8 @@
                                                 </ul>
                                             </div>
                                         </td>
+                                        <td>{{ $rol['Rol'] }}</td>
+                                        <td>{{ $rol['Descripcion'] }}</td>
                                     </tr>
                                 @endforeach
                             @else

@@ -39,19 +39,16 @@
                 <table id="mitabla" class="table table-hover table-bordered">
                     <thead class="thead-dark">
                         <tr>
+                            <th>ACCIÓN</th>
                             <th>NOMBRE CARGO</th>
                             <th>SALARIOS</th>
                             <th>FUNCIÓN PRINCIPAL</th>
-                            <th>ACCIÓN</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if(is_array($cargos) || is_object($cargos))
                             @foreach ($cargos as $cargo)
                                 <tr>
-                                    <td>{{ $cargo['NOM_CARGO'] }}</td>
-                                    <td>{{ $cargo['SALARIOS'] }}</td>
-                                    <td>{{ $cargo['FUNCION_PRINCIPAL'] }}</td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $cargo['COD_CARGO'] }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -69,6 +66,9 @@
                                             </ul>
                                         </div>
                                     </td>
+                                    <td>{{ $cargo['NOM_CARGO'] }}</td>
+                                    <td>{{ $cargo['SALARIOS'] }}</td>
+                                    <td>{{ $cargo['FUNCION_PRINCIPAL'] }}</td>
                                 </tr>
                             @endforeach
                         @else

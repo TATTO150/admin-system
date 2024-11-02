@@ -40,15 +40,14 @@
                 <table id="mitabla" class="table table-hover table-bordered">
                     <thead class="thead-dark">
                         <tr>
-                            <th>NOMBRE ÁREA</th>
                             <th>ACCIÓN</th>
+                            <th>NOMBRE ÁREA</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if(is_array($areas) || is_object($areas))
                             @foreach ($areas as $area)
                                 <tr>
-                                    <td>{{ $area['NOM_AREA'] }}</td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $area['COD_AREA'] }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -66,6 +65,7 @@
                                             </ul>
                                         </div>
                                     </td>
+                                    <td>{{ $area['NOM_AREA'] }}</td>
                                 </tr>
                             @endforeach
                         @else

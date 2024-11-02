@@ -29,9 +29,9 @@
                     <table class="table table-bordered table-striped">
                         <thead>
                             <tr>
+                                <th>ACCIONES</th>
                                 <th>#</th>
                                 <th>ESTADO PROYECTO</th>
-                                <th>ACCIONES</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -41,8 +41,6 @@
                             @foreach ($estados as $estado)
                                 @if ($estado->ESTADO_PROYECTO != 'APERTURA')
                                     <tr>
-                                        <td>{{ $contador }}</td>
-                                        <td>{{ $estado->ESTADO_PROYECTO }}</td>
                                         <td>
                                             <a href="{{ route('estado_proyecto.edit', $estado->COD_ESTADO_PROYECTO) }}" class="btn btn-warning">EDITAR</a>
                                             <form action="{{ route('estado_proyecto.destroy', $estado->COD_ESTADO_PROYECTO) }}" method="POST" style="display:inline-block;" onsubmit="return confirmDelete();">
@@ -51,6 +49,8 @@
                                                 <button type="submit" class="btn btn-danger">ELIMINAR</button>
                                             </form>
                                         </td>
+                                        <td>{{ $contador }}</td>
+                                        <td>{{ $estado->ESTADO_PROYECTO }}</td>
                                     </tr>
                                     @php
                                         $contador++;

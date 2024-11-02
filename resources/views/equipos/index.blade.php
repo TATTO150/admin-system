@@ -35,25 +35,19 @@
             <table id="mitabla" class="table table-hover table-bordered">
                 <thead class="thead-dark">
                     <tr>
+                        <th>ACCIÓN</th>
                         <th>NOMBRE EQUIPO</th>
                         <th>TIPO EQUIPO</th>
                         <th>DESCRIPCIÓN EQUIPO</th>
                         <th>ESTADO EQUIPO</th>
                         <th>FECHA COMPRA</th>
                         <th>VALOR EQUIPO</th>
-                        <th>ACCIÓN</th>
                     </tr>
                 </thead>
                 <tbody id="tablaEquipos">
                     @if(!empty($equipos) && (is_array($equipos) || is_object($equipos)))
                         @foreach ($equipos as $equipo)
                             <tr>
-                                <td>{{ $equipo['NOM_EQUIPO'] }}</td>
-                                <td>{{ $equipo['TIPO_EQUIPO_NOMBRE'] }}</td>
-                                <td>{{ $equipo['DESC_EQUIPO'] }}</td>
-                                <td>{{ $equipo['ESTADO_EQUIPO_NOMBRE'] }}</td>
-                                <td>{{ \Carbon\Carbon::parse($equipo['FECHA_COMPRA'])->format('d/m/Y') }}</td>
-                                <td>{{ number_format($equipo['VALOR_EQUIPO'], 2, '.', ',') }}</td>
                                 <td>
                                     @if ($equipo['COD_ESTADO_EQUIPO'] == 3)
                                         <button type="button" class="btn btn-warning btn-sm" onclick="confirmRestore({{ $equipo['COD_EQUIPO'] }})">Restaurar</button>
@@ -73,6 +67,12 @@
                                         </div>
                                     @endif
                                 </td>
+                                <td>{{ $equipo['NOM_EQUIPO'] }}</td>
+                                <td>{{ $equipo['TIPO_EQUIPO_NOMBRE'] }}</td>
+                                <td>{{ $equipo['DESC_EQUIPO'] }}</td>
+                                <td>{{ $equipo['ESTADO_EQUIPO_NOMBRE'] }}</td>
+                                <td>{{ \Carbon\Carbon::parse($equipo['FECHA_COMPRA'])->format('d/m/Y') }}</td>
+                                <td>{{ number_format($equipo['VALOR_EQUIPO'], 2, '.', ',') }}</td>
                             </tr>
                         @endforeach
                     @else
