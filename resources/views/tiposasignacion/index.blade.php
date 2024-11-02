@@ -30,19 +30,19 @@
                 <table id="mitabla" class="table table-hover table-bordered">
                     <thead class="thead-dark">
                         <tr>
+                            <th>Acciones</th>
                             <th>ID</th>
                             <th>Tipo de Asignación</th>
-                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($tiposAsignacion as $tipo)
                             <tr>
-                                <td>{{ $tipo->COD_TIPO_ASIGNACION }}</td>
-                                <td>{{ $tipo->TIPO_ASIGNACION }}</td>
                                 <td>
                                     <a href="{{ route('tiposasignacion.edit', $tipo->COD_TIPO_ASIGNACION) }}" class="btn btn-warning btn-sm">Editar</a>
                                 </td>
+                                <td>{{ $tipo->COD_TIPO_ASIGNACION }}</td>
+                                <td>{{ $tipo->TIPO_ASIGNACION }}</td>
                             </tr>
                         @endforeach
                     </tbody>

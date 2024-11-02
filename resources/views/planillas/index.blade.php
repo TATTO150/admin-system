@@ -300,22 +300,17 @@ $(document).ready(function() {
                 <table id="mitabla" class="table table-hover table-bordered">
                     <thead class="thead-dark">
                         <tr>
+                            <th>Acciones</th>
                             <th>Planilla</th>
                             <th>Fecha Generada</th>
                             <th>Mes Pagado</th>
                             <th>Tipo Planilla</th>
                             <th>Total Pagado</th>
-                            <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($planillas as $planilla)
                             <tr>
-                                <td>{{ $planilla->COD_PLANILLA }}</td>
-                                <td>{{ $planilla->FECHA_GENERADA }}</td>
-                                <td>{{ $planilla->MES }}</td>
-                                <td>{{ $tipos_planilla[$planilla->COD_TIPO_PLANILLA] ? $tipos_planilla[$planilla->COD_TIPO_PLANILLA]->TIPO_PLANILLA : 'N/A' }}</td>
-                                <td>{{ $planilla->TOTAL_PAGADO }}</td>
                                 <td>
                                     <div class="dropdown">
                                         <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $planilla['COD_PLANILLA'] }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -334,6 +329,11 @@ $(document).ready(function() {
                                         </ul>
                                     </div>
                                 </td>
+                                <td>{{ $planilla->COD_PLANILLA }}</td>
+                                <td>{{ $planilla->FECHA_GENERADA }}</td>
+                                <td>{{ $planilla->MES }}</td>
+                                <td>{{ $tipos_planilla[$planilla->COD_TIPO_PLANILLA] ? $tipos_planilla[$planilla->COD_TIPO_PLANILLA]->TIPO_PLANILLA : 'N/A' }}</td>
+                                <td>{{ $planilla->TOTAL_PAGADO }}</td>
                             </tr>
                         @endforeach
                     </tbody>

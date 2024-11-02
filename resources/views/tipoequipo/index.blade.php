@@ -50,14 +50,13 @@
                     <table id="mitabla" class="table table-hover table-bordered" style="width: 75%; margin: auto;">
                         <thead class="thead-dark">
                             <tr>
-                                <th>Tipo de Equipo</th>
                                 <th>Acciones</th>
+                                <th>Tipo de Equipo</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($tipoEquipos as $tipoEquipo)
                                 <tr>
-                                    <td>{{ $tipoEquipo->TIPO_EQUIPO }}</td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $tipoEquipo->COD_TIP_EQUIPO }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -75,6 +74,7 @@
                                             </ul>
                                         </div>
                                     </td>
+                                    <td>{{ $tipoEquipo->TIPO_EQUIPO }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

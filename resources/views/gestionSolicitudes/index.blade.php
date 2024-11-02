@@ -37,6 +37,7 @@
                             <table id="tablaEspera" class="table table-hover table-bordered">
                                 <thead class="thead-dark">
                                     <tr>
+                                        <th>ACCIÓN</th>
                                         <th>SOLICITANTE</th>
                                         <th>DESCRIPCIÓN SOLICITUD</th>
                                         <th>PROYECTO ASOCIADO</th>
@@ -45,12 +46,14 @@
                                         <th>PRECIO CUOTA</th>
                                         <th>PRECIO TOTAL</th>
                                         <th>ESTADO SOLICITUD</th>
-                                        <th>ACCIÓN</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach ($solicitudesEspera as $solicitud)
                                         <tr>
+                                            <td>
+                                                <a href="{{ route('gestionSolicitudes.gestionar', $solicitud->COD_COMPRA) }}" class="btn btn-warning btn-sm">GESTIONAR</a>
+                                            </td>
                                             <td>{{ $usuarios[$solicitud->Id_usuario]->Usuario ?? 'N/A' }}</td>
                                             <td>{{ $solicitud->DESC_COMPRA }}</td>
                                             <td>{{ $proyectos[$solicitud->COD_PROYECTO]->NOM_PROYECTO ?? 'N/A' }}</td>
@@ -59,9 +62,6 @@
                                             <td>{{ $solicitud->TOTAL_CUOTAS }}</td>
                                             <td>{{ $solicitud->PRECIO_COMPRA }}</td>
                                             <td>{{ $estados[$solicitud->COD_ESTADO]->DESC_ESTADO ?? 'N/A' }}</td>
-                                            <td>
-                                                <a href="{{ route('gestionSolicitudes.gestionar', $solicitud->COD_COMPRA) }}" class="btn btn-warning btn-sm">GESTIONAR</a>
-                                            </td>
                                         </tr>
                                     @endforeach
                                 </tbody>

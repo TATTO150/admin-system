@@ -48,14 +48,13 @@
                     <table id="mitabla" class="table table-hover table-bordered" style="width: 75%; margin: auto;">
                         <thead class="thead-dark">
                             <tr>
-                                <th>Estado de Asignación</th>
                                 <th>Acciones</th>
+                                <th>Estado de Asignación</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($estados as $estado)
                                 <tr>
-                                    <td>{{ $estado->ESTADO }}</td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $estado->COD_ESTADO_ASIGNACION }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -74,6 +73,7 @@
                                             </ul>
                                         </div>
                                     </td>
+                                    <td>{{ $estado->ESTADO }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

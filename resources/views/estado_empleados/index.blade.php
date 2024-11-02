@@ -40,15 +40,14 @@
                 <table id="mitabla" class="table table-hover table-bordered">
                     <thead class="thead-dark">
                         <tr>
-                            <th>TIPO EMPLEADO</th>
                             <th>ACCIÓN</th>
+                            <th>TIPO EMPLEADO</th>
                         </tr>
                     </thead>
                     <tbody>
                         @if(is_array($estados) || is_object($estados))
                             @foreach ($estados as $estado)
                                 <tr>
-                                    <td>{{ $estado->ESTADO_EMPLEADO }}</td>
                                     <td>
                                         <div class="dropdown">
                                             <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $estado->COD_ESTADO_EMPLEADO }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -66,6 +65,7 @@
                                             </ul>
                                         </div>
                                     </td>
+                                    <td>{{ $estado->ESTADO_EMPLEADO }}</td>
                                 </tr>
                             @endforeach
                         @else

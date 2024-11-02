@@ -53,6 +53,7 @@
                     <table id="mitabla" class="table table-hover table-bordered" style="width: 75%; margin: auto;">
                         <thead class="thead-dark">
                             <tr>
+                                <th>Acción</th>
                                 <th>Usuario</th>
                                 <th>Nombre Usuario</th>
                                 <th>Estado Usuario</th>
@@ -62,7 +63,6 @@
                                 <th>Cantidad Ingresos</th>
                                 <th>Fecha Vencimiento</th>
                                 <th>Correo Electrónico</th>
-                                <th>Acción</th>
                             </tr>
                         </thead>
                         <tbody id="tablaUsuarios">
@@ -72,21 +72,6 @@
                             @if(is_array($usuarios) || is_object($usuarios))
                                 @foreach ($usuarios as $usuario)
                                     <tr>
-                                        <td>{{ $usuario['Usuario'] }}</td>
-                                        <td>{{ $usuario['Nombre_Usuario'] }}</td>
-                                        <td>
-                                            @if($usuario->estado)
-                                                {{ $usuario->estado->ESTADO }}
-                                            @else
-                                                {{ $usuario->Estado_Usuario }}
-                                            @endif
-                                        </td>
-                                        <td>{{ $usuario['fecha_creacion'] }}</td>
-                                        <td>{{ $usuario->rol ? $usuario->rol->Rol : 'Sin rol asignado' }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($usuario['Fecha_Ultima_Conexion'])->format('Y/m/d') }}</td>
-                                        <td>{{ $usuario['Primer_Ingreso'] }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($usuario['Fecha_Vencimiento'])->format('Y/m/d') }}</td>
-                                        <td>{{ $usuario['Correo_Electronico'] }}</td>
                                         <td>
                                             @if ($index != 1)
                                                 <div class="dropdown">
@@ -106,6 +91,21 @@
                                                 </div>
                                             @endif
                                         </td>
+                                        <td>{{ $usuario['Usuario'] }}</td>
+                                        <td>{{ $usuario['Nombre_Usuario'] }}</td>
+                                        <td>
+                                            @if($usuario->estado)
+                                                {{ $usuario->estado->ESTADO }}
+                                            @else
+                                                {{ $usuario->Estado_Usuario }}
+                                            @endif
+                                        </td>
+                                        <td>{{ $usuario['fecha_creacion'] }}</td>
+                                        <td>{{ $usuario->rol ? $usuario->rol->Rol : 'Sin rol asignado' }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($usuario['Fecha_Ultima_Conexion'])->format('Y/m/d') }}</td>
+                                        <td>{{ $usuario['Primer_Ingreso'] }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($usuario['Fecha_Vencimiento'])->format('Y/m/d') }}</td>
+                                        <td>{{ $usuario['Correo_Electronico'] }}</td>
                                     </tr>
                                     @php
                                         $index++;

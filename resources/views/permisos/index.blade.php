@@ -54,25 +54,19 @@
                     <table id="mitabla" class="table table-hover table-bordered" style="width: 100%; margin: auto;">
                         <thead class="thead-dark">
                             <tr>
+                                <th>Acciones</th>
                                 <th>Rol</th>
                                 <th>Objeto</th>
                                 <th>Permiso Inserción</th>
                                 <th>Permiso Eliminación</th>
                                 <th>Permiso Actualización</th>
                                 <th>Permiso Consultar</th>
-                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tablaPermisos">
                             @if(is_array($permisos) || is_object($permisos))
                                 @foreach ($permisos as $permiso)
                                     <tr>
-                                        <td>{{ $roles[$permiso['Id_Rol']]->Rol ?? 'N/A' }}</td>
-                                        <td>{{ $objetos[$permiso['Id_Objeto']]->Objeto ?? 'N/A' }}</td>
-                                        <td>{{ $permiso['Permiso_Insercion'] }}</td>
-                                        <td>{{ $permiso['Permiso_Eliminacion'] }}</td>
-                                        <td>{{ $permiso['Permiso_Actualizacion'] }}</td>
-                                        <td>{{ $permiso['Permiso_Consultar'] }}</td>
                                         <td>
                                             <div class="dropdown">
                                                 <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $permiso['COD_PERMISOS'] }}" data-bs-toggle="dropdown" aria-expanded="false">
@@ -90,6 +84,12 @@
                                                 </ul>
                                             </div>
                                         </td>
+                                        <td>{{ $roles[$permiso['Id_Rol']]->Rol ?? 'N/A' }}</td>
+                                        <td>{{ $objetos[$permiso['Id_Objeto']]->Objeto ?? 'N/A' }}</td>
+                                        <td>{{ $permiso['Permiso_Insercion'] }}</td>
+                                        <td>{{ $permiso['Permiso_Eliminacion'] }}</td>
+                                        <td>{{ $permiso['Permiso_Actualizacion'] }}</td>
+                                        <td>{{ $permiso['Permiso_Consultar'] }}</td>
                                     </tr>
                                 @endforeach
                             @else

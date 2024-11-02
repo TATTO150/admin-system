@@ -83,6 +83,7 @@
                 <table id="mitabla" class="table table-hover table-bordered w-100">
                     <thead class="thead-dark">
                         <tr>
+                            <th>ACCIÓN</th>
                             <th>NOMBRE EQUIPO</th>
                             <th>NOMBRE EMPLEADO</th>
                             <th>NOMBRE PROYECTO</th>
@@ -91,13 +92,19 @@
                             <th>ESTADO ASIGNACIÓN</th>
                             <th>FECHA INICIO</th>
                             <th>FECHA FIN</th>
-                            <th>ACCIÓN</th>
                         </tr>
                     </thead>
                     <tbody id="tablaAsignaciones">
                         @if($asignaciones->isNotEmpty())
                             @foreach ($asignaciones as $asignacion)
                                 <tr data-cod-asignacion="{{ $asignacion->COD_ASIGNACION_EQUIPO }}">
+                                    <td>
+                                        <a href="{{ route('asignaciones.edit', $asignacion->COD_ASIGNACION_EQUIPO) }}" class="btn btn-warning btn-sm">EDITAR</a>
+                                        <button class="btn btn-danger btn-sm" onclick="confirmInactive({{ $asignacion->COD_ASIGNACION_EQUIPO }}, {{ $asignacion->COD_ESTADO_ASIGNACION }})">ELIMINAR</button>
+                                        @if($asignacion->mostrar_finalizar)
+                                            <button class="btn btn-info btn-sm" onclick="confirmFinalizar({{ $asignacion->COD_ASIGNACION_EQUIPO }}, {{ $asignacion->COD_ESTADO_ASIGNACION }}, '{{ $asignacion->COD_EQUIPO }}', '{{ $asignacion->COD_EMPLEADO }}', '{{ $asignacion->COD_PROYECTO }}', '{{ $asignacion->DESCRIPCION }}', '{{ $asignacion->FECHA_ASIGNACION_INICIO }}')">FINALIZAR</button>
+                                        @endif
+                                    </td>
                                     <td>{{ $asignacion->NOM_EQUIPO }}</td>
                                     <td>{{ $asignacion->NOM_EMPLEADO }}</td>
                                     <td>{{ $asignacion->NOM_PROYECTO }}</td>
@@ -106,13 +113,6 @@
                                     <td>{{ $asignacion->ESTADO_ASIGNACION }}</td>
                                     <td>{{ $asignacion->FECHA_ASIGNACION_INICIO }}</td>                
                                     <td>{{ $asignacion->FECHA_ASIGNACION_FIN }}</td>
-                                    <td>
-                                        <a href="{{ route('asignaciones.edit', $asignacion->COD_ASIGNACION_EQUIPO) }}" class="btn btn-warning btn-sm">EDITAR</a>
-                                        <button class="btn btn-danger btn-sm" onclick="confirmInactive({{ $asignacion->COD_ASIGNACION_EQUIPO }}, {{ $asignacion->COD_ESTADO_ASIGNACION }})">ELIMINAR</button>
-                                        @if($asignacion->mostrar_finalizar)
-                                            <button class="btn btn-info btn-sm" onclick="confirmFinalizar({{ $asignacion->COD_ASIGNACION_EQUIPO }}, {{ $asignacion->COD_ESTADO_ASIGNACION }}, '{{ $asignacion->COD_EQUIPO }}', '{{ $asignacion->COD_EMPLEADO }}', '{{ $asignacion->COD_PROYECTO }}', '{{ $asignacion->DESCRIPCION }}', '{{ $asignacion->FECHA_ASIGNACION_INICIO }}')">FINALIZAR</button>
-                                        @endif
-                                    </td>
                                 </tr>
                             @endforeach
                         @else
