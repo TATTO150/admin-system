@@ -442,11 +442,7 @@ return [
                 'url'  => 'permisos',
                 'icon' => 'fab fa-expeditedssl',
             ],
-            [
-                'text'  => 'ESTADO USUARIO',
-                'url'   => 'estado_usuarios',
-                'icon'  => 'fas fa-user-check',
-            ],
+           
             [
                 'text'  => 'BITACORA',
                 'url'  => 'bitacora',
@@ -456,6 +452,11 @@ return [
                 'text'  => 'RESPALDO',
                 'url'  => 'backups',
                 'icon' => 'fas fa-lock'
+            ],
+            [
+                'text'  => 'RESTAURAR',
+                'url'  => 'restore',
+                'icon' => 'fas fa-lock fa-lg'
             ],
         ],
     ],

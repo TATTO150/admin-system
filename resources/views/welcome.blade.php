@@ -49,7 +49,7 @@
                                             href="{{ route('login') }}"  
                                             class="rounded-md px-3 py-2 text-8x1 ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
                                         >
-                                            Iniciar Sesion
+                                            Inicio de sesion
                                         </a>
 
                                        
