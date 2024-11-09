@@ -16,4 +16,9 @@ class EstadoCompra extends Model
     protected $fillable = [
         'DESC_ESTADO',
     ];
+
+    public function compras()
+    {
+        return $this->belongsTo(Compras::class, 'COD_COMPRA', 'COD_COMPRA');
+    }
 }

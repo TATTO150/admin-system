@@ -16,4 +16,9 @@ class TipoCompra extends Model
     protected $fillable = [
         'DESC_TIPO',
     ];
+
+    public function compras()
+    {
+        return $this->belongsTo(Compras::class, 'COD_COMPRA', 'COD_COMPRA');
+    }
 }
