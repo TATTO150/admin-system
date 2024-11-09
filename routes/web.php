@@ -70,7 +70,7 @@ use App\Models\Asignacion_Equipo;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\EstadoProyectoControllador;
-
+use App\Http\Controllers\RestoreController;
 Route::get('/', function () {
     return view('welcome');
  });
@@ -462,6 +462,10 @@ Route::post('/backups/create', [BackupController::class, 'create'])->name('backu
 Route::get('/backups/download/{filename}', [BackupController::class, 'download'])->name('backups.download');
 Route::delete('/backups/delete/{filename}', [BackupController::class, 'delete'])->name('backups.delete');
 
+/*restaurar*/
+Route::get('/restore', [RestoreController::class, 'index'])->name('restore.index');
+
+Route::post('/restore-from-backup', [RestoreController::class, 'restoreFromBackup'])->middleware('auth');
 
 Route::get('/usuarios/depurar', function () {
     // Aquí puedes pasar cualquier dato adicional si es necesario
