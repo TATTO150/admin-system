@@ -10,7 +10,7 @@
 @section('content')
     <!-- Botón para regresar al índice de compras -->
     <div class="mb-4">
-        <a href="{{ route('compras.index') }}" class="btn btn-swarning btn btn-warning text-white hover:bg-blue-600">Regresar al listado de compras</a>
+        <a href="{{ route('compras.index') }}" class="btn btn-secondary">Regresar al listado de compras</a>
     </div>
 
 
@@ -91,7 +91,7 @@
                             <td>
                                 <!-- Dropdown para acciones de las deducciones -->
                                 <div class="dropdown">
-                                    <button class="btn btn-secondary text-white hover:bg-blue-600" type="button" id="dropdownMenuButton{{ $deducciones['COD_DEDUCCION'] }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $deducciones['COD_DEDUCCION'] }}" data-bs-toggle="dropdown" aria-expanded="false">
                                         Acción
                                     </button>
                                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $deducciones['COD_DEDUCCION'] }}">
@@ -177,3 +177,4 @@
         });
     </script>
 @stop
+
