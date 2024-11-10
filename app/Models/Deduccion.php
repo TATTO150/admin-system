@@ -19,4 +19,9 @@ class Deduccion extends Model
         'VALOR_DEDUCCION'
     ];     
     public $timestamps = false; 
+
+    public function compras()
+    {
+        return $this->belongsTo(Compras::class, 'COD_COMPRA', 'COD_COMPRA');
+    }
 }

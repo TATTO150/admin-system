@@ -71,6 +71,11 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\EstadoProyectoControllador;
 use App\Http\Controllers\RestoreController;
+use App\Http\Controllers\DeduccionControlador;
+
+
+
+
 Route::get('/', function () {
     return view('welcome');
  });
@@ -644,7 +649,7 @@ Route::get('estado_proyecto/{id}/check', [EstadoProyectoControllador::class, 'ch
     Route::put('/equipos/restaurar/{id}', [EquipoControlador::class, 'restaurar'])->name('equipos.restaurar');
 
     ///////////////////////////////////////////////////////////////*MANTENIMIENTO*////////////////////////////////////////////////////
-    Route::middleware(['web'])->group(function () {
+        Route::middleware(['web'])->group(function () {
         Route::get('/mantenimientos', [MantenimientoControlador::class, 'index'])->name('mantenimientos.index');
         Route::get('/mantenimientos/crear', [MantenimientoControlador::class, 'crear'])->name('mantenimientos.crear');
         Route::post('/mantenimientos', [MantenimientoControlador::class, 'insertar'])->name('mantenimientos.insertar');
@@ -660,19 +665,14 @@ Route::get('estado_proyecto/{id}/check', [EstadoProyectoControllador::class, 'ch
         Route::patch('/actualizar/{COD_MANTENIMIENTO}', [GestionMantenimientoControlador::class, 'actualizarEstado'])->name('gestionMantenimiento.actualizarEstado');
     });
     ///////////////////////////////////////////////////////////////////*COMPRAS*//////////////////////////////////////////////////
-
-    Route::get('compras/reporte-diario', [ComprasControlador::class, 'reporteDiario'])->name('compras.reporteDiario');
-    Route::get('compras/reporte-mensual', [ComprasControlador::class, 'reporteMensual'])->name('compras.reporteMensual');
-    Route::get('/compras/pdf', [ComprasControlador::class, 'pdf'])->name('compras.pdf');
-    Route::get('/compras', [ComprasControlador::class, 'index'])->name('compras.index');
-    Route::get('/compras/crear', [ComprasControlador::class, 'crear'])->name('compras.crear');
-    Route::post('/compras', [ComprasControlador::class, 'insertar'])->name('compras.insertar');
-    Route::delete('/compras/{COD_COMPRA}', [ComprasControlador::class, 'destroy'])->name('compras.destroy');
-    Route::get('/compras/{COD_COMPRA}', [ComprasControlador::class, 'edit'])->name('compras.edit');
-    Route::put('/compras/{COD_COMPRA}', [ComprasControlador::class, 'update'])->name('compras.update');
-    Route::post('compras/generar-gastos', [ComprasControlador::class, 'generarGastos'])->name('compras.generarGastos');
-
-
+        Route::get('/compras', [ComprasControlador::class, 'index'])->name('compras.index');
+        Route::post('compras/generar-gastos', [ComprasControlador::class, 'generarGastos'])->name('compras.generarGastos');
+        Route::get('/compras/{COD_COMPRA}/deducciones', [DeduccionControlador::class, 'index'])->name('compras.deduccion');
+        Route::post('/compras/{COD_COMPRA}/', [ComprasControlador::class, 'agregarDeduccion'])->name('compras.agregar');
+        Route::put('/compras/{COD_COMPRA}/deducciones/{COD_DEDUCCION}', [DeduccionControlador::class, 'update'])->name('compras.deduccion.update');
+        Route::delete('/compras/{COD_COMPRA}/deducciones/{COD_DEDUCCION}', [DeduccionControlador::class, 'destroy'])->name('compras.deduccion.destroy');
+        Route::post('/compras/liquidar/', [ComprasControlador::class, 'liquidarCompras'])->name('compras.liquidar');
+        
 
     //////////////////////////////////////////////////////////////////*CARGOS*//////////////////////////////////////////
     Route::get('/cargos/pdf', [CargosControlador::class, 'pdf'])->name('cargos.pdf');

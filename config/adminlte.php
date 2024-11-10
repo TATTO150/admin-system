@@ -357,16 +357,16 @@ return [
         'text'    => 'COMPRAS Y GASTOS',
         'icon'    => 'fas fa-hand-holding-usd',
         'submenu' => [
-            /*[
+            [
                 'text' => 'COMPRAS',
                 'url'  => 'compras',
                 'icon' => 'fas fa-donate',
-            ],*/
-            [
+            ],
+            /*[
                 'text' => 'LIBRO DIARIO',
                 'url'  => 'gastos',
                 'icon' => 'fa fa-cart-plus',
-            ],
+            ],*/
         ],
     ],
     [
