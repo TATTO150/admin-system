@@ -14,10 +14,13 @@ use App\Models\Area;
 use App\Models\Empleados;
 use App\Models\Permisos;
 use App\Models\Compras;
+use App\Models\user;
+use Illuminate\Support\Facades\Mail;
 use App\Models\TipoCompra;
 use Illuminate\Support\Facades\Cache;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Providers\PermisoService;
+use App\Mail\NotificacionNuevaSolicitud;
 
 class SolicitudesControlador extends Controller
 {
@@ -259,6 +262,26 @@ class SolicitudesControlador extends Controller
 
     // Guardar en la base de datos
     $compra->save();
+    // Obtener el nombre de usuario y el nombre del proyecto
+    $usuario = User::find($id_usuario);
+    $proyecto = Proyectos::where('COD_PROYECTO', $request->COD_PROYECTO)->first();
+
+    // Enviar el correo con los detalles
+    $detalles = [
+        'usuario' => $usuario ? $usuario->Nombre_Usuario : 'Desconocido',
+        'descripcion' => $request->DESC_COMPRA,
+        'proyecto' => $proyecto ? $proyecto->NOM_PROYECTO : 'Desconocido',
+        'url' => route('login'),
+    ];
+
+    // Obtener todos los correos de los administradores con Id_Rol = 1
+    $adminEmails = User::where('Id_Rol', 1)->pluck('Correo_Electronico')->toArray();
+
+    // Verificar que existan correos antes de enviar
+    if (count($adminEmails) > 0) {
+        // Enviar el correo a los administradores
+        Mail::to($adminEmails)->send(new NotificacionNuevaSolicitud($detalles));
+    }
 
     // Registrar en la bitácora
     $this->bitacora->registrarEnBitacora(22, 'Nueva compra creada', 'insertar');

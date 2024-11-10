@@ -41,9 +41,6 @@
                 @endif
 
                 <div class="card-body">
-                  
-                 
-                    <!-- Ejemplo de tabla -->
                     <h6>Detalles de la Solicitud:</h6>
                     <table class="table table-striped table-bordered table-hover">
                         <thead>
@@ -55,7 +52,7 @@
                         <tbody>
                             <tr>
                                 <td>Código Solicitud</td>
-                                <td>{{ $solicitud->COD_COMPRA}}</td>
+                                <td>{{ $solicitud->COD_COMPRA }}</td>
                             </tr>
                             <tr>
                                 <td>Solicitante</td>
@@ -87,18 +84,43 @@
                         <button type="submit" class="btn btn-success btn-sm">APROBAR</button>
                     </form>
 
-                    <form action="{{ route('gestionSolicitudes.rechazar', $solicitud->COD_COMPRA) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('¿Estás seguro de que deseas rechazar esta solicitud?');">
-                        @csrf
-                        @method('PATCH')
-                        <button type="submit" class="btn btn-danger btn-sm">RECHAZAR</button>
-                    </form>
+                    <!-- Botón para abrir el modal de rechazo -->
+                    <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#rejectModal">
+                        RECHAZAR
+                    </button>
+
+                    <!-- Modal de rechazo -->
+                    <div class="modal fade" id="rejectModal" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel" aria-hidden="true">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="rejectModalLabel">Rechazar Solicitud</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <form action="{{ route('gestionSolicitudes.rechazar', $solicitud->COD_COMPRA) }}" method="POST" id="rejectForm">
+                                        @csrf
+                                        @method('PATCH')
+                                        <div class="form-group">
+                                            <label for="motivo">Especifique el motivo de rechazo:</label>
+                                            <textarea name="motivo" id="motivo" class="form-control" required></textarea>
+                                        </div>
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                                    <button type="submit" form="rejectForm" class="btn btn-danger">Enviar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </main>
         </div>
     </div>
 @stop
-
-
 
 @section('css')
     <link rel="stylesheet" href="/css/admin_custom.css">
@@ -145,7 +167,6 @@
         }
     </style>
 @stop
-
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
