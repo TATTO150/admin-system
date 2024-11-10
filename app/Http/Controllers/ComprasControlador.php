@@ -96,11 +96,58 @@ class ComprasControlador extends Controller
 
     public function agregarDeduccion(Request $request, $id)
     {
-        // Validar la entrada
+        $palabrasSoeces = ['conchatumadre', 'prostituta', 'pene', 'culo', 
+        'estupido', 'idiota', 'invecil', 'imbécil', 'tonto', 'inutil', 'malnacido',
+        'baboso', 'payaso', 'demonio', 'muerte', 'violacion', 'pudrete', 'basura',
+        'asqueroso', 'bastardo', 'puta','despreciable','pendejo','bastardo','maldito']; // Reemplaza con palabras inapropiadas específicas
+    
+        // Convertir las palabras prohibidas en una expresión regular
+        $regexPalabrasSoeces = implode('|', array_map('preg_quote', $palabrasSoeces));
+        
+        // Validar la entrada con reglas avanzadas
         $validated = $request->validate([
-            'valor_deduccion' => 'numeric|min:0',
+            'valor_deduccion' => 'required|numeric|min:100',
             'tipo_deduccion' => 'required|in:numerico,porcentaje',
-            'descripcion_deduccion' => 'nullable|string|max:255',
+            'descripcion_deduccion' => [
+                'required',
+                'nullable',
+                'string',
+                'max:255',
+                
+                // Validación: no permite palabras soeces
+                function($attribute, $value, $fail) use ($regexPalabrasSoeces) {
+                    if (preg_match("/\b($regexPalabrasSoeces)\b/i", $value)) {
+                        $fail("La $attribute contiene palabras inapropiadas.");
+                    }
+                },
+                
+                // Validación: no permite múltiples espacios consecutivos
+                'regex:/^\S+(?: \S+)*$/',
+                
+                // Validación: solo permite caracteres alfanuméricos y puntuación básica
+                'regex:/^[\w\s.,-]*$/',
+                
+                // Validación: no permite la misma letra repetida consecutivamente más de 2 veces
+                'regex:/^(?!.*([a-zA-Z])\1\1).*$/',
+                
+                // Validación: no permite la misma palabra consecutiva
+                function($attribute, $value, $fail) {
+                    if (preg_match('/\b(\w+)\b(?:\s+\1\b)+/i', $value)) {
+                        $fail("La descripcion contiene palabras repetidas consecutivamente.");
+                    }
+                },
+
+            ],
+        ], [
+            'valor_deduccion.numeric' => 'El valor de la deducción debe ser numérico.',
+            'valor_deduccion.min' => 'El valor de la deducción no puede ser menor a 100.',
+            'tipo_deduccion.required' => 'El tipo de deducción es obligatorio.',
+            'tipo_deduccion.in' => 'El tipo de deducción debe ser "numérico" o "porcentaje".',
+            'descripcion_deduccion.string' => 'La descripción debe ser un texto.',
+            'descripcion_deduccion.max' => 'La descripción no puede tener más de 255 caracteres.',
+            'descripcion_deduccion.required' => 'La descripción no puede ser nula.',
+            'valor_deduccion.required' => 'La deduccion es obligatoria',
+            'descripcion_deduccion.regex' => 'La descripción contiene caracteres inválidos o múltiples espacios consecutivos.',
         ]);
         
         
@@ -138,7 +185,7 @@ class ComprasControlador extends Controller
         return redirect()->back()->with('success', 'Deducción agregada correctamente. El total de deducciones es: ' . number_format($totalDeducciones, 2));
     }
 
-    public function liquidarCompras(Request $request)
+    public function BTNLiquidar(Request $request)
     {
         // Decodificar los IDs de las compras seleccionadas
         $comprasSeleccionadas = json_decode($request->compras_seleccionadas, true);
@@ -162,8 +209,8 @@ class ComprasControlador extends Controller
             }
         }
     
-        return redirect()->route('compras.liquidar')->with('success', 'Compras liquidadas correctamente.');
-    }
+       return response()->json(['success' => 'Compras liquidadas correctamente.']);
+}
     
 
 

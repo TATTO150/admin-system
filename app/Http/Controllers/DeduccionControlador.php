@@ -77,11 +77,60 @@ class DeduccionControlador extends Controller
 
 public function update(Request $request, $COD_COMPRA, $COD_DEDUCCION)
 {
-    $validated = $request->validate([
-        'VALOR_DEDUCCION' => 'numeric|min:0',
-        'tipo_deduccion' => 'required|in:numerico,porcentaje',
-        'DESC_DEDUCCION' => 'nullable|string|max:255',
-    ]);
+    $palabrasSoeces = ['conchatumadre', 'prostituta', 'pene', 'culo', 
+        'estupido', 'idiota', 'invecil', 'imbécil', 'tonto', 'inutil', 'malnacido',
+        'baboso', 'payaso', 'demonio', 'muerte', 'violacion', 'pudrete', 'basura',
+        'asqueroso', 'bastardo', 'puta','despreciable','pendejo','bastardo','maldito']; // Reemplaza con palabras inapropiadas específicas
+    
+        // Convertir las palabras prohibidas en una expresión regular
+        $regexPalabrasSoeces = implode('|', array_map('preg_quote', $palabrasSoeces));
+        
+        // Validar la entrada con reglas avanzadas
+        $validated = $request->validate([
+            'VALOR_DEDUCCION' => 'required|numeric|min:100',
+            'tipo_deduccion' => 'required|in:numerico,porcentaje',
+            'DESC_DEDUCCION' => [
+                'required',
+                'nullable',
+                'string',
+                'max:255',
+                
+                // Validación: no permite palabras soeces
+                function($attribute, $value, $fail) use ($regexPalabrasSoeces) {
+                    if (preg_match("/\b($regexPalabrasSoeces)\b/i", $value)) {
+                        $fail("La $attribute contiene palabras inapropiadas.");
+                    }
+                },
+                
+                // Validación: no permite múltiples espacios consecutivos
+                'regex:/^\S+(?: \S+)*$/',
+                
+                // Validación: solo permite caracteres alfanuméricos y puntuación básica
+                'regex:/^[\w\s.,-]*$/',
+                
+                // Validación: no permite la misma letra repetida consecutivamente más de 2 veces
+                'regex:/^(?!.*([a-zA-Z])\1\1).*$/',
+                
+                // Validación: no permite la misma palabra consecutiva
+                function($attribute, $value, $fail) {
+                    if (preg_match('/\b(\w+)\b(?:\s+\1\b)+/i', $value)) {
+                        $fail("La descripcion contiene palabras repetidas consecutivamente.");
+                    }
+                },
+
+            ],
+        ], [
+            'VALOR_DEDUCCION.numeric' => 'El valor de la deducción debe ser numérico.',
+            'VALOR_DEDUCCION.min' => 'El valor de la deducción no puede ser menor a 100.',
+            'tipo_deduccion.required' => 'El tipo de deducción es obligatorio.',
+            'tipo_deduccion.in' => 'El tipo de deducción debe ser "numérico" o "porcentaje".',
+            'DESC_DEDUCCION.string' => 'La descripción debe ser un texto.',
+            'DESC_DEDUCCION.max' => 'La descripción no puede tener más de 255 caracteres.',
+            'DESC_DEDUCCION.required' => 'La descripción no puede ser nula.',
+            'VALOR_DEDUCCION.required' => 'La deduccion es obligatoria',
+            'DESC_DEDUCCION.regex' => 'La descripción contiene caracteres inválidos o múltiples espacios consecutivos.',
+        ]);
+
     // Buscar la deducción por el ID de la deducción
     $deducciones = Deduccion::where('COD_DEDUCCION', $COD_DEDUCCION)->first();
  

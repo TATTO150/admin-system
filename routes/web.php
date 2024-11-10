@@ -671,8 +671,23 @@ Route::get('estado_proyecto/{id}/check', [EstadoProyectoControllador::class, 'ch
         Route::post('/compras/{COD_COMPRA}/', [ComprasControlador::class, 'agregarDeduccion'])->name('compras.agregar');
         Route::put('/compras/{COD_COMPRA}/deducciones/{COD_DEDUCCION}', [DeduccionControlador::class, 'update'])->name('compras.deduccion.update');
         Route::delete('/compras/{COD_COMPRA}/deducciones/{COD_DEDUCCION}', [DeduccionControlador::class, 'destroy'])->name('compras.deduccion.destroy');
-        Route::post('/compras/liquidar/', [ComprasControlador::class, 'liquidarCompras'])->name('compras.liquidar');
-        
+        Route::post('/compras/liquidar', [ComprasControlador::class, 'BTNLiquidar'])->name('compras.BTNLiquidar');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     //////////////////////////////////////////////////////////////////*CARGOS*//////////////////////////////////////////
     Route::get('/cargos/pdf', [CargosControlador::class, 'pdf'])->name('cargos.pdf');
