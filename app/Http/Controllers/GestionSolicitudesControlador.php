@@ -7,12 +7,15 @@ use App\Models\solitudes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Area;
+use App\Models\User;
 use App\Models\Permisos;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Gastos;
 use App\Models\Compras;
 use App\Models\Empleados;
 use App\Providers\PermisoService;
+use App\Mail\NotificacionResultadoSolicitud;
+use Illuminate\Support\Facades\Mail;
 
 class GestionSolicitudesControlador extends Controller
 {
@@ -85,6 +88,10 @@ class GestionSolicitudesControlador extends Controller
         // Cambia el estado de la solicitud a 'APROBADA'
         $solicitud->COD_ESTADO = 2; 
         $solicitud->save();
+
+        $motivoRechazo = '';
+
+        $this->enviarEmail($solicitud, $motivoRechazo);
     
         // Redirige al índice de gestión de solicitudes con un mensaje de éxito
         return redirect()->route('gestionSolicitudes.index')->with('success', 'Solicitud aprobada exitosamente.');
@@ -92,14 +99,49 @@ class GestionSolicitudesControlador extends Controller
 
 
 
-    public function rechazar($COD_COMPRA)
+    public function rechazar(Request $request, $COD_COMPRA)
     {
+        // Buscar la solicitud por código
         $solicitud = Compras::findOrFail($COD_COMPRA);
 
-        $solicitud->COD_ESTADO = 3; // O el estado que correspondan para el rechazo
+        // Actualizar el estado a rechazado
+        $solicitud->COD_ESTADO = 3; // O el estado que corresponda para el rechazo
+
+        // Almacenar el motivo de rechazo en una variable
+        $motivoRechazo = $request->input('motivo');
+
+        // Guardar los cambios en la solicitud
         $solicitud->save();
 
+        // Llamar al método de envío de email
+        $this->enviarEmail($solicitud, $motivoRechazo);
+
+        // Redirigir con mensaje de éxito
         return redirect()->route('gestionSolicitudes.index')->with('success', 'Solicitud rechazada exitosamente.');
+    }
+
+    public function enviarEmail($solicitud, $motivoRechazo){
+        // Obtener el nombre de usuario y el nombre del proyecto
+        $usuario = User::find($solicitud->Id_usuario);
+        $proyecto = Proyectos::where('COD_PROYECTO', $solicitud->COD_PROYECTO)->first();
+        
+        if($solicitud->COD_ESTADO === 2){ 
+        $message = 'Su solicitud ha sido aprobada';
+        }
+        if($solicitud->COD_ESTADO === 3){
+            $message = 'Su solicitud ha sido rechazada';
+        }
+
+        // Enviar el correo con los detalles
+        $detalles = [
+            'usuario' => $usuario ? $usuario->Nombre_Usuario : 'Desconocido',
+            'proyecto' => $proyecto ? $proyecto->NOM_PROYECTO : 'Desconocido',
+            'resultado' => $message,
+            'motivo' => $motivoRechazo,
+            'url' => route('login'),
+        ];
+
+        Mail::to($usuario->Correo_Electronico)->send(new NotificacionResultadoSolicitud($detalles));
     }
 
 }
