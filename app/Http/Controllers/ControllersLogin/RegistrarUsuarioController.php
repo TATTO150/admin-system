@@ -55,7 +55,7 @@ class RegistrarUsuarioController extends Controller
         $request->validate([
             'Usuario' =>  [(new Validaciones)->requerirSinEspacios()->requerirTodoMayusculas()],
             'Nombre_Usuario' => [(new Validaciones)->requerirUnEspacio()->requerirTodoMayusculas()->prohibirNumerosSimbolos()],
-            'Contrasena' => [(new Validaciones)->requerirSinEspacios()->requerirSimbolo()->requerirMinuscula()->requerirMayuscula()->requerirNumero()->requerirlongitudMinima(8)->requerirlongitudMaxima(12)->requerirCampo()],
+            'Contrasena' => [(new Validaciones)->requerirSinEspacios()->requerirSimbolo()->requerirMinuscula()->requerirMayuscula()->requerirNumero()->requerirlongitudMinima(18)->requerirlongitudMaxima(25)->requerirCampo()],
             'Correo_Electronico' => [(new Validaciones)->requerirSinEspacios()->requerirArroba()->requerirCampo()->requerirCorreoUnico('users', 'email')],
         ]);
 
@@ -170,7 +170,7 @@ class RegistrarUsuarioController extends Controller
     public function insertar(UsuarioRequest $request)
     {
  // Generar una nueva contraseña robusta de 12 caracteres
- $contraseña = $this->generarContraseñaRobusta(12); // Corregido: Se usa $this-> para llamar a la función
+ $contraseña = $this->generarContraseñaRobusta(22); // Corregido: Se usa $this-> para llamar a la función
 // Encriptar la contraseña
 $contraseñaHasheada = Hash::make($contraseña);
 Log::info('Contraseña Generada: ' . $contraseña); // Depuración
