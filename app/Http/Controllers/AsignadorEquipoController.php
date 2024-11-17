@@ -138,6 +138,11 @@ private function validateAsignacion(Request $request)
 
 public function index(Request $request)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     $roleId = $user->Id_Rol;
 
@@ -239,6 +244,11 @@ public function index(Request $request)
     // Mostrar una asignación específica
     public function show($id)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $asignacion = $this->fetchApiData("Asignaciones/{$id}");
         if (empty($asignacion)) {
             return redirect()->route('asignaciones.index')->with('error', 'Asignación no encontrada');
@@ -249,6 +259,11 @@ public function index(Request $request)
     // Mostrar el formulario para crear una nueva asignación
     public function create(Request $request)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     
@@ -359,6 +374,11 @@ public function store(Request $request)
 
 public function edit($id)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     $roleId = $user->Id_Rol;
 
@@ -537,6 +557,11 @@ public function generarReporteGeneral()
 }
 public function gestionar(Request $request, $id)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     // Obtener la asignación con las relaciones necesarias
     $asignacion = Asignacion_Equipos::with(['equipo', 'empleado', 'proyectos', 'estado_asignacion'])->findOrFail($id);
 

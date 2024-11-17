@@ -37,6 +37,11 @@ class EmpleadosControlador extends Controller
 
     public function index()
     {
+         // Verificar si el usuario no está autenticado
+         if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     
@@ -73,6 +78,11 @@ class EmpleadosControlador extends Controller
     
     public function pdf(Request $request)
 {
+     // Verificar si el usuario no está autenticado
+     if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     // Obtener parámetros de la solicitud
     $tipo = $request->query('tipo');
     $id = $request->query('id');
@@ -179,6 +189,11 @@ class EmpleadosControlador extends Controller
 
 public function crear()
 {
+     // Verificar si el usuario no está autenticado
+     if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     
     //Nueva validacvion de permisos
@@ -308,6 +323,11 @@ public function insertar(Request $request)
 
 public function destroy($COD_EMPLEADO)
 {
+     // Verificar si el usuario no está autenticado
+     if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     
     //Nueva validacvion de permisos
@@ -334,6 +354,11 @@ public function destroy($COD_EMPLEADO)
 
 public function edit($COD_EMPLEADO)
 {
+     // Verificar si el usuario no está autenticado
+     if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     
     //Nueva validacvion de permisos
@@ -510,6 +535,11 @@ public function update(Request $request, $COD_EMPLEADO)
 
 public function desactivar($id)
 {
+     // Verificar si el usuario no está autenticado
+     if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     
     //Nueva validacvion de permisos
@@ -542,6 +572,11 @@ public function desactivar($id)
 
 public function restaurar($id)
 {
+     // Verificar si el usuario no está autenticado
+     if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     $roleId = $user->Id_Rol;
 

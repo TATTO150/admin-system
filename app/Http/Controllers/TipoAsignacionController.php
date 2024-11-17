@@ -16,6 +16,11 @@ class TipoAsignacionController extends Controller
     // Mostrar todos los tipos de asignación
     public function index()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -40,6 +45,11 @@ class TipoAsignacionController extends Controller
     // Mostrar formulario de creación
     public function create()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -83,6 +93,11 @@ class TipoAsignacionController extends Controller
     // Mostrar formulario de edición
     public function edit($id)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -181,6 +196,11 @@ class TipoAsignacionController extends Controller
     }
     public function generateReport()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $tipoAsignaciones = TipoAsignacion::all();
         $fechaHora = Carbon::now()->format('d-m-Y H:i:s');
         $path = public_path('images/CTraterra.jpeg');

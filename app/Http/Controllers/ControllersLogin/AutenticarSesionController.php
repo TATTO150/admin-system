@@ -9,6 +9,7 @@ use Laravel\Fortify\Contracts\LoginResponse;
 use Laravel\Fortify\Contracts\LoginViewResponse;
 use Laravel\Fortify\Contracts\LogoutResponse;
 use App\Models\User;
+use App\Models\Sesiones;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Bitacora;
 use App\Models\Parametros;
@@ -93,9 +94,15 @@ class AutenticarSesionController extends Controller
         if (Hash::check($request->password, $user->Contrasena)) {
             // Restablecer intentos fallidos en caso de inicio de sesión exitoso
             $this->resetearIntentosLogin($user);
+            
             $user->refresh();
 
+            $existeSesion = Sesiones::where('user_id', $user->Id_usuario)->first(); 
             $this->guard->login($user);
+            if($existeSesion){
+                return redirect()->route('unica.sesion');
+            }
+
             $this->actualizarUltimoLogin($user);
             $this->Primer_Ingreso($user);
             $this->registrarEnBitacora($user, 2, 'Inicio de sesión exitoso', 'Ingreso');
@@ -157,10 +164,15 @@ class AutenticarSesionController extends Controller
     public function destroy(Request $request): LogoutResponse
 {
     $user = $this->guard->user();
+
+    // Eliminar todas las sesiones activas del usuario en la base de datos
+    Sesiones::where('user_id', auth()->id())->delete();
     
     $this->registrarEnBitacora($user, 2, 'Cierre de sesión', 'Ingreso'); // ID_objetos 2: 'login'
 
     $this->guard->logout();
+     // Limpiar todas las variables de sesión
+    session()->flush();
 
     if ($request->hasSession()) {
         $request->session()->invalidate();

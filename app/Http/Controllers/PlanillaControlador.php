@@ -35,6 +35,11 @@ class PlanillaControlador extends Controller
 
     public function index()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         
         //Nueva validacvion de permisos
@@ -54,6 +59,11 @@ class PlanillaControlador extends Controller
 
     public function generarReporte(Request $request)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $mesInicio = $request->input('fecha_inicio_reporte');
     $mesFin = $request->input('fecha_fin_reporte');
     $tipoPlanilla = $request->input('tipo_planilla');
@@ -103,6 +113,11 @@ class PlanillaControlador extends Controller
 
 public function generarReporteGeneral()
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     // Obtiene todas las planillas
     $planillas = Planillas::select('COD_PLANILLA', 'FECHA_GENERADA', 'TOTAL_PAGADO')->get();
     $tipos_planilla = TipoPlanilla::all()->keyBy('COD_TIPO_PLANILLA');
@@ -133,6 +148,11 @@ public function generarReporteGeneral()
 
     public function pdfIndividual($id)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $planilla = Planillas::findOrFail($id);
 
         // Obtener empleados con relaciones de área y cargo
@@ -163,6 +183,11 @@ public function generarReporteGeneral()
 
     public function crear()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
 
     //Nueva validacvion de permisos
@@ -317,6 +342,11 @@ if ($codTipoPlanilla == 1) { // Mensual
 }
 
 public function confirmarPlanilla($COD_PLANILLA){
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     // Buscar la planilla específica usando el COD_PLANILLA
     $planilla = Planillas::where('COD_PLANILLA', $COD_PLANILLA)->first();
 
@@ -352,6 +382,11 @@ public function confirmarPlanilla($COD_PLANILLA){
 }
 
 public function cancelarPlanilla($COD_PLANILLA){
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     // Buscar la planilla por su COD_PLANILLA
     $planilla = Planillas::find($COD_PLANILLA);
 
@@ -370,6 +405,11 @@ public function cancelarPlanilla($COD_PLANILLA){
 
 public function show($COD_PLANILLA)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
 
     //Nueva validacvion de permisos
@@ -392,6 +432,11 @@ public function show($COD_PLANILLA)
     
     public function destroy($COD_PLANILLA)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         //Nueva validacvion de permisos
         $this->permisoService->tienePermiso('PLANILLA', 'Eliminacion', true);
 
@@ -406,6 +451,11 @@ public function show($COD_PLANILLA)
 
     public function edit($COD_PLANILLA)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
 
     //Nueva validacvion de permisos
@@ -428,6 +478,11 @@ public function show($COD_PLANILLA)
 
     public function eliminarEmpleados(Request $request)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         // Validar que al menos un empleado haya sido seleccionado
         if (!$request->has('empleados')) {
             return redirect()->back()->with('error', 'Debe seleccionar al menos un empleado.');

@@ -13,6 +13,11 @@ class PerfilController extends Controller
     
     public function editProfile()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
 
         if (!$user instanceof User) {
@@ -64,6 +69,11 @@ class PerfilController extends Controller
 
     public function enable2fa(Request $request)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
 
         if (!$user instanceof User) {

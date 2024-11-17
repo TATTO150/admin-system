@@ -14,6 +14,11 @@ class BitacoraController extends Controller
    
     public function index()
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     
@@ -42,6 +47,11 @@ class BitacoraController extends Controller
     
   public function pdf()
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     // Aumentar el tiempo de ejecución máximo a 300 segundos (5 minutos)
     set_time_limit(300);
 
@@ -91,6 +101,11 @@ class BitacoraController extends Controller
      */
     public function registrarEnBitacora($ID_objetos, $descripcion, $accion)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
 
         Bitacora::create([

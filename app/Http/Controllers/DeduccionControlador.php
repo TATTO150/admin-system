@@ -28,6 +28,11 @@ class DeduccionControlador extends Controller
    
    public function index($id)
    {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
        $user = Auth::user();
        $roleId = $user->Id_Rol;
 
@@ -55,6 +60,12 @@ class DeduccionControlador extends Controller
    }
 
     public function edit($COD_DEDUCCION){ 
+
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $USER = Auth::user();
 
         $this-> permisoService->tienePermiso('DEDUCCION','Actualizacion',true);
@@ -141,6 +152,11 @@ public function update(Request $request, $COD_COMPRA, $COD_DEDUCCION)
 
 public function destroy($COD_COMPRA, $COD_DEDUCCION)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     // Encuentra la deducción basada en los parámetros
     $deducciones = Deduccion::where('COD_COMPRA', $COD_COMPRA)
                           ->where('COD_DEDUCCION', $COD_DEDUCCION)

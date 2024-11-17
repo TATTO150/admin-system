@@ -133,6 +133,11 @@ class EquipoControlador extends Controller
 
     public function index(Request $request)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     $roleId = $user->Id_Rol;
 
@@ -188,6 +193,11 @@ class EquipoControlador extends Controller
 
     public function restaurar($id)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         // Obtener el equipo específico de la API
         $response = Http::get("http://localhost:3000/Equipos/{$id}");
     
@@ -218,6 +228,11 @@ class EquipoControlador extends Controller
     
     public function crear()
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -282,6 +297,11 @@ class EquipoControlador extends Controller
 
     public function asignarNuevoEquipo(Request $request)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         if ($request->input('asignar') == 'si') {
             $nuevoEquipo = collect($this->fetchApiData('Equipos'))->last();
 
@@ -295,6 +315,11 @@ class EquipoControlador extends Controller
 
     public function edit($COD_EQUIPO)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     $roleId = $user->Id_Rol;
 
@@ -365,6 +390,11 @@ class EquipoControlador extends Controller
 
     public function destroy($COD_EQUIPO)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     
@@ -421,6 +451,11 @@ class EquipoControlador extends Controller
 // Reporte General
 public function generarReporteGeneral()
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $equipos = Equipos::all(); // Obtener todos los equipos
 
     if ($equipos->isEmpty()) {
@@ -445,6 +480,11 @@ public function generarReporteGeneral()
 // Reporte por Estado
 public function generarReporteEstado(Request $request)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $estado = $request->input('estado'); // Obtener el estado seleccionado
 
     if (!$estado) {
@@ -476,6 +516,11 @@ public function generarReporteEstado(Request $request)
 // Reporte por Fecha
 public function generarReporteFecha(Request $request)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $fechaInicio = Carbon::parse($request->input('fecha_inicio'))->startOfDay();
     $fechaFin = Carbon::parse($request->input('fecha_fin'))->endOfDay();
 

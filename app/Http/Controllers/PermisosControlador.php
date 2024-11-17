@@ -27,6 +27,11 @@ class PermisosControlador extends Controller
 
     public function index()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     
@@ -44,6 +49,11 @@ class PermisosControlador extends Controller
     }
 
     public function pdf(){
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $permisos=Permisos::all();
         $roles = \App\Models\Rol::all()->keyBy('Id_Rol');
         $objetos = \App\Models\Objeto::all()->keyBy('Id_Objetos');
@@ -66,6 +76,11 @@ class PermisosControlador extends Controller
 
     public function crear()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -108,6 +123,11 @@ class PermisosControlador extends Controller
 
     public function destroy($COD_PERMISOS)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
     $roleId = $user->Id_Rol;
 
@@ -141,6 +161,11 @@ class PermisosControlador extends Controller
 
     public function edit($COD_PERMISOS)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     

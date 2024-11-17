@@ -43,6 +43,11 @@ class MantenimientoControlador extends Controller
 
     public function index()
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -103,6 +108,11 @@ class MantenimientoControlador extends Controller
 
 /*pdf*/
 public function pdf(){
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $response = Http::get('http://127.0.0.1:3000/mantenimientos');
     $mantenimientos = $response->json();
     //fecha
@@ -153,15 +163,13 @@ return $pdf->stream();
 }
 
 
-
-
-
-
-
-
-
     public function crear()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -243,6 +251,11 @@ return $pdf->stream();
 
     public function destroy($COD_MANTENIMIENTO)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -341,6 +354,11 @@ return $pdf->stream();
    /* }*/
      public function gestion($id)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -366,7 +384,11 @@ return $pdf->stream();
 
     public function actualizarEstado(Request $request, $id)
     {
-        
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $mantenimiento = Mantenimientos::findOrFail($id);
         $mantenimiento->COD_ESTADO_MANTENIMIENTO = $request->input('estado');
         $mantenimiento->save();

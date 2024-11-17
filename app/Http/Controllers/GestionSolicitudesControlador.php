@@ -36,6 +36,11 @@ class GestionSolicitudesControlador extends Controller
 
     public function index()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -54,6 +59,11 @@ class GestionSolicitudesControlador extends Controller
 
     public function gestionar($COD_COMPRA)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -65,6 +75,12 @@ class GestionSolicitudesControlador extends Controller
 
         if (!$solicitud) {
             abort(404, 'Solicitud no encontrada');
+        }
+
+        if($solicitud->LIQUIDEZ_COMPRA === 1){
+            return redirect()->back()
+            ->withErrors("La solicitud ya ha sido liquidada, no puede editarla")
+            ->send();
         }
 
         // Obtener áreas, proyectos y empleados
@@ -82,6 +98,11 @@ class GestionSolicitudesControlador extends Controller
 
     public function aprobar($COD_COMPRA)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         // Encuentra la solicitud por su código
         $solicitud = Compras::findOrFail($COD_COMPRA);
         
@@ -101,6 +122,11 @@ class GestionSolicitudesControlador extends Controller
 
     public function rechazar(Request $request, $COD_COMPRA)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         // Buscar la solicitud por código
         $solicitud = Compras::findOrFail($COD_COMPRA);
 

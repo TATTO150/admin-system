@@ -27,13 +27,19 @@
             <button id="verOtrasSolicitudesBtn" class="btn btn-primary">Ver Otras Solicitudes</button>
         </div>
 
+         <!-- Formulario de búsqueda -->
+         <form id="buscador-form" method="GET">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="buscar" placeholder="Buscar..." name="buscar" value="{{ request()->input('buscar') }}">
+            </div>
+        </form>
+
         <!-- Card que contiene la tabla -->
         <div class="card shadow-sm">
             <div class="card-body">
                 <div id="tablaSolicitudesEspera">
                     <h2>Solicitudes en Espera</h2>
-                    @if($solicitudesEspera->isNotEmpty())
-                        <div class="table-responsive">
+                        <div class="table-responsive mt-4">
                             <table id="tablaEspera" class="table table-hover table-bordered">
                                 <thead class="thead-dark">
                                     <tr>
@@ -42,8 +48,8 @@
                                         <th>DESCRIPCIÓN SOLICITUD</th>
                                         <th>PROYECTO ASOCIADO</th>
                                         <th>TIPO COMPRA</th>
-                                        <th>CANTIDAD CUOTAS</th>
                                         <th>PRECIO CUOTA</th>
+                                        <th>CANTIDAD CUOTAS</th>
                                         <th>PRECIO TOTAL</th>
                                         <th>ESTADO SOLICITUD</th>
                                     </tr>
@@ -73,31 +79,32 @@
                             <span id="currentPageEspera" class="align-self-center"></span>
                             <button id="nextPageEspera" class="btn btn-outline-primary ms-2">Siguiente</button>
                         </nav>
-                    @else
-                        <p>No hay solicitudes en espera.</p>
-                    @endif
+                    
                 </div>
 
                 <div id="tablaOtrasSolicitudes" style="display: none;">
                     <h2>Otras Solicitudes</h2>
-                    <div class="table-responsive">
+                    <div class="table-responsive mt-4">
                         <table id="tablaOtras" class="table table-hover table-bordered">
                             <thead class="thead-dark">
                                 <tr>
+                                    <th>ACCIÓN</th>
                                     <th>SOLICITANTE</th>
                                     <th>DESCRIPCIÓN SOLICITUD</th>
                                     <th>PROYECTO ASOCIADO</th>
                                     <th>TIPO COMPRA</th>
-                                    <th>CANTIDAD CUOTAS</th>
                                     <th>PRECIO CUOTA</th>
+                                    <th>CANTIDAD CUOTAS</th>
                                     <th>PRECIO TOTAL</th>
                                     <th>ESTADO SOLICITUD</th>
-                                    <th>ACCIÓN</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($otrasSolicitudes as $solicitud)
                                     <tr>
+                                        <td>
+                                            <a href="{{ route('gestionSolicitudes.gestionar', $solicitud->COD_COMPRA) }}" class="btn btn-warning btn-sm">GESTIONAR</a>
+                                        </td>
                                         <td>{{ $usuarios[$solicitud->Id_usuario]->Usuario ?? 'N/A' }}</td>
                                         <td>{{ $solicitud->DESC_COMPRA }}</td>
                                         <td>{{ $proyectos[$solicitud->COD_PROYECTO]->NOM_PROYECTO ?? 'N/A' }}</td>
@@ -106,9 +113,7 @@
                                         <td>{{ $solicitud->TOTAL_CUOTAS }}</td>
                                         <td>{{ $solicitud->PRECIO_COMPRA }}</td>
                                         <td>{{ $estados[$solicitud->COD_ESTADO]->DESC_ESTADO ?? 'N/A' }}</td>
-                                        <td>
-                                            <a href="{{ route('gestionSolicitudes.gestionar', $solicitud->COD_COMPRA) }}" class="btn btn-warning btn-sm">GESTIONAR</a>
-                                        </td>
+                                        
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -142,6 +147,33 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        $(document).ready(function() {
+            $('#buscar').on('keyup', function() {
+                var query = $(this).val().toLowerCase();
+                $('#tablaSolicitudesEspera tbody tr').each(function() {
+                    var rowText = $(this).text().toLowerCase();
+                    if (rowText.indexOf(query) === -1) {
+                        $(this).hide();
+                    } else {
+                        $(this).show();
+                    }
+                });
+            });
+        });
+
+        $(document).ready(function() {
+            $('#buscar').on('keyup', function() {
+                var query = $(this).val().toLowerCase();
+                $('#tablaOtrasSolicitudes tbody tr').each(function() {
+                    var rowText = $(this).text().toLowerCase();
+                    if (rowText.indexOf(query) === -1) {
+                        $(this).hide();
+                    } else {
+                        $(this).show();
+                    }
+                });
+            });
+        });
         // Función para paginar las tablas
         function paginateTable(tableId, paginationId, rowsPerPage) {
             const table = document.getElementById(tableId);

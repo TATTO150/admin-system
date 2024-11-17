@@ -24,6 +24,11 @@ class EstadoProyectoControllador extends Controller
 
     public function index()
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $estados = EstadoProyecto::where('ESTADO_PROYECTO', '!=', 'INACTIVO')->get();
         $user = Auth::user();
         $roleId = $user->Id_Rol;
@@ -48,6 +53,11 @@ class EstadoProyectoControllador extends Controller
     
     public function generatePdf()
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         // Obtén los estados de proyecto que no estén inactivos
         $estados = EstadoProyecto::where('ESTADO_PROYECTO', '!=', 'INACTIVO')->get();
     
@@ -75,6 +85,11 @@ class EstadoProyectoControllador extends Controller
 
     public function create()
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         return view('estado_proyecto.create');
                 // Verificar si el rol del usuario tiene el permiso de inserción en el objeto SOLICITUD
@@ -132,6 +147,11 @@ if (\App\Models\EstadoProyecto::where('ESTADO_PROYECTO', $value)->exists()) {
 
 public function store(Request $request)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     // Validar el estado del proyecto
     $this->validateEstadoProyecto($request);
 
@@ -153,6 +173,11 @@ public function store(Request $request)
 
     public function edit(EstadoProyecto $estadoProyecto)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
                 // Verificar permiso
@@ -195,6 +220,11 @@ public function store(Request $request)
     
     public function destroy(EstadoProyecto $estadoProyecto)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         // Verificar si el estado está asociado a algún proyecto
         $proyectosConEstado = Proyectos::where('ESTADO_PROYECTO', $estadoProyecto->ESTADO_PROYECTO)->count();
     

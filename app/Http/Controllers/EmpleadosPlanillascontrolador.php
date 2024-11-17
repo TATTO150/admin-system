@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Rules\Validaciones;
 use App\Models\empleados;
 use App\Models\Planillas;
+use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class EmpleadosPlanillascontrolador extends Controller
@@ -27,12 +28,22 @@ class EmpleadosPlanillascontrolador extends Controller
     }
     public function index()
     {
+         // Verificar si el usuario no está autenticado
+         if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $response = Http::get('http://127.0.0.1:3000/empleados_planillas');
         $empleado_planillas = EmpleadoPlanilla::with(['empleado', 'planilla'])->get();
         $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s'); 
         return view('empleado_planillas.index', compact('empleado_planillas','fechaHora'));
     }
     public function pdf(){
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $empleado_planillas=EmpleadoPlanilla::all();
         $empleados = empleados::all();
         $planillas = Planillas::all();
@@ -57,6 +68,11 @@ class EmpleadosPlanillascontrolador extends Controller
 
     public function crear()
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
           return view('empleado_planillas.crear', [
             'empleados' => $this->empleados,
             'planillas' => $this->planillas,
@@ -114,6 +130,11 @@ class EmpleadosPlanillascontrolador extends Controller
     
 public function destroy($COD_EMPLEADO_PLANILLA)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     try {
         // Obtener el empleado de planilla antes de eliminar
         $empleadoPlanilla = EmpleadoPlanilla::findOrFail($COD_EMPLEADO_PLANILLA);
@@ -148,6 +169,11 @@ public function destroy($COD_EMPLEADO_PLANILLA)
 
     public function edit($COD_EMPLEADO_PLANILLA)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $response = Http::get("http://localhost:3000/empleados_planillas/{$COD_EMPLEADO_PLANILLA}");
         $empleado_planillas = $response->json();
     

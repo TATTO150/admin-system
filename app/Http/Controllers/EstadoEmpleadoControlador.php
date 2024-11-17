@@ -26,6 +26,11 @@ class EstadoEmpleadoControlador extends Controller
 
     public function index()
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         //Nueva validacvion de permisos
         $this->permisoService->tienePermiso('TIPOEMPLEADO', 'Consultar', true);
@@ -39,6 +44,11 @@ class EstadoEmpleadoControlador extends Controller
 
     public function pdf()
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $estados = EstadoEmpleado::all();
         $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s');
         // Cambio de img a formato pdf
@@ -61,6 +71,11 @@ class EstadoEmpleadoControlador extends Controller
 
     public function crear()
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
 
          //Nueva validacvion de permisos
@@ -107,6 +122,11 @@ class EstadoEmpleadoControlador extends Controller
 
     public function destroy($COD_ESTADO_EMPLEADO)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -134,6 +154,11 @@ class EstadoEmpleadoControlador extends Controller
 
     public function edit($COD_ESTADO_EMPLEADO)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         
          //Nueva validacvion de permisos
