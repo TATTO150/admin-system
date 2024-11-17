@@ -696,7 +696,7 @@ public function update(Request $request, $COD_PROYECTO)
             (new Validaciones)->prohibirInicioConEspacio()
         ],
         'FEC_INICIO' => [
-            (new Validaciones)->requerirCampo()->validarFechaNoMenorQueHoy(),
+            (new Validaciones)->requerirCampo(),
             (new Validaciones)->validarAnoActual()
         ],
         'FEC_FINAL' => [
@@ -809,39 +809,40 @@ public function finalizar(Request $request, $COD_PROYECTO)
 
 
     public function empleados()
-{
- // Obtener todos los datos del modelo EmpleadoProyectos
- $empleadoProyectos = EmpleadoProyectos::with('empleado', 'solicitud')->get();
-        
- // Pasar los datos a la vista
- return view('proyectos.empleado_proyectos', compact('empleadoProyectos'));
- $this->bitacora->registrarEnBitacora(12, 'Vista de empleado proyectos', 'ingresar');//BITACORA
-}
-
-
-
-
-public function gestionarEmpleados(Request $request, $proyectoId)
-{
-    // Obtener el proyecto
-    $proyecto = Proyectos::findOrFail($proyectoId);
-
-    // Recibir los DNIs seleccionados en el modal
-    $empleadoDNIsSeleccionados = $request->input('empleados', []); // Los DNIs seleccionados
-
-    // Verifica si no se seleccionaron empleados
-    if (empty($empleadoDNIsSeleccionados)) {
-        return redirect()->route('proyectos.index', $proyectoId)->with('error', 'No se seleccionaron empleados para eliminar.');
+    {
+     // Obtener todos los datos del modelo EmpleadoProyectos
+     $empleadoProyectos = EmpleadoProyectos::with('empleado', 'solicitud')->get();
+            
+     // Pasar los datos a la vista
+     return view('proyectos.empleado_proyectos', compact('empleadoProyectos'));
+     $this->bitacora->registrarEnBitacora(12, 'Vista de empleado proyectos', 'ingresar');//BITACORA
     }
-
-    // Eliminar los empleados seleccionados del proyecto
-    $proyecto->Empleados()->detach($empleadoDNIsSeleccionados);
-
-    // Redirigir a la vista con un mensaje de éxito
-    $this->bitacora->registrarEnBitacora(12, 'Empleado desasignado de proyecto', 'desasignar');//BITACORA
-
-    return redirect()->route('proyectos.empleados', $proyectoId)->with('success', 'Empleados eliminados del proyecto correctamente.');
-}
+    
+    
+    
+    
+    public function gestionarEmpleados(Request $request, $proyectoId)
+    {
+        // Obtener el proyecto
+        $proyecto = Proyectos::findOrFail($proyectoId);
+    
+        // Recibir los DNIs seleccionados en el modal
+        $empleadoDNIsSeleccionados = $request->input('empleados', []); // Los DNIs seleccionados
+    
+        // Verifica si no se seleccionaron empleados
+        if (empty($empleadoDNIsSeleccionados)) {
+            return redirect()->route('proyectos.index', $proyectoId)->with('error', 'No se seleccionaron empleados para eliminar.');
+        }
+    
+        // Eliminar los empleados seleccionados del proyecto
+        $proyecto->Empleados()->detach($empleadoDNIsSeleccionados);
+    
+        // Redirigir a la vista con un mensaje de éxito
+        $this->bitacora->registrarEnBitacora(12, 'Empleado desasignado de proyecto', 'desasignar');//BITACORA
+    
+        return redirect()->route('proyectos.empleados', $proyectoId)->with('success', 'Empleados eliminados del proyecto correctamente.');
+    }
+    
 
     
 
