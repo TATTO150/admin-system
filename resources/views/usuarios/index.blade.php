@@ -44,13 +44,14 @@
                     <a href="{{ route('usuarios.crear') }}" class="btn btn-success">NUEVO</a>
                     <a href="{{ route('usuarios.pdf') }}" class="btn btn-primary" target="_blank">REPORTE</a>
                 </div>
+
                 <!-- Campo de búsqueda -->
                 <div class="mb-4">
                     <input type="text" id="searchInput" class="form-control" placeholder="Buscar usuario...">
                 </div>
                 
                 <div style="overflow-x: auto;">
-                    <table id="mitabla" class="table table-hover table-bordered" style="width: 75%; margin: auto;">
+                    <table id="mitabla" class="table table-hover table-bordered" style="width: 100%; margin: auto;">
                         <thead class="thead-dark">
                             <tr>
                                 <th>Acción</th>
@@ -84,7 +85,7 @@
                                                             <form action="{{ route('usuarios.destroy', $usuario['Id_usuario']) }}" method="POST" class="d-inline" id="delete-form-{{ $usuario['Id_usuario'] }}">
                                                                 @csrf
                                                                 @method('DELETE')
-                                                                <button type="button" class="btn" onclick="confirmDelete({{ $usuario->Id_usuario }})">Eliminar</button>
+                                                                <button type="button" class="btn" onclick="confirmDelete({{ $usuario['Id_usuario'] }})">Eliminar</button>
                                                             </form>
                                                         </li>
                                                     </ul>
@@ -119,7 +120,6 @@
                         </tbody>
                     </table>
                 </div>
-                
             </div>
         </div>
     </div>
@@ -146,54 +146,44 @@
 
     <script>
         $(document).ready(function() {
-    // Guardar las filas originales para poder restaurarlas
-    var originalRows = $('#tablaUsuarios').html();
-
-    // Funcionalidad de búsqueda personalizada
-    $('#searchInput').on('input', function() {
-        var searchTerm = $(this).val().toLowerCase().trim();
-        var hasResults = false;
-
-        // Restaurar filas originales cada vez que cambia el término de búsqueda
-        $('#tablaUsuarios').html(originalRows);
-
-        if (searchTerm.length > 0) {
-            $('#tablaUsuarios tr').each(function() {
-                var rowText = $(this).text().toLowerCase().replace(/\s+/g, ' ');
-                if (rowText.includes(searchTerm)) {
-                    $(this).show();
-                    hasResults = true;
-                } else {
-                    $(this).hide();
-                }
+            // Inicializar DataTables con idioma personalizado
+            $('#mitabla').DataTable({
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/es-MX.json',
+                    paginate: {
+                        first: "Primero",
+                        last: "Último",
+                        next: "Siguiente Página",
+                        previous: "Página Anterior"
+                    },
+                    info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                    zeroRecords: "No se encontraron coincidencias",
+                },
+                pageLength: 5,
+                lengthChange: false,
+                paging: true,
+                searching: false,
+                ordering: true,
+                info: true,
+                autoWidth: false,
             });
-
-            // Mostrar mensaje de "No se encontraron coincidencias" si no hay resultados
-            if (!hasResults) {
-                $('#tablaUsuarios').html(
-                    '<tr><td colspan="9" class="text-center">No se encontraron coincidencias.</td></tr>'
-                );
-            }
-        }
-    });
-});
+        });
 
         function confirmDelete(userId) {
-    Swal.fire({
-        title: '¿Estás seguro?',
-        text: "¡No podrás revertir esto!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Sí, eliminar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            // Si el usuario confirma la eliminación, envía el formulario
-            document.getElementById('delete-form-' + userId).submit();
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¡No podrás revertir esto!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-form-' + userId).submit();
+                }
+            });
         }
-    });
-}
     </script>
 @stop

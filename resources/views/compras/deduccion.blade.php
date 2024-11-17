@@ -10,7 +10,7 @@
 @section('content')
     <!-- Botón para regresar al índice de compras -->
     <div class="mb-4">
-        <a href="{{ route('compras.index') }}" class="btn btn-swarning btn btn-warning text-white hover:bg-blue-600">Regresar al listado de compras</a>
+        <a href="{{ route('compras.index') }}" class="btn btn-secondary">Regresar al listado de compras</a>
     </div>
 
 
@@ -91,7 +91,7 @@
                             <td>
                                 <!-- Dropdown para acciones de las deducciones -->
                                 <div class="dropdown">
-                                    <button class="btn btn-secondary text-white hover:bg-blue-600" type="button" id="dropdownMenuButton{{ $deducciones['COD_DEDUCCION'] }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $deducciones['COD_DEDUCCION'] }}" data-bs-toggle="dropdown" aria-expanded="false">
                                         Acción
                                     </button>
                                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $deducciones['COD_DEDUCCION'] }}">
@@ -139,11 +139,11 @@
                                             </div>
                                             <div class="form-group">
                                                 <label for="descripcionDeduccion">Descripción</label>
-                                                <input type="text" class="form-control" id="DESC_DEDUCCION" name="DESC_DEDUCCION" rows="3" required maxlength="255" value="{{old('DESC_DEDUCCION', $deducciones['DESC_DEDUCCION']) }}" required></textarea>
+                                                <input type="text" class="form-control" id="DESC_DEDUCCION" name="DESC_DEDUCCION" rows="3" maxlength="255" value="{{old('DESC_DEDUCCION', $deducciones['DESC_DEDUCCION']) }}"></textarea>
                                             </div>
                                             <div class="form-group">
                                                 <label for="valorDeduccion">Valor de Deducción</label>
-                                                <input type="number" class="form-control" id="VALOR_DEDUCCION" name="VALOR_DEDUCCION"  value="{{ old('VALOR_DEDUCCION', intval($deducciones['VALOR_DEDUCCION'])) }}" min="0" required>
+                                                <input type="number" class="form-control" id="VALOR_DEDUCCION" name="VALOR_DEDUCCION"  value="{{ old('VALOR_DEDUCCION', intval($deducciones['VALOR_DEDUCCION'])) }}" min="1">
                                             </div>
                                             <button type="submit" class="btn btn-primary">Guardar</button>
                                         </form>
@@ -177,3 +177,4 @@
         });
     </script>
 @stop
+

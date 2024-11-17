@@ -100,14 +100,18 @@
 <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
+            <!-- Encabezado del Modal -->
             <div class="modal-header">
                 <h5 class="modal-title" id="reportModalLabel">Generar Reporte</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+
+            <!-- Cuerpo del Modal -->
             <div class="modal-body">
-                <!-- Contenedor para mostrar mensajes de error dentro del modal -->
+                <!-- Contenedor para mensajes de error -->
                 <div id="errorContainer" class="alert alert-danger d-none"></div>
 
+                <!-- Selección de Tipo de Reporte -->
                 <div class="mb-3">
                     <label for="tipoReporte" class="form-label">Tipo de Reporte</label>
                     <select id="tipoReporte" class="form-select" onchange="mostrarFormulario()">
@@ -118,38 +122,39 @@
                     </select>
                 </div>
 
-                <div class="d-grid gap-2">
-                    <!-- Formulario para Reporte por Estado -->
-                    <form id="reporteEstadoForm" class="d-none" onsubmit="return enviarFormulario(event, '{{ route('equipos.reporte.estado') }}')">
-                        @csrf
-                        <select name="estado" class="form-control mb-2" required>
+                <!-- Formulario para Reporte por Estado -->
+                <form id="reporteEstadoForm" class="d-none" method="POST" action="{{ route('equipos.reporte.estado') }}" onsubmit="return enviarFormulario(event)">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="estado" class="form-label">Seleccione el Estado</label>
+                        <select name="estado" class="form-control" required>
                             @foreach($estados as $estado)
                                 <option value="{{ $estado['COD_ESTADO_EQUIPO'] }}">{{ $estado['DESC_ESTADO_EQUIPO'] }}</option>
                             @endforeach
                         </select>
-                        <button type="submit" class="btn btn-warning">Generar Reporte por Estado</button>
-                    </form>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100">Generar Reporte por Estado</button>
+                </form>
 
-                    <!-- Formulario para Reporte por Fecha -->
-                    <form id="reporteFechaForm" class="d-none" onsubmit="return enviarFormulario(event, '{{ route('equipos.reporte.fecha') }}')">
-                        @csrf
-                        <div class="mb-2">
-                            <label for="fecha_inicio">Fecha Inicio</label>
-                            <input type="date" name="fecha_inicio" class="form-control" required>
-                        </div>
-                        <div class="mb-2">
-                            <label for="fecha_fin">Fecha Fin</label>
-                            <input type="date" name="fecha_fin" class="form-control" required>
-                        </div>
-                        <button type="submit" class="btn btn-info">Generar Reporte por Fecha</button>
-                    </form>
+                <!-- Formulario para Reporte por Fecha -->
+                <form id="reporteFechaForm" class="d-none" method="POST" action="{{ route('equipos.reporte.fecha') }}" onsubmit="return enviarFormulario(event)">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                        <input type="date" name="fecha_inicio" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                        <input type="date" name="fecha_fin" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-info w-100">Generar Reporte por Fecha</button>
+                </form>
 
-                    <!-- Formulario para Reporte General -->
-                    <form id="reporteGeneralForm" class="d-none" onsubmit="return enviarFormulario(event, '{{ route('equipos.reporte.general') }}')">
-                        @csrf
-                        <button type="submit" class="btn btn-primary">Generar Reporte General de Equipos</button>
-                    </form>
-                </div>
+                <!-- Formulario para Reporte General -->
+                <form id="reporteGeneralForm" class="d-none" method="POST" action="{{ route('equipos.reporte.general') }}" onsubmit="return enviarFormulario(event)">
+                    @csrf
+                    <button type="submit" class="btn btn-primary w-100">Generar Reporte General de Equipos</button>
+                </form>
             </div>
         </div>
     </div>
@@ -177,6 +182,58 @@
     <script src="//cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js" type="text/javascript"></script>
 
     <script>
+     function mostrarFormulario() {
+        const tipoReporte = document.getElementById("tipoReporte").value;
+
+        // Oculta todos los formularios inicialmente
+        document.getElementById("reporteEstadoForm").classList.add("d-none");
+        document.getElementById("reporteFechaForm").classList.add("d-none");
+        document.getElementById("reporteGeneralForm").classList.add("d-none");
+
+        // Muestra el formulario correspondiente según la opción seleccionada
+        if (tipoReporte === "estado") {
+            document.getElementById("reporteEstadoForm").classList.remove("d-none");
+        } else if (tipoReporte === "fecha") {
+            document.getElementById("reporteFechaForm").classList.remove("d-none");
+        } else if (tipoReporte === "general") {
+            document.getElementById("reporteGeneralForm").classList.remove("d-none");
+        }
+    }
+
+    function enviarFormulario(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const url = form.getAttribute("action");
+
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            // Si hay un error en la respuesta, devuelve la respuesta en JSON
+            return response.json().then(data => {
+                throw new Error(data.error); // Lanza el error con el mensaje del servidor
+            });
+        }
+        return response.blob(); // Continua con la generación del PDF si no hay errores
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank'); // Abre el PDF en una nueva pestaña
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error => {
+        // Muestra el mensaje de error en el modal
+        const errorContainer = document.getElementById("errorContainer");
+        errorContainer.classList.remove("d-none"); // Muestra el contenedor de error
+        errorContainer.innerText = error.message; // Coloca el mensaje de error en el contenedor
+    });
+}
         $(document).ready(function() {
             // Guardar las filas originales para poder restaurarlas
             var originalRows = $('#tablaEquipos').html();
@@ -271,6 +328,27 @@
                 }
             });
         };
+         // Comprueba si existe un mensaje de éxito en la sesión
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: '{{ session('success') }}',
+            timer: 3000,
+            showConfirmButton: false
+        });
+    @endif
+
+    // Comprueba si existe un mensaje de error en la sesión
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: '¡Error!',
+            text: '{{ session('error') }}',
+            timer: 3000,
+            showConfirmButton: false
+        });
+    @endif
     </script>
     
     

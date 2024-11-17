@@ -354,11 +354,11 @@ return [
         ],
     ],
     [
-        'text'    => 'COMPRAS Y GASTOS',
+        'text'    => 'GESTIÓN DE COMPRA',
         'icon'    => 'fas fa-hand-holding-usd',
         'submenu' => [
             [
-                'text' => 'COMPRAS',
+                'text' => 'LIQUIDACIONES DE COMPRAS',
                 'url'  => 'compras',
                 'icon' => 'fas fa-donate',
             ],

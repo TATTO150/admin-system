@@ -557,17 +557,7 @@ Route::get('estado_proyecto/{id}/check', [EstadoProyectoControllador::class, 'ch
     Route::post('/proyectos/{proyecto}/gestionar-empleados', [ProyectoControlador::class, 'gestionarEmpleados'])->name('proyectos.gestionarEmpleados');
 
     ////////////////////////////////////////////*SOLICITUDES*///////////////////////////////////////////////////
-    Route::post('/solicitudes/generateReport', [SolicitudesControlador::class, 'generateReport'])->name('solicitudes.generateReport');
     Route::get('/solicitudes/generateReport', [SolicitudesControlador::class, 'generateReport'])->name('solicitudes.generateReport');
-    Route::get('/solicitudes/reportes/estado', [SolicitudesControlador::class, 'reportePorEstado'])->name('solicitudes.reportePorEstado');
-    Route::get('/solicitudes/reportes/proyecto', [SolicitudesControlador::class, 'reportePorProyecto'])->name('solicitudes.reportePorProyecto');
-    Route::get('/solicitudes/reportes/area', [SolicitudesControlador::class, 'reportePorArea'])->name('solicitudes.reportePorArea');
-    Route::get('/solicitudes/reportes/general', [SolicitudesControlador::class, 'reporteGeneral'])->name('solicitudes.reporteGeneral');
-    Route::post('/solicitudes/reportes/estado', [SolicitudesControlador::class, 'reportePorEstadoPost'])->name('solicitudes.reportePorEstadoPost');
-    Route::post('/solicitudes/reportes/proyecto', [SolicitudesControlador::class, 'reportePorProyectoPost'])->name('solicitudes.reportePorProyectoPost');
-    Route::post('/solicitudes/reportes/area', [SolicitudesControlador::class, 'reportePorAreaPost'])->name('solicitudes.reportePorAreaPost');
-    Route::post('/solicitudes/reportes/general', [SolicitudesControlador::class, 'reporteGeneralPost'])->name('solicitudes.reporteGeneralPost');
-    Route::get('/solicitudes/pdf', [SolicitudesControlador::class, 'pdf'])->name('solicitudes.pdf');
     Route::get('/solicitudes', [SolicitudesControlador::class, 'index'])->name('solicitudes.index');
     Route::get('/solicitudes/crear', [SolicitudesControlador::class, 'crear'])->name('solicitudes.crear');
     Route::post('/solicitudes', [SolicitudesControlador::class, 'insertar'])->name('solicitudes.insertar');
@@ -672,7 +662,8 @@ Route::get('estado_proyecto/{id}/check', [EstadoProyectoControllador::class, 'ch
         Route::put('/compras/{COD_COMPRA}/deducciones/{COD_DEDUCCION}', [DeduccionControlador::class, 'update'])->name('compras.deduccion.update');
         Route::delete('/compras/{COD_COMPRA}/deducciones/{COD_DEDUCCION}', [DeduccionControlador::class, 'destroy'])->name('compras.deduccion.destroy');
         Route::post('/compras/liquidar/', [ComprasControlador::class, 'liquidarCompras'])->name('compras.liquidar');
-        
+        Route::get('/compras/reporte-buscar', [ComprasControlador::class, 'generarReporteBuscar'])->name('compras.reporte.buscar');
+
 
     //////////////////////////////////////////////////////////////////*CARGOS*//////////////////////////////////////////
     Route::get('/cargos/pdf', [CargosControlador::class, 'pdf'])->name('cargos.pdf');

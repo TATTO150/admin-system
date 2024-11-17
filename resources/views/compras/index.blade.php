@@ -79,70 +79,69 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($compras as $compras)
-                            <tr>
-                                <td>
-                                    <!-- Dropdown para acciones de las deducciones -->
-                                    <div class="dropdown">
-                                        <button class="btn btn-secondary  text-white hover:bg-blue-600" type="button" id="dropdownMenuButton{{ $compras['COD_COMPRA'] }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                            Acción
-                                        </button>
-                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $compras['COD_COMPRA'] }}">
-                                            <!-- Opción de deducción que abre el modal -->
-                                            <li><a class="dropdown-item" href="#" data-toggle="modal" data-target="#deduccionModal{{ $compras['COD_COMPRA'] }}">Agregar Deducción</a></li>
-                                            <li><a class="dropdown-item" href="{{ route('compras.deduccion', $compras->COD_COMPRA) }}">Detalles</a></li>
-                                        </ul>
-                                    </div>
-                                </td>
-                                
-                                <td>{{ isset($usuarios[$compras['Id_usuario']]) ? $usuarios[$compras['Id_usuario']]->Nombre_Usuario : 'Usuario no encontrado' }}</td>
-                                <td>{{ $compras['DESC_COMPRA'] }}</td>
-                                <td>{{ isset($proyectos[$compras['COD_PROYECTO']]) ? $proyectos[$compras['COD_PROYECTO']]->NOM_PROYECTO : 'Proyecto no encontrado' }}</td>
-                                <td>{{ $compras['FEC_REGISTRO'] }}</td>
-                                <td>{{ $compras['FECHA_PAGO'] }}</td>
-                                <td>{{ isset($estadocompras[$compras['COD_ESTADO']]) ? $estadocompras[$compras['COD_ESTADO']]->DESC_ESTADO: 'Estado no encontrada' }}</td>
-                                <td>{{ isset($tipocompras[$compras['COD_TIPO']]) ? $tipocompras[$compras['COD_TIPO']]->DESC_TIPO : 'Compra no encontrada' }}</td>
-                                <td>{{ number_format($compras->PRECIO_COMPRA, 2) }}</td>
-                                <td>{{ number_format($compras->totalDeducciones, 2) }}</td>
-                                <td>{{ number_format($compras->precioFinal, 2)}}</td>
-                                <td>{{ $compras['LIQUIDEZ_COMPRA'] == 1 ? 'Sí' : 'No' }}</td>
-                            </tr>
+                        @foreach ($compras as $compra)
+    <tr>
+        <td>
+            <!-- Dropdown para acciones de las deducciones -->
+            <div class="dropdown">
+                <button class="btn btn-secondary text-white hover:bg-blue-600" type="button" id="dropdownMenuButton{{ $compra['COD_COMPRA'] }}" data-bs-toggle="dropdown" aria-expanded="false">
+                    Acción
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $compra['COD_COMPRA'] }}">
+                    <!-- Opción de deducción que abre el modal -->
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#deduccionModal{{ $compra['COD_COMPRA'] }}">Agregar Deducción</a></li>
+                    <li><a class="dropdown-item" href="{{ route('compras.deduccion', $compra['COD_COMPRA']) }}">Detalles</a></li>
+                </ul>
+            </div>
+        </td>
 
-                            <!-- Modal para deducción -->
-                            <div class="modal fade" id="deduccionModal{{ $compras['COD_COMPRA'] }}" tabindex="-1" aria-labelledby="deduccionModalLabel{{ $compras['COD_COMPRA'] }}" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title" id="deduccionModalLabel{{ $compras['COD_COMPRA'] }}">Agregar Deducción</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        
-                                        <div class="modal-body">
-                                            <!-- Formulario para agregar la deducción -->
-                                            <form action="{{ route('compras.agregar', $compras['COD_COMPRA']) }}" method="POST">
-                                                @csrf
-                                                <div class="form-group">
-                                                    <label for="tipoDeduccion">Tipo de Deducción</label>
-                                                    <select class="form-control" id="tipoDeduccion" name="tipo_deduccion" required>
-                                                        <option value="numerico">Numérico</option>
-                                                        <option value="porcentaje">Porcentaje</option>
-                                                    </select>
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="valorDeduccion">Valor de Deducción</label>
-                                                    <input type="number" class="form-control" id="valorDeduccion" name="valor_deduccion" placeholder="Ingrese el valor de deducción">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="descripcionDeduccion">Descripción</label>
-                                                    <textarea class="form-control" id="descripcionDeduccion" name="descripcion_deduccion" placeholder="Descripción de la deducción"></textarea>
-                                                </div>
-                                                <button type="submit" class="btn btn-primary">Guardar</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
+        <td>{{ isset($usuarios[$compra['Id_usuario']]) ? $usuarios[$compra['Id_usuario']]->Nombre_Usuario : 'Usuario no encontrado' }}</td>
+        <td>{{ $compra['DESC_COMPRA'] }}</td>
+        <td>{{ isset($proyectos[$compra['COD_PROYECTO']]) ? $proyectos[$compra['COD_PROYECTO']]->NOM_PROYECTO : 'Proyecto no encontrado' }}</td>
+        <td>{{ $compra['FEC_REGISTRO'] }}</td>
+        <td>{{ $compra['FECHA_PAGO'] }}</td>
+        <td>{{ isset($estadocompras[$compra['COD_ESTADO']]) ? $estadocompras[$compra['COD_ESTADO']]->DESC_ESTADO : 'Estado no encontrado' }}</td>
+        <td>{{ isset($tipocompras[$compra['COD_TIPO']]) ? $tipocompras[$compra['COD_TIPO']]->DESC_TIPO : 'Compra no encontrada' }}</td>
+        <td>{{ number_format($compra->PRECIO_COMPRA, 2) }}</td>
+        <td>{{ number_format($compra->totalDeducciones, 2) }}</td>
+        <td>{{ number_format($compra->precioFinal, 2) }}</td>
+        <td>{{ $compra['LIQUIDEZ_COMPRA'] == 1 ? 'Sí' : 'No' }}</td>
+    </tr>
+
+    <!-- Modal para deducción -->
+    <div class="modal fade" id="deduccionModal{{ $compra['COD_COMPRA'] }}" tabindex="-1" aria-labelledby="deduccionModalLabel{{ $compra['COD_COMPRA'] }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deduccionModalLabel{{ $compra['COD_COMPRA'] }}">Agregar Deducción</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulario para agregar la deducción -->
+                    <form action="{{ route('compras.agregar', $compra['COD_COMPRA']) }}" method="POST">
+                        @csrf
+                        <div class="form-group">
+                            <label for="tipoDeduccion">Tipo de Deducción</label>
+                            <select class="form-control" id="tipoDeduccion" name="tipo_deduccion" required>
+                                <option value="numerico">Numérico</option>
+                                <option value="porcentaje">Porcentaje</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="valorDeduccion">Valor de Deducción</label>
+                            <input type="number" class="form-control" id="valorDeduccion" name="valor_deduccion" placeholder="Ingrese el valor de deducción">
+                        </div>
+                        <div class="form-group">
+                            <label for="descripcionDeduccion">Descripción</label>
+                            <textarea class="form-control" id="descripcionDeduccion" name="descripcion_deduccion" placeholder="Descripción de la deducción"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+@endforeach
                     </tbody>
                 </table>
             </div>
@@ -151,10 +150,9 @@
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="text-center mt-3" id="tituloActivos">LIQUIDACIONES POR REALIZAR</h5>
                     
-                    <form action="{{ route('compras.liquidar') }}" method="POST" id="formLiquidar">
+                    <form  id="formLiquidar">
                         @csrf
-                        <input type="hidden" name="compras_seleccionadas" id="comprasSeleccionadas">
-                        <button type="submit" class="btn btn-success text-white hover:bg-blue-600">Liquidar</button>
+                        <a href="#" class="btn btn-success" id="LiquidarSelect">Liquidar</a>
                     </form>
                     
                     
@@ -164,7 +162,7 @@
                 <table class="table table-hover table-bordered dt-responsive nowrap">
                     <thead class="thead-dark">
                         <tr>
-                            <th> <input type="checkbox" id="selectAll"> 
+                            <th> <input type="checkbox" name="" id="selectAll"> 
                             </th>
                             <th>USUARIO</th>
                             <th>DESCRIPCION COMPRA</th>
@@ -183,8 +181,8 @@
                     </thead>
                     <tbody id="tablaLiquidaciones">
                         @foreach ($Liquidaciones as $compras)
-                        <tr data-compra-id="{{ $compras->COD_COMPRA }}">
-                            <td><input type="checkbox" class="checkbox-compra" value="{{ $compras->COD_COMPRA }}">
+                        <tr id="compraCod{{ $compras->COD_COMPRA }}">
+                            <td><input type="checkbox" name="ids" class="checkbox-compra" value="{{ $compras->COD_COMPRA }}">
                             </td>
                             <td>{{ isset($usuarios[$compras['Id_usuario']]) ? $usuarios[$compras['Id_usuario']]->Nombre_Usuario : 'Usuario no encontrado' }}</td>
                             <td>{{ $compras['DESC_COMPRA'] }}</td>
@@ -204,45 +202,40 @@
                     </tbody>
                 </table>
             </div>
+            
         </div>
          
     </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const selectAllCheckbox = document.getElementById('selectAll');
-            const checkboxes = document.querySelectorAll('.checkbox-compra');
-            const formLiquidar = document.getElementById('formLiquidar');
-            const comprasSeleccionadasInput = document.getElementById('comprasSeleccionadas');
-    
-            // Función para seleccionar o deseleccionar todos los checkboxes de las compras
-            selectAllCheckbox.addEventListener('change', function() {
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = selectAllCheckbox.checked;
+        $(function(e){
+            $("#selectAll").click(function(){
+                $('.checkbox-compra').prop('checked',$(this).prop('checked'));
+            });
+
+            $('#LiquidarSelect').click(function(e){
+                e.preventDefault();
+                var all_cod = [];
+                $('input:checkbox[name=ids]:checked').each(function(){
+                    all_cod.push($(this).val());
                 });
-            });
-    
-            // Función para enviar las compras seleccionadas al backend
-            formLiquidar.addEventListener('submit', function(event) {
-                event.preventDefault();
-                const comprasSeleccionadas = Array.from(checkboxes)
-                    .filter(checkbox => checkbox.checked)
-                    .map(checkbox => checkbox.value);
-                comprasSeleccionadasInput.value = JSON.stringify(comprasSeleccionadas);
-                formLiquidar.submit();
-            });
+
+            })
         });
     </script> 
-
+<!-- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------->
     <div class="card mb-3 d-none" id="tablaretrasados">
         <div class="card-body">
 
             <div class="d-flex justify-content-between align-items-left mb-2">
-                <form action="" method="POST" id="formLiquidacion">
+                <form id="formLiquidacion">
                     @csrf
-                    <input type="hidden" name="compraSeleccionada" id="comprasRetrasoSeleccionadas">
+                    <input type="hidden" name="compras_seleccionadas" id="comprasRetrasoSeleccionadas">
                     <button type="submit" class="btn btn-success text-white hover:bg-blue-600">Liquidar</button>
                 </form>
             </div>
+            
             <!-- Contenedor para la tabla con barra de desplazamiento horizontal -->
             <div class="table-responsive">
                 <table id="tablaretrasados" class="table table-hover table-bordered dt-responsive nowrap">
@@ -288,34 +281,14 @@
                 </table>
             </div>
         </div>
+        <script>
+            
+           
 
+        </script> 
          
     </div>              
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const selectAllCheckbox = document.getElementById('selecAll');
-            const checkboxes = document.querySelectorAll('.checkbox-compras');
-            const formLiquidacion = document.getElementById('formLiquidacion');
-            const compraSeleccionadaInput = document.getElementById('comprasRetrasoSeleccionadas');
-    
-            // Función para seleccionar o deseleccionar todos los checkboxes de las compras
-            selectAllCheckbox.addEventListener('change', function() {
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = selectAllCheckbox.checked;
-                });
-            });
-    
-            // Función para enviar las compras seleccionadas al backend
-            formLiquidar.addEventListener('submit', function(event) {
-                event.preventDefault();
-                const compraSeleccionada = Array.from(checkboxes)
-                    .filter(checkbox => checkbox.checked)
-                    .map(checkbox => checkbox.value);
-                compraSeleccionadaInput.value = JSON.stringify(compraSeleccionada);
-                formLiquidacion.submit();
-            });
-        });
-    </script> 
+   
     
 @stop
 

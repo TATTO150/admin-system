@@ -19,6 +19,6 @@ class TipoCompra extends Model
 
     public function compras()
     {
-        return $this->belongsTo(Compras::class, 'COD_COMPRA', 'COD_COMPRA');
+        return $this->hasMany(Compras::class, 'COD_TIPO', 'COD_TIPO');
     }
 }

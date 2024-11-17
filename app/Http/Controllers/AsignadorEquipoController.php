@@ -462,7 +462,6 @@ public function update(Request $request, $id)
     return redirect()->route('asignaciones.index')->with('error', 'Error al actualizar la asignación.');
 }
 
-
 public function eliminarAsignacion(Request $request, $id)
 {
     $asignacion = Asignacion_Equipos::findOrFail($id);
@@ -473,12 +472,21 @@ public function eliminarAsignacion(Request $request, $id)
         $asignacion->COD_ESTADO_ASIGNACION = 3;
         $asignacion->save();
 
+        // Registrar en bitácora
         $this->bitacora->registrarEnBitacora(19, 'Asignación eliminada', 'eliminación');
-        return response()->json(['message' => 'Asignación eliminada correctamente.'], 200);
+        return redirect()->route('asignaciones.index')->with('success', 'Asignación eliminada correctamente.');
+
     } elseif ($asignacion->COD_ESTADO_ASIGNACION == 3) {
-        return response()->json(['message' => 'La asignación ya está eliminada.'], 400);
+        // Si el estado es 3, ya está eliminada
+        return redirect()->route('asignaciones.index')->with('error', 'La asignación ya está eliminada.');
+
+    } elseif ($asignacion->COD_ESTADO_ASIGNACION == 1) {
+        // Si el estado es 1, no se puede eliminar porque está activa
+        return redirect()->route('asignaciones.index')->with('error', 'No se puede eliminar una asignación activa.');
+
     } else {
-        return response()->json(['message' => 'Solo se pueden eliminar asignaciones activas.'], 400);
+        // Respuesta para otros estados que no son elegibles para eliminación
+        return redirect()->route('asignaciones.index')->with('error', 'Solo se pueden eliminar asignaciones en estado activo o inactivo.');
     }
 }
 
@@ -823,4 +831,5 @@ public function mostrarModal()
 
     return view('asignaciones.reporte_modal', compact('tiposAsignacion', 'estadosAsignacion', 'proyectosAsignados', 'empleadosAsignados'));
 }
+
 }

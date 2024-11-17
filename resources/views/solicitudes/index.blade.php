@@ -124,57 +124,80 @@
             </nav>
         </div>
     </div>
+<!-- Modal para Generar Reportes -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reportModalLabel">Generar Reporte</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Contenedor de mensajes de error -->
+                <div id="errorContainer" class="alert alert-danger d-none"></div>
 
-    <!-- Modal para Generar Reporte -->
-    <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="reportModalLabel">Generar Reporte</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Contenedor para mostrar mensajes de error dentro del modal -->
-                    <div id="errorContainer" class="alert alert-danger d-none"></div>
+                <!-- Selector para tipo de reporte -->
+                <form id="reportForm">
+                    <div class="mb-3">
+                        <label for="reportType" class="form-label">Tipo de Reporte</label>
+                        <select id="reportType" name="reportType" class="form-select" required>
+                            <option value="">Seleccione una opción</option>
+                            <option value="usuario">Por Usuario</option>
+                            <option value="proyecto">Por Proyecto</option>
+                            <option value="estado">Por Estado</option>
+                            <option value="tipo">Por Tipo de Compra</option>
+                            <option value="general">General</option>
+                        </select>
+                    </div>
 
-                    <form id="reporteForm" onsubmit="return enviarFormulario(event, '{{ route('solicitudes.generateReport') }}')">
-                        @csrf
-                        <div class="mb-3">
-                            <label for="reportType" class="form-label">Tipo de Reporte</label>
-                            <select id="reportType" name="reportType" class="form-select" required>
-                                <option value="">Seleccione un tipo de reporte</option>
-                                <option value="general">General</option>
-                                <option value="proyecto">Por Proyecto</option>
-                                <option value="area">Por Estado</option>
-                            </select>
-                        </div>
-                        <div id="filtrosAdicionales">
-                            <!-- Opciones adicionales dinámicas -->
-                            <div id="proyectoFiltro" style="display: none;">
-                                <label for="proyectoSelect" class="form-label">Selecciona el Proyecto</label>
-                                <select id="proyectoSelect" name="proyecto" class="form-select">
-                                    @foreach($proyectos as $proyecto)
-                                        <option value="{{ $proyecto->COD_PROYECTO }}">{{ $proyecto->NOM_PROYECTO }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div id="areaFiltro" style="display: none;">
-                                <label for="areaSelect" class="form-label">Selecciona el Área</label>
-                                <select id="areaSelect" name="area" class="form-select">
-                                    @foreach($areas as $area)
-                                        <option value="{{ $area->COD_AREA }}">{{ $area->NOM_AREA }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mt-3">
-                            <button type="submit" class="btn btn-primary">Generar</button>
-                        </div>
-                    </form>
-                </div>
+                    <!-- Contenedores para filtros dependiendo del tipo de reporte -->
+                    <div id="usuarioContainer" class="d-none">
+                        <label for="usuarioSelect" class="form-label">Usuario</label>
+                        <select id="usuarioSelect" name="usuario" class="form-select">
+                            @foreach ($usuarios as $usuario)
+                                <option value="{{ $usuario->Id_usuario }}">{{ $usuario->Usuario }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div id="proyectoContainer" class="d-none">
+                        <label for="proyectoSelect" class="form-label">Proyecto</label>
+                        <select id="proyectoSelect" name="proyecto" class="form-select">
+                            @foreach ($proyectos as $proyecto)
+                                <option value="{{ $proyecto->COD_PROYECTO }}">{{ $proyecto->NOM_PROYECTO }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div id="estadoContainer" class="d-none">
+                        <label for="estadoSelect" class="form-label">Estado de Compra</label>
+                        <select id="estadoSelect" name="estado" class="form-select">
+                            @foreach ($estados as $estado)
+                                <option value="{{ $estado->COD_ESTADO }}">{{ $estado->DESC_ESTADO }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div id="tipoContainer" class="d-none">
+                        <label for="tipoSelect" class="form-label">Tipo de Compra</label>
+                        <select id="tipoSelect" name="tipo" class="form-select">
+                            @foreach ($tipos as $tipo)
+                                <option value="{{ $tipo->COD_TIPO }}">{{ $tipo->DESC_TIPO }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Botón para generar el reporte -->
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="button" class="btn btn-primary" id="generarReporteBtn">Generar Reporte</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+</div>
+
+
 @stop
 
 @section('css')
@@ -359,6 +382,125 @@ $(document).ready(function() {
         }
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const reportTypeSelect = document.getElementById("reportType");
+    const usuarioContainer = document.getElementById("usuarioContainer");
+    const proyectoContainer = document.getElementById("proyectoContainer");
+    const estadoContainer = document.getElementById("estadoContainer");
+    const tipoContainer = document.getElementById("tipoContainer");
+    const errorContainer = document.getElementById("errorContainer");
+
+    // Función para mostrar/ocultar filtros según el tipo de reporte seleccionado
+    function toggleFilters(selectedType) {
+        usuarioContainer.classList.add("d-none");
+        proyectoContainer.classList.add("d-none");
+        estadoContainer.classList.add("d-none");
+        tipoContainer.classList.add("d-none");
+
+        if (selectedType === "usuario") {
+            usuarioContainer.classList.remove("d-none");
+        } else if (selectedType === "proyecto") {
+            proyectoContainer.classList.remove("d-none");
+        } else if (selectedType === "estado") {
+            estadoContainer.classList.remove("d-none");
+        } else if (selectedType === "tipo") {
+            tipoContainer.classList.remove("d-none");
+        }
+    }
+
+    // Evento para cambiar los filtros cuando se selecciona un tipo de reporte
+    reportTypeSelect.addEventListener("change", function () {
+        toggleFilters(reportTypeSelect.value);
+    });
+
+    // Evento para generar el reporte
+    document.getElementById("generarReporteBtn").addEventListener("click", function () {
+    const tipoReporte = document.getElementById("reportType").value;
+    let url = "{{ route('solicitudes.generateReport') }}"; // Ruta para la generación del reporte
+    let params = {};
+
+    // Validar selección del tipo de reporte
+    if (!tipoReporte) {
+        mostrarError("Por favor, selecciona un tipo de reporte.");
+        return;
+    }
+
+    // Capturar el filtro correspondiente
+    if (tipoReporte === "usuario") {
+        const usuario = document.getElementById("usuarioSelect").value;
+        if (!usuario) {
+            mostrarError("Por favor, selecciona un usuario.");
+            return;
+        }
+        params.usuario = usuario;
+    } else if (tipoReporte === "proyecto") {
+        const proyecto = document.getElementById("proyectoSelect").value;
+        if (!proyecto) {
+            mostrarError("Por favor, selecciona un proyecto.");
+            return;
+        }
+        params.proyecto = proyecto;
+    } else if (tipoReporte === "estado") {
+        const estado = document.getElementById("estadoSelect").value;
+        if (!estado) {
+            mostrarError("Por favor, selecciona un estado de compra.");
+            return;
+        }
+        params.estado = estado;
+    } else if (tipoReporte === "tipo") {
+        const tipo = document.getElementById("tipoSelect").value;
+        if (!tipo) {
+            mostrarError("Por favor, selecciona un tipo de compra.");
+            return;
+        }
+        params.tipo = tipo;
+    }
+
+    // Realizar la solicitud AJAX
+    const queryString = new URLSearchParams(params).toString();
+    fetch(`${url}?reportType=${tipoReporte}&${queryString}`, {
+        method: "GET",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.registros === 0) {
+                // Mostrar mensaje de error en el modal
+                mostrarError("No se encontraron registros para el reporte seleccionado.");
+            } else if (data.pdfUrl) {
+                // Abrir el reporte en una nueva pestaña
+                window.open(data.pdfUrl, "_blank");
+
+                // Limpiar el mensaje de error y cerrar el modal
+                document.getElementById("errorContainer").textContent = '';
+                document.getElementById("errorContainer").classList.add("d-none");
+                $('#reportModal').modal('hide');
+            }
+        })
+        .catch(error => {
+            mostrarError("Ocurrió un error al generar el reporte. Por favor, inténtalo nuevamente.");
+        });
+});
+    // Función para mostrar mensajes de error dentro del modal
+    function mostrarError(mensaje) {
+    const errorContainer = document.getElementById("errorContainer");
+    errorContainer.textContent = mensaje;
+    errorContainer.classList.remove("d-none");
+}
+
+    // Restablecer el mensaje de error al cerrar el modal
+    $('#reportModal').on('hidden.bs.modal', function () {
+        errorContainer.textContent = ''; // Limpiar el mensaje de error
+        errorContainer.classList.add('d-none'); // Ocultar el contenedor de errores
+    });
+});
+
+
+
 
     </script>
 @stop
