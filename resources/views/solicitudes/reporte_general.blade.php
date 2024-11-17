@@ -1,87 +1,123 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte Solicitud</title>
+    <title>Reporte de Solicitudes</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        .header {
-            width: 100%;
-            margin-top: 20px;
+            font-family: Arial, sans-serif;
+            margin: 20px;
             position: relative;
-            text-align: center; /* Centrar los títulos */
         }
+
+        .header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+            padding-bottom: 50px;
+        }
+
         .logo {
-            position: absolute;
-            top: 50%; /* Mueve el logo al 50% del contenedor */
-            right: 0;
-            transform: translateY(-322%); /* Ajuste personalizado para alinearlo con el contenido de .report-details */
             width: 150px;
-            height: 150px;
+            position: absolute;
+            right: -20;
+            top: 5;
         }
-        .report-details {
+
+        .empresa {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .titulo {
+            font-size: 18px;
             margin-top: 10px;
         }
-        .report-details h3 {
-            margin-bottom: 0;
+
+        .subtitulo {
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 5px;
+            text-transform: uppercase;
+            word-wrap: break-word; /* Asegura que las palabras largas se ajusten */
+            white-space: normal;  /* Permite que el texto fluya a la siguiente línea */
+            text-align: center;   /* Centra el texto */
+            max-width: 80%;       /* Establece un ancho máximo para el subtítulo */
+            margin: 0 auto;       /* Centra el subtítulo horizontalmente */
         }
-        .report-details p {
-            margin: 4px 0;
-        }
-        .content {
-            margin: 10px;
-            margin-top: 60px; /* Ajuste para dejar espacio al logo y al total */
-        }
-        .table {
+
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 30px; /* Espacio de tres renglones entre el total y la tabla */
+            font-size: 10px;
+            margin-top: 20px;
         }
-        .cabecera {
-            background-color: #343a40;
-            color: white;
-        }
-        .table, .table th, .table td {
-            border: 1px solid black;
-        }
-        .table th, .table td {
-            padding: 8px;
+
+        th, td {
+            border: 1px solid #000;
+            padding: 4px;
             text-align: center;
+            word-wrap: break-word;
         }
+
+        th {
+            background-color: #000;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        td {
+            font-size: 10px;
+        }
+
         .footer {
-            width: 100%;
             position: fixed;
-            bottom: 20px;
+            bottom: 10px;
+            width: 100%;
             font-size: 10px;
             display: flex;
             justify-content: space-between;
-            padding: 0 30px;
+            padding: 10px 20px;
+            border-top: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+
+        .footer .left {
+            text-align: left;
+        }
+
+        .footer .right {
+            text-align: right;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <div class="report-details">
-            <h3>Reporte General Solicitud</h3>
-            <p>Constructora Traterra S. de R.L</p>
-           
+        <div class="empresa">
+            <br><br>
+            Constructora Traterra S. de R.L <br>
+            Reporte de Solicitudes <br>
+            <div class="subtitulo">
+                  {{ strtoupper($filterValue) }}
+            </div>
+            
         </div>
-        <img src="{{ $logoBase64 }}" alt="Logo" class="logo">
+        <img src="{{ $logoBase64 }}" class="logo">
     </div>
-    
-    <div class="content">
-        <table class="table table-striped">
-            <thead class="cabecera">
-                <tr>
-               <th>#</th> <!-- Columna de numeración -->
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
                 <th>Solicitante</th>
                 <th>Descripción Solicitud</th>
                 <th>Proyecto</th>
+                <th>Estado</th>
                 <th>Tipo</th>
                 <th>Total Cuotas</th>
                 <th>Precio Cuota</th>
@@ -89,30 +125,21 @@
             </tr>
         </thead>
         <tbody>
-                @if(is_array($solicitudes) || is_object($solicitudes))
-                    @php $contador = 1; @endphp
-                    @foreach ($solicitudes as $solicitud)
+            @foreach ($solicitudes as $index => $solicitud)
                 <tr>
-                    <td>{{ $contador++ }}</td>
-                    <td>{{ $usuarios[$solicitud->Id_usuario]->Usuario ?? 'N/A' }}</td>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $solicitud->usuario->Usuario ?? 'N/A' }}</td>
                     <td>{{ $solicitud->DESC_COMPRA }}</td>
                     <td>{{ $solicitud->proyecto->NOM_PROYECTO ?? 'N/A' }}</td>
-                    <td>{{ $tipos[$solicitud->COD_TIPO]->DESC_TIPO ?? 'N/A' }}</td>
-                    <td>{{ $estados[$solicitud->COD_ESTADO]->DESC_ESTADO ?? 'N/A' }}</td>
+                    <td>{{ $solicitud->estadocompras->DESC_ESTADO ?? 'N/A' }}</td>
+                    <td>{{ $solicitud->tipocompras->DESC_TIPO ?? 'N/A' }}</td>
                     <td>{{ $solicitud->TOTAL_CUOTAS }}</td>
-                    <td>{{ $solicitud->PRECIO_CUOTA }}</td>
-                    <td>{{ $solicitud->PRECIO_COMPRA }}</td>
-                    </tr>
-                    @endforeach
-                @else
-                    <tr>
-                        <td colspan="5">No se encontraron registros de solicitudes.</td>
-                    </tr>
-                @endif
-            </tbody>
-        </table>
-    </div>
-
+                    <td>{{ number_format($solicitud->PRECIO_CUOTA, 2) }}</td>
+                    <td>{{ number_format($solicitud->PRECIO_COMPRA, 2) }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
     <div class="footer">
         <script type="text/php">
             if ( isset($pdf) ) {
@@ -120,12 +147,11 @@
                     $font = $fontMetrics->get_font("Arial", "normal");
                     $size = 10;
                     $pageText = "Página " . $PAGE_NUM . " de " . $PAGE_COUNT;
-                    $pdf->text(1050, 820, $pageText, $font, $size); /* Mover la paginación más a la derecha */
-                    $pdf->text(30, 820, "{{ $fechaHora }}", $font, $size); /* La fecha se mantiene en el lado izquierdo */
+                    $pdf->text(520, 820, $pageText, $font, $size);
+                    $pdf->text(30, 820, "{{ $fechaHora }}", $font, $size);
                 ');
             }
         </script>
     </div>
-    
 </body>
 </html>

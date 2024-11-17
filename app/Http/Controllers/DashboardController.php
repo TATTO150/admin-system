@@ -34,12 +34,7 @@ class DashboardController extends Controller
     $fechaVencimiento = $user->Fecha_Vencimiento ? Carbon::parse($user->Fecha_Vencimiento) : null; // Aseguramos que sea un objeto Carbon si existe
     $mostrarAlerta = false;
     $ahora = Carbon::now(); // Fecha actual
-
-   // Verificar si el usuario no está autenticado
-   if (!Auth::check()) {
-        // Redirigir a la vista `sesion_suspendida`
-        return redirect()->route('sesion.suspendida');
-    }
+    $role = $user->rol->Rol; // Suponiendo que el campo de rol está en la tabla de usuarios
 
    // Validar si el usuario tiene pendiente la autenticación de dos factores
    if (!is_null($user->two_factor_secret) && ($user->two_factor_status === 0 || is_null($user->two_factor_status))) {
@@ -164,6 +159,7 @@ $mantenimientoFinalizadoCount = Equipos::whereHas('estadoEquipo', function($quer
         'mantenimientoFinalizadoCount' => $mantenimientoFinalizadoCount,
         'equiposTotalCount' => $equiposTotalCount,
         'mostrarAlerta' => $mostrarAlerta, // Nuevo dato agregado
+        'role'=> $role,
     ]);
 }
 }

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Rules\Validaciones;
 use App\Models\Area;
+use App\Models\EstadoCompra;
 use App\Models\Empleados;
 use App\Models\Permisos;
 use App\Models\Compras;
@@ -131,40 +132,6 @@ class SolicitudesControlador extends Controller
 
         // Retornar la vista con los datos necesarios
         return view('solicitudes.index', compact('compras', 'areas', 'usuarios', 'proyectos', 'estados', 'tipos'));
-    }
-
-
-
-
-    public function pdf()
-    {
-        // Verificar si el usuario no está autenticado
-    if (!Auth::check()) {
-        // Redirigir a la vista `sesion_suspendida`
-        return redirect()->route('sesion.suspendida');
-    }
-        // Configura el tiempo máximo de ejecución
-        ini_set('max_execution_time', 120); // 2 minutos
-
-        $areas = Area::all();
-        $proyectos = Proyectos::all();
-        $solicitudes = solitudes::all();
-        $empleados = Empleados::all();
-        //fecha
-        $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s');
-        
-        $path = public_path('images/CTraterra.jpeg');
-        $logoBase64 = 'data:image/' . pathinfo($path, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($path));
-
-        $pdf = Pdf::loadView('solicitudes.pdf', compact('solicitudes', 'empleados', 'areas', 'proyectos', 'fechaHora', 'logoBase64'))
-            ->setOptions([
-                'isHtml5ParserEnabled' => true,
-                'isPhpEnabled' => true,
-                'defaultFont' => 'Arial',
-                'isRemoteEnabled' => true,
-            ]);
-            $this->bitacora->registrarEnBitacora(22, 'Generacion de reporte de solicitudes', 'Update');
-        return $pdf->stream('reporte_solicitudes.pdf');
     }
 
     public function crear()
@@ -484,67 +451,48 @@ public function destroy($COD_COMPRA)
 
 public function generateReport(Request $request)
 {
-    // Verificar si el usuario no está autenticado
-    if (!Auth::check()) {
-        // Redirigir a la vista `sesion_suspendida`
-        return redirect()->route('sesion.suspendida');
+    $reportType = $request->query('reportType');
+    $filterName = null;
+    $filterValue = null;
+
+    $solicitudes = Compras::query();
+
+    if ($reportType === 'usuario' && $request->query('usuario')) {
+        $usuarioId = $request->query('usuario');
+        $solicitudes->where('Id_usuario', $usuarioId);
+        $filterName = 'Usuario';
+        $filterValue = User::find($usuarioId)->Usuario ?? 'Desconocido';
+    } elseif ($reportType === 'proyecto' && $request->query('proyecto')) {
+        $proyectoId = $request->query('proyecto');
+        $solicitudes->where('COD_PROYECTO', $proyectoId);
+        $filterName = 'Proyecto';
+        $filterValue = Proyectos::find($proyectoId)->NOM_PROYECTO ?? 'Desconocido';
+    } elseif ($reportType === 'estado' && $request->query('estado')) {
+        $estadoId = $request->query('estado');
+        $solicitudes->where('COD_ESTADO', $estadoId);
+        $filterName = 'Estado de Compra';
+        $filterValue = EstadoCompra::find($estadoId)->DESC_ESTADO ?? 'Desconocido';
+    } elseif ($reportType === 'tipo' && $request->query('tipo')) {
+        $tipoId = $request->query('tipo');
+        $solicitudes->where('COD_TIPO', $tipoId);
+        $filterName = 'Tipo de Compra';
+        $filterValue = TipoCompra::find($tipoId)->DESC_TIPO ?? 'Desconocido';
+    } else {
+        $filterName = 'General';
+        $filterValue = 'Todos los registros';
     }
-    // Definir la consulta básica con relaciones
-    $query = Solitudes::with(['empleado:COD_EMPLEADO,NOM_EMPLEADO', 'area:COD_AREA,NOM_AREA', 'proyecto:COD_PROYECTO,NOM_PROYECTO']);
 
-    // Aplicar filtros según el tipo de reporte seleccionado
-    $reportType = $request->input('reportType', 'general');
+    $solicitudes = $solicitudes->with(['usuario', 'proyecto', 'tipocompras', 'estadocompras'])->get();
 
-    switch ($reportType) {
-        case 'proyecto':
-            if ($request->has('proyecto')) {
-                $query->where('COD_PROYECTO', $request->input('proyecto'));
-            }
-            break;
-        case 'area':
-            if ($request->has('area')) {
-                $query->where('COD_AREA', $request->input('area'));
-            }
-            break;
-        default:
-            // No se aplican filtros adicionales para el reporte general
-            break;
-    }
-
-    // Generar una clave de caché basada en la consulta SQL y sus parámetros
-    $cacheKey = 'reporte_' . md5($query->toSql() . serialize($query->getBindings()));
-
-    // Cachear los datos de la consulta
-    $solicitudes = Cache::remember($cacheKey, 60, function() use ($query) {
-        return $query->get();
-    });
-
-    // Si no hay registros, retornar un mensaje de error específico
     if ($solicitudes->isEmpty()) {
-        $message = match($reportType) {
-            'proyecto' => 'No se encontraron registros para el reporte por proyecto seleccionado.',
-            'area' => 'No se encontraron registros para el reporte por área seleccionada.',
-            default => 'No se encontraron registros para el reporte general.',
-        };
-
-        return response()->json([
-            'status' => 'error',
-            'message' => $message,
-        ], 400);
+        return response()->json(['registros' => 0], 200);
     }
 
-    // Cargar las demás colecciones necesarias
-    $areas = Area::all(['COD_AREA', 'NOM_AREA']);
-    $proyectos = Proyectos::all(['COD_PROYECTO', 'NOM_PROYECTO']);
-    $empleados = Empleados::all(['COD_EMPLEADO', 'NOM_EMPLEADO']);
-
-    // Generar el PDF usando los datos cacheados
-    $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s');
+    $fechaHora = now()->format('d-m-Y H:i:s');
     $path = public_path('images/CTraterra.jpeg');
     $logoBase64 = 'data:image/' . pathinfo($path, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($path));
 
-    $pdf = Pdf::loadView('solicitudes.reporte_general', compact('solicitudes', 'empleados', 'areas', 'proyectos', 'fechaHora', 'logoBase64'))
-        ->setPaper('a3', 'landscape')
+    $pdf = Pdf::loadView('solicitudes.reporte_general', compact('solicitudes', 'fechaHora', 'logoBase64', 'filterName', 'filterValue'))
         ->setOptions([
             'isHtml5ParserEnabled' => true,
             'isPhpEnabled' => true,
@@ -552,121 +500,13 @@ public function generateReport(Request $request)
             'isRemoteEnabled' => true,
         ]);
 
-    // Devolver el PDF para ser descargado o visualizado en el navegador
-    return $pdf->stream('reporte_solicitudes_' . $reportType . '.pdf');
-}
+    $fileName = 'reporte_' . time() . '.pdf';
+    $pdf->save(public_path($fileName));
 
-    public function reporteGeneral()
-    {
-        $query = Solitudes::with(['empleado', 'area', 'proyecto']);
-        $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s');
-        $path = public_path('images/CTraterra.jpeg');
-        $logoBase64 = 'data:image/' . pathinfo($path, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($path));
-
-        $pdf = Pdf::loadView('solicitudes.reporte_general', compact('solicitudes', 'empleados', 'areas', 'proyectos', 'fechaHora', 'logoBase64'))
-        ->setPaper('a3', 'landscape')    
-        ->setOptions([
-                'isHtml5ParserEnabled' => true,
-                'isPhpEnabled' => true,
-                'defaultFont' => 'Arial',
-                'isRemoteEnabled' => true,
-            ]);
-            $this->bitacora->registrarEnBitacora(22, 'Generacion de reporte general solicitudes', 'Update');
-        return $pdf->stream('reporte_solicitudes_general.pdf');
-    }
-
-    public function generarReporte(Request $request)
-{
-    $query = Solitudes::with(['empleado', 'area', 'proyecto']);
-
-    // Filtrar según el tipo de reporte seleccionado
-    if ($request->has('reportType')) {
-        $reportType = $request->input('reportType');
-
-        if ($reportType === 'proyecto' && $request->has('proyecto')) {
-            $query->where('COD_PROYECTO', $request->input('proyecto'));
-        }
-
-        if ($reportType === 'area' && $request->has('area')) {
-            $query->where('COD_AREA', $request->input('area'));
-        }
-    }
-
-    // Obtener los datos filtrados
-    $solicitudes = $query->get();
-    $areas = Area::all();
-    $proyectos = Proyectos::all();
-    $empleados = Empleados::all();
-
-    $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s');
-    $path = public_path('images/CTraterra.jpeg');
-    $logoBase64 = 'data:image/' . pathinfo($path, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($path));
-
-    $pdf = Pdf::loadView('solicitudes.reporte_general', compact('solicitudes', 'empleados', 'areas', 'proyectos', 'fechaHora', 'logoBase64'))
-        ->setPaper('a3', 'landscape')    
-        ->setOptions([
-            'isHtml5ParserEnabled' => true,
-            'isPhpEnabled' => true,
-            'defaultFont' => 'Arial',
-            'isRemoteEnabled' => true,
-        ]);
-
-    // Registrar en la bitácora
-    $this->bitacora->registrarEnBitacora(22, 'Generación de reporte filtrado de solicitudes', 'Update');
-
-    return $pdf->stream();
+    return response()->json(['registros' => $solicitudes->count(), 'pdfUrl' => asset($fileName)], 200);
 }
 
 
-    public function reportePorEstado()
-    {
-        $solicitudes = solitudes::with(['empleado', 'area', 'proyecto'])->get();
-        $areas = Area::all();
-        $proyectos = Proyectos::all();
-        $empleados = Empleados::all();
-
-        $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s');
-        $path = public_path('images/CTraterra.jpeg');
-        $logoBase64 = 'data:image/' . pathinfo($path, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($path));
-
-        $pdf = Pdf::loadView('solicitudes.reporte_estado', compact('solicitudes', 'empleados', 'areas', 'proyectos', 'fechaHora', 'logoBase64'))
-            ->setOptions([
-                'isHtml5ParserEnabled' => true,
-                'isPhpEnabled' => true,
-                'defaultFont' => 'Arial',
-                'isRemoteEnabled' => true,
-            ]);
-            $this->bitacora->registrarEnBitacora(22, 'Generacion de reporte estado de solicitudes', 'Update');
-        return $pdf->stream('reporte_solicitudes_estado.pdf');
-    }
-
-    
-    public function reportePorProyecto()
-    {
-        $proyectos = Proyectos::with('solicitudes')->get();
-    
-        dd($proyectos); // Verifica el contenido
-    
-        if ($proyectos->isEmpty()) {
-            return redirect()->back()->with('error', 'No hay proyectos disponibles para generar el reporte.');
-        }
-    
-        return view('reportes.proyecto', [
-            'proyectos' => $proyectos,
-            'logoBase64' => '', // Proporciona el logo en base64 si lo tienes
-            'fechaHora' => now()->format('d/m/Y H:i:s')
-        ]);
-    }
-    
-    
-
-    
-    public function reportePorArea()
-{
-    $areas = area::all();
-    dd($areas); // Esto mostrará los datos de áreas y detendrá la ejecución
-    return view('solicitudes.index', compact('areas'));
-}
 
     }
 
