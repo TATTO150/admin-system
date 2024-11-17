@@ -4,7 +4,7 @@
 @section('plugins.Sweetalert2', true)
 
 @section('content_header')
-    <h1 class="text-white">PROYECTOS</h1>
+    <h1 class="">PROYECTOS</h1>
 @stop
 
 @section('content')
@@ -202,6 +202,14 @@
 </form>
 
 
+<!-- Formulario de búsqueda -->
+<form id="buscador-form" method="GET">
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="buscar" placeholder="Buscar..." name="buscar" value="{{ request()->input('buscar') }}">
+            </div>
+        </form>
+
+
                 <!-- Formulario de filtro -->
                 <form action="{{ route('proyectos.index') }}" method="GET" class="form-inline">
     <div class="form-group mr-2">
@@ -300,144 +308,166 @@
     .table td .descripcion .descripcion-completa {
         display: none;
     }
+
 </style>
 
 
+<!-- este es para la busqueda barra -->
+<script >
+$(document).ready(function() {
+            $('#buscar').on('keyup', function() {
+                var query = $(this).val().toLowerCase();
+                $('#mitabla tbody tr').each(function() {
+                    var rowText = $(this).text().toLowerCase();
+                    if (rowText.indexOf(query) === -1) {
+                        $(this).hide();
+                    } else {
+                        $(this).show();
+                    }
+                });
+            });
+        });
+</script>
+
 @if($verInactivos)
-    <h2>PROYECTOS INACTIVOS</h2>
-    <table class="table table-striped">
-        <thead>
+<h2>PROYECTOS INACTIVOS</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ACCIÓN</th>
+            <th>NOMBRE PROYECTO</th>
+            <th>ESTADO PROYECTO</th>
+            <th>DESCRIPCIÓN PROYECTO</th>
+            <th>FECHA INICIO</th>
+            <th>FECHA FINAL</th>
+            <th>PRESUPUESTO INICIO</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($proyectosInactivos as $proyecto)
             <tr>
-                <th>NOMBRE PROYECTO</th>
-                <th>FECHA INICIO</th>
-                <th>FECHA FINAL</th>
-                <th>DESCRIPCION PROYECTO</th>
-                <th>PRESUPUESTO INICIO</th>
-                <th>ESTADO PROYECTO</th>
-                <th>ACCION</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($proyectosInactivos as $proyecto)
-                <tr>
-                    <td>{{ $proyecto->NOM_PROYECTO }}</td>
-                    <td>{{ $proyecto->FEC_INICIO }}</td>
-                    <td>{{ $proyecto->FEC_FINAL }}</td>
-                    <td>
-                        @php
-                            $descripcion = $proyecto->DESC_PROYECTO;
-                            $descripcion_truncada = strlen($descripcion) > 30 ? substr($descripcion, 0, 30) . '...' : $descripcion;
-                        @endphp
-                        <div class="descripcion">
-                            <span class="descripcion-corta" id="descripcionCorta{{ $proyecto->COD_PROYECTO }}">{{ $descripcion_truncada }}</span>
-                            @if(strlen($proyecto->DESC_PROYECTO) > 30)
+                <td>
+                    <form id="restaurarForm{{ $proyecto->COD_PROYECTO }}" action="{{ route('proyectos.restaurar', $proyecto->COD_PROYECTO) }}" method="POST" style="display:inline;">
+                        @csrf
+                        <button type="button" class="btn btn-success" onclick="confirmRestauracion({{ $proyecto->COD_PROYECTO }})">RESTAURAR</button>
+                    </form>
+                </td>
+                <td>{{ $proyecto->NOM_PROYECTO }}</td>
+                <td style="color: {{ $obtenerColorEstado($proyecto->ESTADO_PROYECTO) }}">
+                    {{ $proyecto->ESTADO_PROYECTO }}
+                </td>
+                <td>
+                    @php
+                        $descripcion = $proyecto->DESC_PROYECTO;
+                        $descripcion_truncada = strlen($descripcion) > 30 ? substr($descripcion, 0, 30) . '...' : $descripcion;
+                    @endphp
+                    <div class="descripcion">
+                        <span class="descripcion-corta" id="descripcionCorta{{ $proyecto->COD_PROYECTO }}">{{ $descripcion_truncada }}</span>
+                        @if(strlen($proyecto->DESC_PROYECTO) > 30)
                             <span class="btn-fecha" id="btnMostrarMas{{ $proyecto->COD_PROYECTO }}" onclick="mostrarDescripcionCompleta({{ $proyecto->COD_PROYECTO }})">Mostrar más</span>
                             <span class="descripcion-completa" id="descripcionCompleta{{ $proyecto->COD_PROYECTO }}">{{ $proyecto->DESC_PROYECTO }}</span>
                             <span class="btn-menos" id="btnMenos{{ $proyecto->COD_PROYECTO }}" onclick="ocultarDescripcionCompleta({{ $proyecto->COD_PROYECTO }})">Mostrar menos</span>
-                            @endif
-                        </div>
-                    </td>
-                    <td>{{ $proyecto->PRESUPUESTO_INICIO }}</td>
-                    <td style="color: {{ $obtenerColorEstado($proyecto->ESTADO_PROYECTO) }}">
-                        {{ $proyecto->ESTADO_PROYECTO }}
-                    </td>
-                    <td>
-                    <form id="restaurarForm{{ $proyecto->COD_PROYECTO }}" action="{{ route('proyectos.restaurar', $proyecto->COD_PROYECTO) }}" method="POST" style="display:inline;">
-    @csrf
-    <button type="button" class="btn btn-success" onclick="confirmRestauracion({{ $proyecto->COD_PROYECTO }})">RESTAURAR</button>
-</form>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+                        @endif
+                    </div>
+                </td>
+                <td>{{ $proyecto->FEC_INICIO }}</td>
+                <td>{{ $proyecto->FEC_FINAL }}</td>
+                <td>{{ $proyecto->PRESUPUESTO_INICIO }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
+
 
     
 @else
-    <h2>TODOS LOS PROYECTOS</h2>
-    <table id="mitabla" class="table table-striped">
-        <thead>
-            <tr>
-                <th>NOMBRE PROYECTO</th>
-                <th>FECHA INICIO</th>
-                <th>FECHA FINAL</th>
-                <th>DESCRIPCION PROYECTO</th>
-                <th>PRESUPUESTO INICIO</th>
-                <th>ESTADO PROYECTO</th>
-                <th>ACCION</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($proyectos as $proyecto)
-                <tr>
-                    <td>{{ $proyecto->NOM_PROYECTO }}</td>
-                    <td>{{ $proyecto->FEC_INICIO }}</td>
-                    <td>{{ $proyecto->FEC_FINAL }}</td>
-                    <td>
-                        @php
-                            $descripcion = $proyecto->DESC_PROYECTO;
-                            $descripcion_truncada = strlen($descripcion) > 30 ? substr($descripcion, 0, 30) . '...' : $descripcion;
-                        @endphp
-                        <div class="descripcion">
-                            <span class="descripcion-corta" id="descripcionCorta{{ $proyecto->COD_PROYECTO }}">{{ $descripcion_truncada }}</span>
-                            @if(strlen($proyecto->DESC_PROYECTO) > 30)
-                            <span class="btn-fecha" id="btnMostrarMas{{ $proyecto->COD_PROYECTO }}" onclick="mostrarDescripcionCompleta({{ $proyecto->COD_PROYECTO }})">Mostrar más</span>
-                            <span class="descripcion-completa" id="descripcionCompleta{{ $proyecto->COD_PROYECTO }}">{{ $proyecto->DESC_PROYECTO }}</span>
-                            <span class="btn-menos" id="btnMenos{{ $proyecto->COD_PROYECTO }}" onclick="ocultarDescripcionCompleta({{ $proyecto->COD_PROYECTO }})">Mostrar menos</span>
-                            @endif
-                        </div>
-                    </td>
-                    <td>{{ $proyecto->PRESUPUESTO_INICIO }}</td>
-                    <td style="color: {{ $obtenerColorEstado($proyecto->ESTADO_PROYECTO) }}">
-                        {{ $proyecto->ESTADO_PROYECTO }}
-                        </td>
-            <td>
-                @if($proyecto->ESTADO_PROYECTO !== 'INACTIVO')
-                <!-- Dropdown Button -->
-                <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $proyecto->COD_PROYECTO }}" data-bs-toggle="dropdown" aria-expanded="false">
-                        Acciones
-                    </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $proyecto->COD_PROYECTO }}">
-                        @if($proyecto->ESTADO_PROYECTO === 'SUSPENDIDO')
-                            <li><a class="dropdown-item" href="#" onclick="confirmActivation({{ $proyecto->COD_PROYECTO }})">ACTIVAR</a></li>
-                            <li>
-                                <form action="{{ route('proyectos.destroy', $proyecto->COD_PROYECTO) }}" method="POST" class="d-inline" onsubmit="return confirmDeletion()">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="dropdown-item">ELIMINAR</button>
-                                </form>
-                            </li>
-                        @elseif($proyecto->ESTADO_PROYECTO === 'APERTURA' || $proyecto->ESTADO_PROYECTO === 'FINALIZADO')
-                            <li>
-                                <form action="{{ route('proyectos.destroy', $proyecto->COD_PROYECTO) }}" method="POST" class="d-inline" onsubmit="return confirmDeletion()">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="dropdown-item">ELIMINAR</button>
-                                </form>
-                            </li>
-                            @if($proyecto->ESTADO_PROYECTO !== 'FINALIZADO')
-                                <li><a class="dropdown-item" href="{{ route('proyectos.edit', $proyecto->COD_PROYECTO) }}">EDITAR</a></li>
-                                <li><button class="dropdown-item" onclick="openModal({{ $proyecto->COD_PROYECTO }})">ASIGNAR EMPLEADO</button></li>
-                                <li><a class="dropdown-item" href="{{ route('proyectos.empleados', $proyecto->COD_PROYECTO) }}">VER EMPLEADOS</a></li>
-                            @endif
-                            <li><a class="dropdown-item" href="{{ route('reporte.proyecto.general', ['proyectoId' => $proyecto->COD_PROYECTO]) }}" target="_blank">GENERAR PDF</a></li>
-                        @else
-                            @if($proyecto->ESTADO_PROYECTO !== 'FINALIZADO')
-                                <li><a class="dropdown-item" href="{{ route('proyectos.edit', $proyecto->COD_PROYECTO) }}">EDITAR</a></li>
-                                <li><button class="dropdown-item" onclick="openModal({{ $proyecto->COD_PROYECTO }})">ASIGNAR EMPLEADO</button></li>
-                                <li><a class="dropdown-item" href="{{ route('proyectos.empleados', $proyecto->COD_PROYECTO) }}">VER EMPLEADOS</a></li>
-                            @endif
-                            <li><a class="dropdown-item" href="{{ route('reporte.proyecto.general', ['proyectoId' => $proyecto->COD_PROYECTO]) }}" target="_blank">GENERAR PDF</a></li>
-                        @endif
-                    </ul>
-                </div>
-                @endif
-            </td>
+<h2>TODOS LOS PROYECTOS</h2>
+<table id="mitabla" class="table table-striped">
+    <thead>
+        <tr>
+            <th>ACCION</th>
+            <th>NOMBRE PROYECTO</th>
+            <th>ESTADO PROYECTO</th>
+            <th>DESCRIPCION PROYECTO</th>
+            <th>FECHA INICIO</th>
+            <th>FECHA FINAL</th>
+            <th>PRESUPUESTO INICIO</th>
         </tr>
-            @endforeach
-        </tbody>
-    </table>
+    </thead>
+    <tbody>
+        @foreach ($proyectos as $proyecto)
+            <tr>
+                <td>
+                    @if($proyecto->ESTADO_PROYECTO !== 'INACTIVO')
+                    <!-- Dropdown Button -->
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="dropdownMenuButton{{ $proyecto->COD_PROYECTO }}" data-bs-toggle="dropdown" aria-expanded="false">
+                            Acciones
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $proyecto->COD_PROYECTO }}">
+                            @if($proyecto->ESTADO_PROYECTO === 'SUSPENDIDO')
+                                <li><a class="dropdown-item" href="#" onclick="confirmActivation({{ $proyecto->COD_PROYECTO }})">ACTIVAR</a></li>
+                                <li>
+                                    <form action="{{ route('proyectos.destroy', $proyecto->COD_PROYECTO) }}" method="POST" class="d-inline" onsubmit="return confirmDeletion()">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="dropdown-item">ELIMINAR</button>
+                                    </form>
+                                </li>
+                            @elseif($proyecto->ESTADO_PROYECTO === 'APERTURA' || $proyecto->ESTADO_PROYECTO === 'FINALIZADOS')
+                                <li>
+                                    <form action="{{ route('proyectos.destroy', $proyecto->COD_PROYECTO) }}" method="POST" class="d-inline" onsubmit="return confirmDeletion()">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="dropdown-item">ELIMINAR</button>
+                                    </form>
+                                </li>
+                                @if($proyecto->ESTADO_PROYECTO !== 'FINALIZADOS')
+                                    <li><a class="dropdown-item" href="{{ route('proyectos.edit', $proyecto->COD_PROYECTO) }}">EDITAR</a></li>
+                                    <li><button class="dropdown-item" onclick="openModal({{ $proyecto->COD_PROYECTO }})">ASIGNAR EMPLEADO</button></li>
+                                    <li><a class="dropdown-item" href="{{ route('proyectos.empleados', $proyecto->COD_PROYECTO) }}">VER EMPLEADOS</a></li>
+                                @endif
+                                <li><a class="dropdown-item" href="{{ route('reporte.proyecto.general', ['proyectoId' => $proyecto->COD_PROYECTO]) }}" target="_blank">GENERAR PDF</a></li>
+                            @else
+                                @if($proyecto->ESTADO_PROYECTO !== 'FINALIZADOS')
+                                    <li><a class="dropdown-item" href="{{ route('proyectos.edit', $proyecto->COD_PROYECTO) }}">EDITAR</a></li>
+                                    <li><button class="dropdown-item" onclick="openModal({{ $proyecto->COD_PROYECTO }})">ASIGNAR EMPLEADO</button></li>
+                                    <li><a class="dropdown-item" href="{{ route('proyectos.empleados', $proyecto->COD_PROYECTO) }}">VER EMPLEADOS</a></li>
+                                @endif
+                                <li><a class="dropdown-item" href="{{ route('reporte.proyecto.general', ['proyectoId' => $proyecto->COD_PROYECTO]) }}" target="_blank">GENERAR PDF</a></li>
+                            @endif
+                        </ul>
+                    </div>
+                    @endif
+                </td>
+                <td>{{ $proyecto->NOM_PROYECTO }}</td>
+                <td style="color: {{ $obtenerColorEstado($proyecto->ESTADO_PROYECTO) }}">
+                    {{ $proyecto->ESTADO_PROYECTO }}
+                </td>
+                <td>
+                    @php
+                        $descripcion = $proyecto->DESC_PROYECTO;
+                        $descripcion_truncada = strlen($descripcion) > 30 ? substr($descripcion, 0, 30) . '...' : $descripcion;
+                    @endphp
+                    <div class="descripcion">
+                        <span class="descripcion-corta" id="descripcionCorta{{ $proyecto->COD_PROYECTO }}">{{ $descripcion_truncada }}</span>
+                        @if(strlen($proyecto->DESC_PROYECTO) > 30)
+                        <span class="btn-fecha" id="btnMostrarMas{{ $proyecto->COD_PROYECTO }}" onclick="mostrarDescripcionCompleta({{ $proyecto->COD_PROYECTO }})">Mostrar más</span>
+                        <span class="descripcion-completa" id="descripcionCompleta{{ $proyecto->COD_PROYECTO }}">{{ $proyecto->DESC_PROYECTO }}</span>
+                        <span class="btn-menos" id="btnMenos{{ $proyecto->COD_PROYECTO }}" onclick="ocultarDescripcionCompleta({{ $proyecto->COD_PROYECTO }})">Mostrar menos</span>
+                        @endif
+                    </div>
+                </td>
+                <td>{{ $proyecto->FEC_INICIO }}</td>
+                <td>{{ $proyecto->FEC_FINAL }}</td>
+                <td>{{ $proyecto->PRESUPUESTO_INICIO }}</td>
+            </tr>
+        @endforeach
+    </tbody>
+</table>
+
+
 @endif
 
 

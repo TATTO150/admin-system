@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\EstadoProyecto;
 use App\Models\Proyectos;
 use App\Models\Permisos;
+use App\Providers\PermisoService;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;  
 use App\Http\Controllers\BitacoraController;  //BITACORA
@@ -15,33 +16,20 @@ class EstadoProyectoControllador extends Controller
 {
 
     protected $bitacora;
+    protected $permisoService;
 
-
-    public function __construct(BitacoraController $bitacora)
+    public function __construct(BitacoraController $bitacora, PermisoService $permisoService)
     {
         $this->bitacora = $bitacora;
+        $this->permisoService = $permisoService;  // Inyectar el PermisoService
     }
 
     public function index()
     {
         $estados = EstadoProyecto::where('ESTADO_PROYECTO', '!=', 'INACTIVO')->get();
         $user = Auth::user();
-        $roleId = $user->Id_Rol;
-    
-        // Verificar permisos de consulta
-        $permisoConsultar = Permisos::where('Id_Rol', $roleId)
-            ->where('Id_Objeto', function ($query) {
-                $query->select('Id_Objetos')
-                    ->from('tbl_objeto')
-                    ->where('Objeto', 'ESTADOPROYECTO')
-                    ->limit(1);
-            })
-            ->where('Permiso_Consultar', 'PERMITIDO')
-            ->exists();
-    
-        if (!$permisoConsultar) {
-            return redirect()->route('dashboard')->withErrors('No tiene permiso para consultar estado proyecto');
-        }
+        $this->permisoService->tienePermiso('ESTADOPROYECTO', 'Consultar', true);
+
         $this->bitacora->registrarEnBitacora(12, 'Ingreso a la ventana de estado proyecto', 'ingresar');
         return view('estado_proyecto.index', compact('estados'));
     }
@@ -77,20 +65,7 @@ class EstadoProyectoControllador extends Controller
     {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////////
         return view('estado_proyecto.create');
-                // Verificar si el rol del usuario tiene el permiso de inserción en el objeto SOLICITUD
-                $permisoInsercion = Permisos::where('Id_Rol', $roleId)
-                ->where('Id_Objeto', function ($query) {
-                    $query->select('Id_Objetos')
-                        ->from('tbl_objeto')
-                        ->where('Objeto', 'TIPOEQUIPO')
-                        ->limit(1);
-                })
-                ->where('Permiso_Insercion', 'PERMITIDO')
-                ->exists();
-                $this->bitacora->registrarEnBitacora(12, 'Se creó un nuevo estado de proyecto', 'Insert');//BITACORA
-            if (!$permisoInsercion) {
-                return redirect()->route('estado_proyecto.index')->withErrors('No tiene permiso para crear un estado de proyecto');
-            }
+        $this->permisoService->tienePermiso('ESTADOPROYECTO', 'Insercion', true);
             return view('estado_proyecto.create');
     }
 
@@ -151,25 +126,11 @@ public function store(Request $request)
                      ->with('success', 'Estado del proyecto creado con éxito.');
 }
 
+
     public function edit(EstadoProyecto $estadoProyecto)
     {
         $user = Auth::user();
-        $roleId = $user->Id_Rol;
-                // Verificar permiso
-                $permisoActualizacion = Permisos::where('Id_Rol', $roleId)
-                ->where('Id_Objeto', function ($query) {
-                    $query->select('Id_Objetos')
-                        ->from('tbl_objeto')
-                        ->where('Objeto', 'ESTADOPROYECTO')
-                        ->limit(1);
-                })
-                ->where('Permiso_Actualizacion', 'PERMITIDO')
-                ->exists();
-        
-            if (!$permisoActualizacion) {
-                $this->bitacora->registrarEnBitacora(12, 'Se actualizo un estado proyecto', 'Update'); //BITACORA
-                return redirect()->route('estado_proyecto.index')->withErrors('No tiene permiso para editar tipoe equipo');
-            }
+        $this->permisoService->tienePermiso('ESTADOPROYECTO', 'Actualizacion', true);
 
         return view('estado_proyecto.edit', compact('estadoProyecto'));
     }
@@ -197,7 +158,8 @@ public function store(Request $request)
     {
         // Verificar si el estado está asociado a algún proyecto
         $proyectosConEstado = Proyectos::where('ESTADO_PROYECTO', $estadoProyecto->ESTADO_PROYECTO)->count();
-    
+        $this->permisoService->tienePermiso('ESTADOPROYECTO', 'Eliminacion', true);
+        
         if ($proyectosConEstado > 0) {
             return redirect()->route('estado_proyecto.index')
                              ->with('error', 'Este estado de proyecto está asociado a un proyecto y no se puede eliminar.');
