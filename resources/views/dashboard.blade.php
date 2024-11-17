@@ -3,10 +3,16 @@
 @section('title', 'Dashboard')
 
 @section('content_header')
+<div class="d-flex justify-content-between align-items-center">
     <h1>PANEL GENERAL</h1>
+    <button type="button" class="btn btn-info mb-3" data-toggle="modal" data-target="#helpModal">
+        AYUDA <i class="fas fa-question-circle"></i>
+    </button>
+</div>
 @stop
 
 @section('content')
+
 @if ($mostrarAlerta)
     <div class="alert alert-danger alert-dismissible fade show" role="alert" style="font-size: 1.2rem; font-weight: bold;">
         <strong style="font-size: 1.5rem; text-transform: uppercase;">⚠️ Advertencia:</strong> 
@@ -207,10 +213,76 @@
 </div>
        
     </div>
+<!-- Modal de Ayuda -->
+<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="helpModalLabel">Manuales de Ayuda</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Accede a la documentación de ayuda específica para tu rol en la empresa:</p>
+                <ul class="list-unstyled">
+                    @if ($role === 'ADMINISTRADOR')
+                        <li class="manual-item">
+                            <span><strong><i class="fas fa-user-shield"></i> ADMINISTRADOR:</strong> Documentación completa para la gestión administrativa.</span>
+                            <a href="https://drive.google.com/file/d/1h7xajlqjxc-UQnhCns6ssQUEtDeHrWTHv0GgYC4N7_Q/view?usp=sharing" target="_blank" class="btn btn-primary btn-sm ml-2">Ver Manual <i class="fas fa-eye"></i></a>
+                            <a href="https://drive.google.com/uc?export=download&id=11h7xajlqjxc-UQnhCns6ssQUEtDeHrWTHv0GgYC4N7_Q" target="_blank" class="btn btn-success btn-sm">Descargar <i class="fas fa-download"></i></a>
+                        </li>
+                    @endif
+                    @if ($role === 'PROYECTOS' || $role === 'ADMINISTRADOR')
+                        <li class="manual-item">
+                            <span><strong><i class="fas fa-project-diagram"></i> PROYECTO:</strong> Guía para la gestión de proyectos y tareas.</span>
+                            <a href="https://drive.google.com/file/d/1uBsYsedZyRWLok4jeQnfedCY-JrufdHo0ajUgExUSPw/view?usp=sharing" target="_blank" class="btn btn-primary btn-sm ml-2">Ver Manual <i class="fas fa-eye"></i></a>
+                            <a href="https://drive.google.com/uc?export=download&id=1uBsYsedZyRWLok4jeQnfedCY-JrufdHo0ajUgExUSPw" target="_blank" class="btn btn-success btn-sm">Descargar <i class="fas fa-download"></i></a>
+                        </li>
+                    @endif
+                    @if ($role === 'INGENIERO SUPERVISOR' || $role === 'ADMINISTRADOR')
+                        <li class="manual-item">
+                            <span><strong><i class="fas fa-hard-hat"></i> INGENIERO SUPERVISOR:</strong> Procedimientos y regulaciones de supervisión.</span>
+                            <a href="https://drive.google.com/file/d/1N7p3V79sVc4O91XQndX2GiZ7QvfXYrJHuZyaUw9ljAc/view?usp=sharing" target="_blank" class="btn btn-primary btn-sm ml-2">Ver Manual <i class="fas fa-eye"></i></a>
+                            <a href="https://drive.google.com/uc?export=download&id=1N7p3V79sVc4O91XQndX2GiZ7QvfXYrJHuZyaUw9ljAc" target="_blank" class="btn btn-success btn-sm">Descargar <i class="fas fa-download"></i></a>
+                        </li>
+                    @endif
+                    @if ($role === 'MANTENIMIENTO' || $role === 'ADMINISTRADOR')
+                        <li class="manual-item">
+                            <span><strong><i class="fas fa-tools"></i> MANTENIMIENTO:</strong> Manual de procedimientos para el mantenimiento.</span>
+                            <a href="https://drive.google.com/file/d/1m-fQiZyJZPKxzlcFmda_ZNJcsMbZbb3-5bnolFcCF8o/view?usp=sharing" target="_blank" class="btn btn-primary btn-sm ml-2">Ver Manual <i class="fas fa-eye"></i></a>
+                            <a href="https://drive.google.com/uc?export=download&id=1m-fQiZyJZPKxzlcFmda_ZNJcsMbZbb3-5bnolFcCF8o" target="_blank" class="btn btn-success btn-sm">Descargar <i class="fas fa-download"></i></a>
+                        </li>
+                    @endif
+                    @if (!in_array($role, ['ADMINISTRADOR', 'PROYECTOS', 'INGENIERO SUPERVISOR', 'MANTENIMIENTO']))
+                        <p class="text-danger">No tienes acceso a los manuales.</p>
+                    @endif
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 @stop
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('vendor/adminlte/dist/css/adminlte.min.css') }}">
+    <style>
+        .manual-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #ddd;
+        }
+        .manual-item span {
+            flex: 1;
+        }
+        .manual-item a {
+            margin-left: 10px;
+        }
+    </style>
 @stop
 
 @section('js')
@@ -218,6 +290,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         $(function() {
             // Gráfico de proyectos por estado (doughnut)
@@ -357,6 +430,29 @@
                 }
             }
         }
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+        // Obtener el rol del usuario
+        const role = @json($role);
+
+        // Seleccionar solo los enlaces dentro del modal de ayuda
+        document.querySelectorAll('#helpModal a').forEach(link => {
+            link.addEventListener('click', function (event) {
+                // Verifica si el usuario tiene permiso para ver el manual según su rol
+                if ((role === 'PROYECTO' && !this.href.includes('15UspIpRsTlxH3ljQa6iz05Gq4MbRjsGEa1yWaysX2OY')) ||
+                    (role === 'INGENIERO SUPERVISOR' && !this.href.includes('1zIIVJortpP9WzGxLqTYQyTaOS3he2sLBSwRRCSZNIcc')) ||
+                    (role === 'MANTENIMIENTO' && !this.href.includes('1BWB2NvLyzFN7yNt5zuLIQvkMGLE4QDR57gmjbQ7n9WU'))) {
+                    
+                    // Mostrar alerta y prevenir la navegación
+                    event.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Acceso Denegado',
+                        text: 'No tienes permiso para ver este manual.'
+                    });
+                }
+            });
+        });
     });
     </script>
 @stop
