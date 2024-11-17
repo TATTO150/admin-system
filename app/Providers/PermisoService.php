@@ -17,6 +17,11 @@ class PermisoService
      */
     public function tienePermiso($nombreObjeto, $permiso, $redirect = false)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 

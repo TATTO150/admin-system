@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Rules\Validaciones;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Providers\AuthValidationService;
 
 class AreaControlador extends Controller
 {
@@ -29,8 +30,11 @@ class AreaControlador extends Controller
 
     public function index()
     {
-    $user = Auth::user();
-    
+      // Verificar si el usuario no está autenticado
+      if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     //Nueva validacvion de permisos
     $this->permisoService->tienePermiso('AREA', 'Consultar', true);
 
@@ -42,6 +46,11 @@ class AreaControlador extends Controller
     }
 
     public function pdf(){
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $areas=Area::all();
         $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s');
         //cambio de img a formato pdf
@@ -64,6 +73,11 @@ class AreaControlador extends Controller
 
     public function crear()
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         
         //Nueva validacvion de permisos
@@ -109,6 +123,11 @@ class AreaControlador extends Controller
 
     public function destroy($COD_AREA)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     
     //Nueva validacvion de permisos
@@ -134,6 +153,11 @@ class AreaControlador extends Controller
 
 public function edit($COD_AREA)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     // Obtener el usuario autenticado y su rol
     $user = Auth::user();
     

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Mantenimientos;
 use App\Models\Estado_Mantenimiento;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Empleados;
 use App\Models\Equipos;
 
@@ -25,6 +26,11 @@ class GestionMantenimientoControlador extends Controller
 
     public function index()
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $mantenimientos = Mantenimientos::with(['empleado', 'equipo', 'estado_mantenimiento'])->get();
         
         $mantenimientosPorEstado = $mantenimientos->groupBy(function($item) {
@@ -39,6 +45,11 @@ class GestionMantenimientoControlador extends Controller
 }
     public function gestionar($COD_MANTENIMIENTO)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $mantenimiento = Mantenimientos::where('COD_MANTENIMIENTO', $COD_MANTENIMIENTO)
                                        ->with(['empleado', 'equipo', 'estado_mantenimiento'])
                                        ->first();
@@ -56,6 +67,11 @@ class GestionMantenimientoControlador extends Controller
 
     public function actualizarEstado(Request $request, $COD_MANTENIMIENTO)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $mantenimiento = Mantenimientos::findOrFail($COD_MANTENIMIENTO);
         $mantenimiento->COD_ESTADO_MANTENIMIENTO = $request->input('estado');
         $mantenimiento->save();

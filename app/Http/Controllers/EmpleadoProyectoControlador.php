@@ -6,11 +6,17 @@ use Illuminate\Http\Request;
 use App\Models\Proyectos;
 use App\Models\EmpleadoProyectos;
 use App\Models\empleados;
+use Illuminate\Support\Facades\Auth;
 
 class EmpleadoProyectoControlador extends Controller
 {
     public function index($codProyecto)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         // Obtener el proyecto por su código
         $proyecto = Proyectos::findOrFail($codProyecto);
         
@@ -29,6 +35,11 @@ class EmpleadoProyectoControlador extends Controller
 
     public function proyectosPorEmpleado($dniEmpleado)
     {
+         // Verificar si el usuario no está autenticado
+         if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         // Obtener el empleado por su DNI
         $empleado = empleados::where('DNI_EMPLEADO', $dniEmpleado)->firstOrFail();
         

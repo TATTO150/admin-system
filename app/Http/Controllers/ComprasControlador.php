@@ -40,6 +40,11 @@ class ComprasControlador extends Controller
 
     public function index($id = null)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         
         $roleId = $user->Id_Rol;
@@ -96,6 +101,11 @@ class ComprasControlador extends Controller
 
     public function agregarDeduccion(Request $request, $id)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         // Validar la entrada
         $validated = $request->validate([
             'valor_deduccion' => 'numeric|min:0',
@@ -140,32 +150,30 @@ class ComprasControlador extends Controller
 
     public function liquidarCompras(Request $request)
     {
-        // Decodificar los IDs de las compras seleccionadas
-        $comprasSeleccionadas = json_decode($request->compras_seleccionadas, true);
+        
+        $comprasSeleccionadas = json_decode($request->compraSeleccionada, true);
+    
+        if (empty($comprasSeleccionadas)) {
+            return response()->json(['success' => false, 'message' => 'Debe seleccionar al menos una compra para liquidar.']);
+        }
     
         foreach ($comprasSeleccionadas as $compraId) {
-            // Encontrar la compra por COD_COMPRA
-            $compra = Compras::where('COD_COMPRA', $compraId)->first();
-            
-            if ($compra && $compra->TOTAL_CUOTAS >= 1) {
-                // Incrementar CUOTAS_PAGADAS y calcular PRECIO_NETO
-                $compra->CUOTAS_PAGADAS += 1;
-                $compra->PRECIO_NETO = $compra->PRECIO_COMPRA - $compra->PRECIO_CUOTA;
+            $compra = Compras::find($compraId);
     
-                // Verificar si se ha completado el total de cuotas
+                $compra->CUOTAS_PAGADAS += 1;
+                $compra->PRECIO_NETO -= $compra->PRECIO_CUOTA;
+    
                 if ($compra->CUOTAS_PAGADAS >= $compra->TOTAL_CUOTAS) {
                     $compra->LIQUIDEZ_COMPRA = 1;
                 }
     
-                // Guardar los cambios
                 $compra->save();
-            }
+            
         }
     
-        return redirect()->route('compras.liquidar')->with('success', 'Compras liquidadas correctamente.');
+        return response()->json(['success' => true, 'message' => '¿Seguro que desea liquidar las compras seleccionadas?']);
     }
     
-
-
+    
 }
 

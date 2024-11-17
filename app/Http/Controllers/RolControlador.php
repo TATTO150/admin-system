@@ -26,6 +26,11 @@ class RolControlador extends Controller
 
     public function index()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -54,6 +59,11 @@ class RolControlador extends Controller
 
    
     public function pdf(){
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $roles=Rol::all();
         //fecha
         $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s');
@@ -74,6 +84,11 @@ class RolControlador extends Controller
     }
     public function crear()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -113,6 +128,11 @@ class RolControlador extends Controller
 
     public function edit($Id_Rol)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -158,6 +178,11 @@ class RolControlador extends Controller
     }
     public function destroy($Id_Rol)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     

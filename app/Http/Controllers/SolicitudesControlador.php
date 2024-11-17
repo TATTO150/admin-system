@@ -106,6 +106,11 @@ class SolicitudesControlador extends Controller
 
     public function index()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
 
         // Nueva validación de permisos
@@ -133,6 +138,11 @@ class SolicitudesControlador extends Controller
 
     public function pdf()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         // Configura el tiempo máximo de ejecución
         ini_set('max_execution_time', 120); // 2 minutos
 
@@ -159,6 +169,11 @@ class SolicitudesControlador extends Controller
 
     public function crear()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -180,6 +195,11 @@ class SolicitudesControlador extends Controller
 
     public function insertar(Request $request)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     // Validación de datos
     $validator = Validator::make($request->all(), [
         'DESC_COMPRA' => [
@@ -295,6 +315,11 @@ class SolicitudesControlador extends Controller
 
 public function destroy($COD_COMPRA)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     $roleId = $user->Id_Rol;
 
@@ -303,6 +328,11 @@ public function destroy($COD_COMPRA)
 
     // Obtener la compra a través del modelo Compras
     $compra = Compras::where('COD_COMPRA', $COD_COMPRA)->first();
+
+     // Verificar si la compra ya ha sido liquidada
+     if ($compra->LIQUIDEZ_COMPRA === 1) {
+        return redirect()->back()->with('error', 'Una compra ya liquidada no puede ser editada.');
+    }
     
     if (!$compra) {
         return redirect()->route('solicitudes.index')->withErrors('Compra no encontrada');
@@ -331,6 +361,11 @@ public function destroy($COD_COMPRA)
 
     public function edit($COD_COMPRA)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     
@@ -349,7 +384,7 @@ public function destroy($COD_COMPRA)
             return redirect()->route('solicitudes.index')->withErrors('Compra no encontrada');
         }
         // Verificar si la compra ya ha sido liquidada
-        if ($compra->LIQUIDEZ_COMPRA == 1) {
+        if ($compra->LIQUIDEZ_COMPRA === 1) {
             return redirect()->back()->with('error', 'Una compra ya liquidada no puede ser editada.');
         }
 
@@ -449,6 +484,11 @@ public function destroy($COD_COMPRA)
 
 public function generateReport(Request $request)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     // Definir la consulta básica con relaciones
     $query = Solitudes::with(['empleado:COD_EMPLEADO,NOM_EMPLEADO', 'area:COD_AREA,NOM_AREA', 'proyecto:COD_PROYECTO,NOM_PROYECTO']);
 
@@ -515,12 +555,6 @@ public function generateReport(Request $request)
     // Devolver el PDF para ser descargado o visualizado en el navegador
     return $pdf->stream('reporte_solicitudes_' . $reportType . '.pdf');
 }
-
-
-
-
-
-
 
     public function reporteGeneral()
     {

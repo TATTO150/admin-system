@@ -18,6 +18,11 @@ class EstadoAsignacionController extends Controller
    // Mostrar la lista de registros
    public function index()
    {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     $roleId = $user->Id_Rol;
 
@@ -48,6 +53,11 @@ class EstadoAsignacionController extends Controller
    // Mostrar el formulario para crear un nuevo registro
    public function create()
    {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     $roleId = $user->Id_Rol;
 
@@ -110,6 +120,11 @@ class EstadoAsignacionController extends Controller
    // Mostrar el formulario para editar un registro existente
    public function edit($id)
    {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     $roleId = $user->Id_Rol;
 
@@ -174,6 +189,11 @@ class EstadoAsignacionController extends Controller
    // Eliminar un registro
    public function destroy($id)
    {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
        $estado = EstadoAsignacion::findOrFail($id);
    
 
@@ -237,6 +257,11 @@ class EstadoAsignacionController extends Controller
    }
    public function generateReport()
    {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
        // Obtener todos los estados de asignación
        $estados = EstadoAsignacion::all();
 

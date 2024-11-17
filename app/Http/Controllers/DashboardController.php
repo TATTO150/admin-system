@@ -23,6 +23,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Contracts\Auth\Guard;
+
 
 class DashboardController extends Controller
 {
@@ -32,6 +34,12 @@ class DashboardController extends Controller
     $fechaVencimiento = $user->Fecha_Vencimiento ? Carbon::parse($user->Fecha_Vencimiento) : null; // Aseguramos que sea un objeto Carbon si existe
     $mostrarAlerta = false;
     $ahora = Carbon::now(); // Fecha actual
+
+   // Verificar si el usuario no está autenticado
+   if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
 
    // Validar si el usuario tiene pendiente la autenticación de dos factores
    if (!is_null($user->two_factor_secret) && ($user->two_factor_status === 0 || is_null($user->two_factor_status))) {

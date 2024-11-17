@@ -23,6 +23,11 @@ class TipoEquipoControlador extends Controller
     }
     public function index()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
     $roleId = $user->Id_Rol;
 
@@ -49,6 +54,11 @@ class TipoEquipoControlador extends Controller
 
     public function create()
     {   
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
 
@@ -85,6 +95,11 @@ class TipoEquipoControlador extends Controller
 
     public function edit($id)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     
@@ -137,6 +152,11 @@ class TipoEquipoControlador extends Controller
 
     public function destroy($id)
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $user = Auth::user();
         $roleId = $user->Id_Rol;
     
@@ -178,6 +198,11 @@ class TipoEquipoControlador extends Controller
     
     public function generateReport()
     {
+        // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
         $tipoEquipos = TipoEquipo::with('equipos')->get();
         $path = public_path('images/CTraterra.jpeg');
         $logoBase64 = 'data:image/' . pathinfo($path, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($path));// Cambia la ruta del logo

@@ -29,6 +29,11 @@ class CargosControlador extends Controller
 
     public function index()
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         
         //Nueva validacvion de permisos
@@ -40,6 +45,11 @@ class CargosControlador extends Controller
         return view('cargos.index', compact('cargos'));
     }
     public function pdf(){
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $cargos=Cargo::all();
 
         //fecha y hora generada
@@ -65,6 +75,11 @@ class CargosControlador extends Controller
     }
     public function crear()
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         
         //Nueva validacvion de permisos
@@ -134,6 +149,11 @@ class CargosControlador extends Controller
 
     public function destroy($COD_CARGO)
 {
+    // Verificar si el usuario no está autenticado
+    if (!Auth::check()) {
+        // Redirigir a la vista `sesion_suspendida`
+        return redirect()->route('sesion.suspendida');
+    }
     $user = Auth::user();
     
     //Nueva validacvion de permisos
@@ -160,6 +180,11 @@ class CargosControlador extends Controller
 
     public function edit($COD_CARGO)
     {
+        // Verificar si el usuario no está autenticado
+        if (!Auth::check()) {
+            // Redirigir a la vista `sesion_suspendida`
+            return redirect()->route('sesion.suspendida');
+        }
         $user = Auth::user();
         
         //Nueva validacvion de permisos

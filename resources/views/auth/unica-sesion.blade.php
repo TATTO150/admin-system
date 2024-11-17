@@ -12,10 +12,14 @@
             <form method="POST" action="{{ route('logout') }}" class="inline">
                 @csrf
     
-                <button type="submit" class="underline text-m text-white dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800 ms-2">
-                    {{ __('CERRAR SESION ACTUAL') }}
+                <button type="submit" 
+                class="ms-4 inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
+                    {{ __('CLICK AQUÍ PARA CERRAR LAS DEMÁS SESIONES E INGRESA NUEVAMENTE') }}
                 </button>
+
             </form>
+
+            
         </div>
     </x-authentication-card>
 </x-guest-layout>

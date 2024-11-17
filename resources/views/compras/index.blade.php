@@ -150,22 +150,16 @@
             <div class="table-responsive">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="text-center mt-3" id="tituloActivos">LIQUIDACIONES POR REALIZAR</h5>
-                    
-                    <form action="{{ route('compras.liquidar') }}" method="POST" id="formLiquidar">
+                    <form id="formLiquidar">
                         @csrf
-                        <input type="hidden" name="compras_seleccionadas" id="comprasSeleccionadas">
-                        <button type="submit" class="btn btn-success text-white hover:bg-blue-600">Liquidar</button>
+                        <button type="button" id="submitButton" class="btn btn-success text-white">Liquidar</button>
                     </form>
-                    
-                    
                 </div>
-                
-                
+            
                 <table class="table table-hover table-bordered dt-responsive nowrap">
                     <thead class="thead-dark">
                         <tr>
-                            <th> <input type="checkbox" id="selectAll"> 
-                            </th>
+                            <th><input type="checkbox" id="selectAll"></th>
                             <th>USUARIO</th>
                             <th>DESCRIPCION COMPRA</th>
                             <th>PROYECTO ASIGNADO</th>
@@ -184,7 +178,8 @@
                     <tbody id="tablaLiquidaciones">
                         @foreach ($Liquidaciones as $compras)
                         <tr data-compra-id="{{ $compras->COD_COMPRA }}">
-                            <td><input type="checkbox" class="checkbox-compra" value="{{ $compras->COD_COMPRA }}">
+                            <td>
+                                <input type="checkbox" class="checkbox-compra" value="{{ $compras->COD_COMPRA }}">
                             </td>
                             <td>{{ isset($usuarios[$compras['Id_usuario']]) ? $usuarios[$compras['Id_usuario']]->Nombre_Usuario : 'Usuario no encontrado' }}</td>
                             <td>{{ $compras['DESC_COMPRA'] }}</td>
@@ -204,34 +199,68 @@
                     </tbody>
                 </table>
             </div>
-        </div>
-         
-    </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const selectAllCheckbox = document.getElementById('selectAll');
-            const checkboxes = document.querySelectorAll('.checkbox-compra');
-            const formLiquidar = document.getElementById('formLiquidar');
-            const comprasSeleccionadasInput = document.getElementById('comprasSeleccionadas');
-    
-            // Función para seleccionar o deseleccionar todos los checkboxes de las compras
-            selectAllCheckbox.addEventListener('change', function() {
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = selectAllCheckbox.checked;
+            
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const selectAllCheckbox = document.getElementById('selectAll');
+                    const checkboxes = document.querySelectorAll('.checkbox-compra');
+                    const submitButton = document.getElementById('submitButton');
+                    const formLiquidar = document.getElementById('formLiquidar');
+            
+                    // Seleccionar o deseleccionar todos los checkboxes
+                    selectAllCheckbox.addEventListener('change', function () {
+                        checkboxes.forEach(checkbox => {
+                            checkbox.checked = selectAllCheckbox.checked;
+                        });
+                    });
+            
+                    // Enviar datos al backend
+                    submitButton.addEventListener('click', function () {
+                        const selectedValues = Array.from(checkboxes)
+                            .filter(checkbox => checkbox.checked)
+                            .map(checkbox => checkbox.value);
+            
+                        console.log('Valores seleccionados:', selectedValues); // Depuración en consola
+            
+                        if (selectedValues.length === 0) {
+                            alert('Debe seleccionar al menos una compra para liquidar.');
+                            return;
+                        }
+            
+                        const formData = new FormData(formLiquidar);
+                        formData.append('compraSeleccionada', JSON.stringify(selectedValues));
+            
+                        fetch("{{ route('compras.liquidar') }}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP status ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Respuesta del servidor:', data);
+                        if (data.success) {
+                            alert(data.message || '¿Seguro que desea liquidar las compras seleccionadas?');
+                            window.location.reload();
+                        } else {
+                            alert(data.message || 'Error al realizar la liquidación.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert(`Error al procesar la solicitud: ${error.message}`);
+                    });
+
+                    });
                 });
-            });
-    
-            // Función para enviar las compras seleccionadas al backend
-            formLiquidar.addEventListener('submit', function(event) {
-                event.preventDefault();
-                const comprasSeleccionadas = Array.from(checkboxes)
-                    .filter(checkbox => checkbox.checked)
-                    .map(checkbox => checkbox.value);
-                comprasSeleccionadasInput.value = JSON.stringify(comprasSeleccionadas);
-                formLiquidar.submit();
-            });
-        });
-    </script> 
+            </script>
 
     <div class="card mb-3 d-none" id="tablaretrasados">
         <div class="card-body">
