@@ -199,7 +199,8 @@ return [
     |
     */
 
-    'same_site' => env('SESSION_SAME_SITE', 'lax'),
+    'same_site' => 'lax', // Cambia a 'strict' para mayor seguridad si no usas navegación cruzada.
+
 
     /*
     |--------------------------------------------------------------------------
