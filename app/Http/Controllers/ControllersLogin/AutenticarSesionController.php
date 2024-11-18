@@ -19,6 +19,8 @@ use Laravel\Fortify\Http\Requests\LoginRequest;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Rules\Validaciones;
+use Illuminate\Support\Facades\Validator;
 
 
 
@@ -64,7 +66,17 @@ class AutenticarSesionController extends Controller
      */
    public function store(LoginRequest $request)
 {
-    // Buscar el usuario por correo o nombre de usuario
+    $input = $request->only(['Correo_Electronico', 'password']);
+    try {
+        Validator::make($input, [
+            'Correo_Electronico' => ['required', 'string', 'max:10'],
+            'password' => ['required', 'string'],
+        ])->validate();
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return back()->withErrors(['login' => 'Usuario o contraseña incorrectos']);
+    }
+    
+    
     $user = User::where('Correo_Electronico', $request->Correo_Electronico)
         ->orWhere('Usuario', $request->Correo_Electronico)
         ->first();
