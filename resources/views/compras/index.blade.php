@@ -39,9 +39,7 @@
     <div class="card mb-3 mt-4">
         <div class="card-header">
            <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
-                <!-- Botones para crear empleado, ver inactivos y generar reporte -->
-                <button id="toggleretrasados" class="btn btn-warning text-white hover:bg-blue-600">RETARDO DE LIQUIDEZ</button>
-                <button id="reporteModalBtn" class="btn btn-primary  bg-teal-500 text-white hover:bg-teal-600" data-toggle="modal" data-target="#pdfModal">REPORTE</button>
+                <button id="reporteModalBtn" class="btn btn-primary  bg-teal-500 text-white hover:bg-teal-600" data-toggle="modal" data-target="#reportModal">REPORTE</button>
             </div>
             
         
@@ -54,13 +52,13 @@
         </div>
         
 
-     <!-- Compras liquidadas y por liquidar -->        
+     <!-- Compras liquidadas -->        
         <div class="card-body"  id="tablapago">
             <!-- Contenedor para la tabla con barra de desplazamiento horizontal -->
             <div class="table-responsive"><h5 class="text-center mt-3" id="titulopago">COMPRAS REALIZADAS</h5>
                 <h6 class="text-center mt-3" id="tituloActivos"></h6>
                     
-                <table  class="table table-hover table-bordered dt-responsive nowrap">
+                <table  class="table table-hover table-bordered dt-responsive nowrap" id="tablacompras">
                     
                     <thead class="thead-dark">
                         <tr>
@@ -147,6 +145,7 @@
                 </table>
             </div>
 
+         <!-- Compras por liquidar --> 
             <div class="table-responsive">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="text-center mt-3" id="tituloActivos">LIQUIDACIONES POR REALIZAR</h5>
@@ -156,7 +155,7 @@
                     </form>
                 </div>
             
-                <table class="table table-hover table-bordered dt-responsive nowrap">
+                <table class="table table-hover table-bordered dt-responsive nowrap" id="tablaLiquidacion">
                     <thead class="thead-dark">
                         <tr>
                             <th><input type="checkbox" id="selectAll"></th>
@@ -199,7 +198,46 @@
                     </tbody>
                 </table>
             </div>
+            <nav id="paginationExample" class="d-flex justify-content-center mt-3">
+                <button id="prevPage" class="btn btn-outline-primary me-2">Anterior</button>
+                <span id="currentPage" class="align-self-center"></span>
+                <button id="nextPage" class="btn btn-outline-primary ms-2">Siguiente</button>
+            </nav>
+            <!-- Modal para Generar Reporte -->
+            <div class="modal fade" id="reportModal" tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="reportModalLabel">Generar Reporte</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Contenedor para mostrar mensajes de error dentro del modal -->
+                            <div id="errorContainer" class="alert alert-danger d-none"></div>
+                            
+
+                            <form id="reporteForm" method="POST" action="" >
+                                @csrf
+                                
+                                <div class="form-group">
+                                    <label for="reportType" class="form-label">Tipo de Reporte</label>
+                                    <select id="reportType" name="reportType" class="form-select" required>
+                                        <option value="">Seleccione un tipo de reporte</option>
+                                        <option value="general">General</option>
+                                        <option value="liquidado">Liquidados</option>
+                                        <option value="Noliquidado">No Liquidados</option>
+                                    </select>
+                                </div>
+                                
+                                    <button type="submit" class="btn btn-primary" id="generarReporteBtn">Generar</button>
+                                
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
+            <!-- Creación del check y función -->
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
                     const selectAllCheckbox = document.getElementById('selectAll');
@@ -262,90 +300,7 @@
                 });
             </script>
 
-    <div class="card mb-3 d-none" id="tablaretrasados">
-        <div class="card-body">
-
-            <div class="d-flex justify-content-between align-items-left mb-2">
-                <form action="" method="POST" id="formLiquidacion">
-                    @csrf
-                    <input type="hidden" name="compraSeleccionada" id="comprasRetrasoSeleccionadas">
-                    <button type="submit" class="btn btn-success text-white hover:bg-blue-600">Liquidar</button>
-                </form>
-            </div>
-            <!-- Contenedor para la tabla con barra de desplazamiento horizontal -->
-            <div class="table-responsive">
-                <table id="tablaretrasados" class="table table-hover table-bordered dt-responsive nowrap">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th><input type="checkbox" id="selecAll"> </th>
-                            <th>USUARIO</th>
-                            <th>DESCRIPCION COMPRA</th>
-                            <th>PROYECTO ASIGNADO</th>
-                            <th>FECHA REGISTRO</th>
-                            <th>ESTADO COMPRA</th>
-                            <th>TIPO COMPRA</th>
-                            <th>FECHA PAGO</th>
-                            <th>PRECIO COMPRA</th>
-                            <th>PRECIO CUOTA</th>
-                            <th>PRECIO NETO</th>
-                            <th>CUOTAS PAGADAS</th>
-                            <th>TOTAL CUOTAS</th>
-                            <th>LIQUIDADO</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tablaretrasados">
-                        @foreach ($retraso as $compras)
-                        <tr data-compra-id="{{ $compras->COD_COMPRA }}">
-                            <td><input type="checkbox" class="checkbox-compras" value="{{ $compras->COD_COMPRA }}">
-                            </td>
-                            <td>{{ isset($usuarios[$compras['Id_usuario']]) ? $usuarios[$compras['Id_usuario']]->Nombre_Usuario : 'Usuario no encontrado' }}</td>
-                            <td>{{ $compras['DESC_COMPRA'] }}</td>
-                            <td>{{ isset($proyectos[$compras['COD_PROYECTO']]) ? $proyectos[$compras['COD_PROYECTO']]->NOM_PROYECTO : 'Proyecto no encontrado' }}</td>
-                            <td>{{ $compras['FEC_REGISTRO'] }}</td>
-                            <td>{{ isset($estadocompras[$compras['COD_ESTADO']]) ? $estadocompras[$compras['COD_ESTADO']]->DESC_ESTADO : 'Estado no encontrado' }}</td>
-                            <td>{{ isset($tipocompras[$compras['COD_TIPO']]) ? $tipocompras[$compras['COD_TIPO']]->DESC_TIPO : 'Tipo no encontrado' }}</td>
-                            <td>{{ $compras['FECHA_PAGO'] }}</td>
-                            <td>{{ $compras['PRECIO_COMPRA'] }}</td>
-                            <td>{{ $compras['PRECIO_CUOTA'] }}</td>
-                            <td>{{ $compras['PRECIO_NETO'] }}</td>
-                            <td>{{ $compras['CUOTAS_PAGADAS'] }}</td>
-                            <td>{{ $compras['TOTAL_CUOTAS'] }}</td>
-                            <td>{{ $compras['LIQUIDEZ_COMPRA'] == 1 ? 'Sí' : 'No' }}</td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-         
-    </div>              
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const selectAllCheckbox = document.getElementById('selecAll');
-            const checkboxes = document.querySelectorAll('.checkbox-compras');
-            const formLiquidacion = document.getElementById('formLiquidacion');
-            const compraSeleccionadaInput = document.getElementById('comprasRetrasoSeleccionadas');
-    
-            // Función para seleccionar o deseleccionar todos los checkboxes de las compras
-            selectAllCheckbox.addEventListener('change', function() {
-                checkboxes.forEach(checkbox => {
-                    checkbox.checked = selectAllCheckbox.checked;
-                });
-            });
-    
-            // Función para enviar las compras seleccionadas al backend
-            formLiquidar.addEventListener('submit', function(event) {
-                event.preventDefault();
-                const compraSeleccionada = Array.from(checkboxes)
-                    .filter(checkbox => checkbox.checked)
-                    .map(checkbox => checkbox.value);
-                compraSeleccionadaInput.value = JSON.stringify(compraSeleccionada);
-                formLiquidacion.submit();
-            });
-        });
-    </script> 
-    
+        </div>                  
 @stop
 
 @section('css')
@@ -368,8 +323,61 @@
 @stop
 
 @section('js')
+
+
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
+
+function paginateTable(tableId, rowsPerPage) {
+        const table = document.getElementById(tableId);
+        const rows = table.querySelectorAll('tbody tr');
+        const prevButton = document.getElementById('prevPage');
+        const nextButton = document.getElementById('nextPage');
+        const currentPageLabel = document.getElementById('currentPage');
+
+        let currentPage = 1;
+        const rowCount = rows.length;
+        const pageCount = Math.ceil(rowCount / rowsPerPage);
+
+        // Función para mostrar solo las filas de la página actual
+        function showPage(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            rows.forEach((row, index) => {
+                row.style.display = (index >= start && index < end) ? '' : 'none';
+            });
+            currentPageLabel.textContent = 'Pág. ' + page;
+        }
+
+        // Eventos de navegación
+        prevButton.addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage(currentPage);
+            }
+        });
+
+        nextButton.addEventListener('click', function() {
+            if (currentPage < pageCount) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        });
+
+        // Mostrar la primera página al cargar
+        showPage(currentPage);
+    }
+
+    // Llamar a la función de paginación al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        paginateTable('tablaLiquidacion', 6); // Cambiar el número de filas por página si es necesario
+    });
+
+    // Llamar a la función de paginación al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        paginateTable('tablacompras', 6); // Cambiar el número de filas por página si es necesario
+    });
 $(document).ready(function() {
     $('#buscar').on('keyup', function() {
         var query = $(this).val().toLowerCase();
@@ -386,22 +394,6 @@ $(document).ready(function() {
 </script>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-$(document).ready(function() {
-    $('#buscar').on('keyup', function() {
-        var query = $(this).val().toLowerCase();
-        $('#tablaretrasados tbody tr').each(function() {
-            var rowText = $(this).text().toLowerCase();
-            if (rowText.indexOf(query) === -1) {
-                $(this).hide();
-            } else {
-                $(this).show();
-            }
-        });
-    });
-});
-</script>
-
 <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
 <script src="//code.jquery.com/jquery-3.7.0.js" type="text/javascript"></script>
 <script src="//cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js" type="text/javascript"></script>
@@ -417,20 +409,57 @@ $(document).ready(function() {
 <script src="https://cdn.datatables.net/responsive/2.2.7/js/dataTables.responsive.min.js"></script>
 <script>
         
-    $(document).ready(function() {
-        // Inicializar DataTables
-        $('#mitabla, #mitablaretrasados').DataTable({
-            responsive: false
-        });
+        $(document).ready(function () {
+    // Inicializar DataTables para ambas tablas
+    $('#mitabla, #mitablaretrasados').DataTable({
+        responsive: false
+    });
+    });
+    
 
-        // Alternar entre empleados activos e inactivos
-        $('#toggleretrasados').click(function() {
-            $('#tablapago').toggleClass('d-none');
-            $('#tablaretrasados').toggleClass('d-none');
-            $('#titulopago').toggle();  
-            $('#tituloretrasados').toggle(); 
-            $(this).text($(this).text() === 'Ver Compras y Liquidaciones' ? 'Ver Retardo de Liquidez' : 'Ver Compras y Liquidaciones');
-        });
-    }); 
+    document.addEventListener('DOMContentLoaded', function () {
+    const generarReporteBtn = document.getElementById('generarReporteBtn');
+    const reportTypeSelect = document.getElementById('reportType');
+
+    generarReporteBtn.addEventListener('click', function (event) {
+        event.preventDefault(); // Evitar el comportamiento predeterminado del formulario.
+
+        const selectedOption = reportTypeSelect.value;
+
+        if (!selectedOption) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Advertencia',
+                text: 'Por favor, seleccione un tipo de reporte antes de generar.',
+            });
+            return;
+        }
+
+        // Define las rutas dependiendo del valor seleccionado.
+        let url;
+        switch (selectedOption) {
+            case 'general':
+                url = "{{ route('compras.pdf') }}"; // Ruta para el reporte general.
+                break;
+            case 'liquidado':
+                url = "{{ route('compras.pdfLiquidado') }}"; // Ruta para el reporte de liquidados.
+                break;
+            case 'Noliquidado':
+                url = "{{ route('compras.pdfNoLiquidado') }}"; // Ruta para el reporte no liquidados.
+                break;
+            default:
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Tipo de reporte no válido.',
+                });
+                return;
+        }
+
+        // Abrir el PDF en una nueva pestaña
+        window.open(url, '_blank');
+    });
+    });
+
 </script>
 @stop
