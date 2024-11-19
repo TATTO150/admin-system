@@ -20,27 +20,9 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot()
+   /* public function boot()
 {
-    Response::macro('withCsp', function ($response) {
-        $response->headers->set(
-            'Content-Security-Policy',
-            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; frame-src 'none'; frame-ancestors 'none'; connect-src 'self'"
-        );
-        return $response;
-    });
-
-    // Opcional: Si quieres aplicarlo a todas las respuestas
-    app('router')->matched(function () {
-        app('router')->middleware(function ($request, $next) {
-            $response = $next($request);
-            $response->headers->set(
-                'Content-Security-Policy',
-                "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; frame-src 'none'; frame-ancestors 'none'; connect-src 'self'"
-            );
-            return $response;
-        });
-    });
-}
+   
+}*/
 
 }
