@@ -70,7 +70,6 @@ class AutenticarSesionController extends Controller
     try {
         Validator::make($input, [
             'Correo_Electronico' => ['required', 'string', 'max:10'],
-            'password' => ['required', 'string'],
         ])->validate();
     } catch (\Illuminate\Validation\ValidationException $e) {
         return back()->withErrors(['login' => 'Usuario o contraseña incorrectos']);
