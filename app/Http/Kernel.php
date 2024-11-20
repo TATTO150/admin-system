@@ -31,5 +31,12 @@ class Kernel extends HttpKernel
         // Otros grupos de middleware...
     ];
     
-  
+    
+    //ESTO FUE LO QUE LE AÑADI
+
+    protected $middleware = [
+        // Otros middlewares
+        \App\Http\Middleware\ContentSecurityPolicy::class,
+        \App\Http\Middleware\AntiClickjacking::class,
+    ];
 }

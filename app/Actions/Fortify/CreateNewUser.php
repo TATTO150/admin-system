@@ -28,7 +28,7 @@ class CreateNewUser implements CreatesNewUsers
             Validator::make($input, [
                 'Nombre_Usuario' => [(new Validaciones)->requerirTodoMayusculas()->requerirUnEspacio()->prohibirNumerosSimbolos()->requerirCampo()],
                 'Usuario' => [(new Validaciones)->requerirSinEspacios()->requerirTodoMayusculas()->requerirlongitudMinima(4)->requerirlongitudMaxima(10)],
-                'Contrasena' => [(new Validaciones)->requerirSinEspacios()->requerirSimbolo()->requerirMinuscula()->requerirMayuscula()->requerirNumero()->requerirlongitudMinima(8)->requerirlongitudMaxima(12)->requerirCampo()],
+                'Contrasena' => [(new Validaciones)->requerirSinEspacios()->requerirSimbolo()->requerirMinuscula()->requerirMayuscula()->requerirNumero()->requerirlongitudMinima(18)->requerirlongitudMaxima(25)->requerirCampo()],
                 'Correo_Electronico' => [(new Validaciones)->requerirSinEspacios()->requerirArroba()->requerirCampo()->requerirCorreoUnico('users', 'email')],
             ])->validate();
         
