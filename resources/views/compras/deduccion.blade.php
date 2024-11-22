@@ -45,10 +45,13 @@
         <div class="card-header">
             <h3 class="text-center">Detalles de la Compra</h3>
             <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
-                <!-- Botones para crear empleado, ver inactivos y generar reporte -->
-                <button id="reporteModalBtn" class="btn btn-primary bg-teal-500 text-white hover:bg-teal-600" data-toggle="modal" data-target="#pdfModal">REPORTE</button>
+                <button id="reporteBtn" class="btn btn-primary" data-url="/compras/{id}/reporte" data-compra-id="{{ $compras->COD_COMPRA }}">
+                    REPORTE
+                </button>
             </div>
         </div>
+
+        
         
         <div class="card-body">
             <p><strong>Nombre del Usuario: </strong>{{$compras->usuario->Nombre_Usuario}}</p>
@@ -64,15 +67,13 @@
         
     </div>
 
-    <!-- Formulario de búsqueda -->
-    <div>
-        <form id="buscador-form" method="GET">
-            <div class="input-group mb-3">
-                <input type="text" class="form-control" id="buscar" placeholder="Buscar..." name="buscar" value="{{ request()->input('buscar') }}">
-            </div>
-        </form>
+    <!-- Campo de búsqueda -->
+    <div class="mb-4">
+        <input type="text" id="searchInput" class="form-control" placeholder="Buscar permiso...">
     </div>
+    
     <!-- Tabla de deducciones -->
+    
     <div class="card-body" id="tabladeducciones">
         <div class="table-responsive">
             <h5 class="text-center mt-3">DEDUCCIONES DE LA COMPRA</h5>
@@ -85,81 +86,97 @@
                         <th>Valor de la Deducción</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @foreach ($deducciones as $deducciones)
-                        <tr>
-                            <td>
-                                <!-- Dropdown para acciones de las deducciones -->
-                                <div class="dropdown">
-                                    <button class="btn btn-secondary text-white hover:bg-blue-600" type="button" id="dropdownMenuButton{{ $deducciones['COD_DEDUCCION'] }}" data-bs-toggle="dropdown" aria-expanded="false">
-                                        Acción
-                                    </button>
-                                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $deducciones['COD_DEDUCCION'] }}">
-                                        <!-- Opción de deducción que abre el modal -->
-                                            <li>
-                                                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#deduccionModal{{ $deducciones['COD_DEDUCCION'] }}">
-                                                    EDITAR
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <form action="{{ route('compras.deduccion.destroy', ['COD_COMPRA' => $deducciones['COD_COMPRA'], 'COD_DEDUCCION' => $deducciones['COD_DEDUCCION']]) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta deducción?');">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="dropdown-item text-danger">ELIMINAR</button>
-                                                </form>
-                                                
-                                            </li>
-                                    </ul>
-                                </div>
-                            </td>
-                            <td>{{ $deducciones['DESC_DEDUCCION'] }}</td>
-                            <td>{{ $deducciones['VALOR_DEDUCCION'] }}</td>
-                        </tr>
-
-                        <!-- Modal para la edicion de la deduccion -->
-                        <div class="modal fade" id="deduccionModal{{ $deducciones['COD_DEDUCCION'] }}" tabindex="-1" aria-labelledby="deduccionModalLabel{{ $deducciones['COD_DEDUCCION'] }}" aria-hidden="true" >
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title" id="deduccionModalLabel{{ $deducciones['COD_DEDUCCION'] }}">EDITAR</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <tbody id="tablaDeduccion">
+                    @if(is_array($deducciones) || is_object($deducciones))
+                        @foreach ($deducciones as $deducciones)
+                            <tr>
+                                <td>
+                                    <!-- Dropdown para acciones de las deducciones -->
+                                    <div class="dropdown">
+                                        <button class="btn btn-secondary text-white hover:bg-blue-600" type="button" id="dropdownMenuButton{{ $deducciones['COD_DEDUCCION'] }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                            Acción
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton{{ $deducciones['COD_DEDUCCION'] }}">
+                                            <!-- Opción de deducción que abre el modal -->
+                                                <li>
+                                                    <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#deduccionModal{{ $deducciones['COD_DEDUCCION'] }}">
+                                                        EDITAR
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <form action="{{ route('compras.deduccion.destroy', ['COD_COMPRA' => $deducciones['COD_COMPRA'], 'COD_DEDUCCION' => $deducciones['COD_DEDUCCION']]) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta deducción?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="dropdown-item text-danger">ELIMINAR</button>
+                                                    </form>
+                                                    
+                                                </li>
+                                        </ul>
                                     </div>
-                                    
-                                    <div class="modal-body">
-                                        <!-- Formulario para agregar la deducción -->
-                                        <form action="{{ route('compras.deduccion.update', ['COD_COMPRA' => $deducciones['COD_COMPRA'], 'COD_DEDUCCION' => $deducciones['COD_DEDUCCION']]) }}" method="POST">
-                                            @csrf
-                                            @method('PUT')
-                                            <div class="form-group">
-                                                <label for="tipoDeduccion">Tipo de Deducción</label>
-                                                <select class="form-control" id="tipoDeduccion" name="tipo_deduccion">
-                                                    <option value="numerico">Numérico</option>
-                                                    <option value="porcentaje">Porcentaje</option>
-                                                </select>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="descripcionDeduccion">Descripción</label>
-                                                <input type="text" class="form-control" id="DESC_DEDUCCION" name="DESC_DEDUCCION" rows="3" required maxlength="255" value="{{old('DESC_DEDUCCION', $deducciones['DESC_DEDUCCION']) }}" required></textarea>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="valorDeduccion">Valor de Deducción</label>
-                                                <input type="number" class="form-control" id="VALOR_DEDUCCION" name="VALOR_DEDUCCION"  value="{{ old('VALOR_DEDUCCION', intval($deducciones['VALOR_DEDUCCION'])) }}" min="0" required>
-                                            </div>
-                                            <button type="submit" class="btn btn-primary">Guardar</button>
-                                        </form>
+                                </td>
+                                <td>{{ $deducciones['DESC_DEDUCCION'] }}</td>
+                                <td>{{ $deducciones['VALOR_DEDUCCION'] }}</td>
+                            </tr>
+
+                            <!-- Modal para la edicion de la deduccion -->
+                            <div class="modal fade" id="deduccionModal{{ $deducciones['COD_DEDUCCION'] }}" tabindex="-1" aria-labelledby="deduccionModalLabel{{ $deducciones['COD_DEDUCCION'] }}" aria-hidden="true" >
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deduccionModalLabel{{ $deducciones['COD_DEDUCCION'] }}">EDITAR</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        
+                                        <div class="modal-body">
+                                            <!-- Formulario para agregar la deducción -->
+                                            <form action="{{ route('compras.deduccion.update', ['COD_COMPRA' => $deducciones['COD_COMPRA'], 'COD_DEDUCCION' => $deducciones['COD_DEDUCCION']]) }}" method="POST">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="form-group">
+                                                    <label for="tipoDeduccion">Tipo de Deducción</label>
+                                                    <select class="form-control" id="tipoDeduccion" name="tipo_deduccion">
+                                                        <option value="numerico">Numérico</option>
+                                                        <option value="porcentaje">Porcentaje</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="descripcionDeduccion">Descripción</label>
+                                                    <input type="text" class="form-control" id="DESC_DEDUCCION" name="DESC_DEDUCCION" rows="3" required maxlength="255" value="{{old('DESC_DEDUCCION', $deducciones['DESC_DEDUCCION']) }}" required></textarea>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="valorDeduccion">Valor de Deducción</label>
+                                                    <input type="number" class="form-control" id="VALOR_DEDUCCION" name="VALOR_DEDUCCION"  value="{{ old('VALOR_DEDUCCION', intval($deducciones['VALOR_DEDUCCION'])) }}" min="0" required>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Guardar</button>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                    @endforeach
+                        @endforeach
+                    @else
+                        <tr>
+                            <td colspan="3" class="text-center">No se encontraron deducciones.</td>
+                        </tr>
+                    @endif    
                 </tbody>
             </table>
         </div>
+        <nav id="paginationExample" class="d-flex justify-content-center mt-3">
+            <button id="prevPage" class="btn btn-outline-primary me-2">Anterior</button>
+            <span id="currentPage" class="align-self-center"></span>
+            <button id="nextPage" class="btn btn-outline-primary ms-2">Siguiente</button>
+        </nav>
     </div>
 @stop
 
 @section('js')
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+
+        
+
     <!-- jQuery and DataTables scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
@@ -168,12 +185,71 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+    
     <script>
-        $(document).ready(function() {
-            // Inicializar DataTables
-            $('#mitabla, #mitablaretrasados').DataTable({
-                responsive: false
+
+    function paginateTable(tableId, rowsPerPage) {
+        const table = document.getElementById(tableId);
+        const rows = table.querySelectorAll('tbody tr');
+        const prevButton = document.getElementById('prevPage');
+        const nextButton = document.getElementById('nextPage');
+        const currentPageLabel = document.getElementById('currentPage');
+
+        let currentPage = 1;
+        const rowCount = rows.length;
+        const pageCount = Math.ceil(rowCount / rowsPerPage);
+
+        // Función para mostrar solo las filas de la página actual
+        function showPage(page) {
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+            rows.forEach((row, index) => {
+                row.style.display = (index >= start && index < end) ? '' : 'none';
             });
+            currentPageLabel.textContent = 'Pág. ' + page;
+        }
+
+        // Eventos de navegación
+        prevButton.addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                showPage(currentPage);
+            }
         });
+
+        nextButton.addEventListener('click', function() {
+            if (currentPage < pageCount) {
+                currentPage++;
+                showPage(currentPage);
+            }
+        });
+
+        // Mostrar la primera página al cargar
+        showPage(currentPage);
+    }
+
+    // Llamar a la función de paginación al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        paginateTable('tabladeducciones', 6); // Cambiar el número de filas por página si es necesario
+    });
+           // Script de búsqueda mejorado
+    
+
+        document.getElementById('reporteBtn').addEventListener('click', function () {
+        const compraId = this.getAttribute('data-compra-id');
+        const baseUrl = this.getAttribute('data-url');
+
+        if (compraId && baseUrl) {
+            // Construir una URL relativa
+            const url = baseUrl.replace('{id}', compraId);
+            console.log("Abriendo en nueva pestaña:", url); // Verificar en consola
+            window.open(url, '_blank'); // Abrir en nueva pestaña
+        } else {
+            alert('No se encontró el ID de la compra.');
+        }
+    });
+
+
     </script>
+
 @stop

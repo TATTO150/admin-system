@@ -66,7 +66,7 @@ class ComprasControlador extends Controller
         //compras sin liquidar y en fecha
         $Liquidaciones = Compras::Where('LIQUIDEZ_COMPRA',0)
         ->where('COD_ESTADO',$estadoAprobado)
-        ->where('FECHA_PAGO', '>', $fechaActual)
+       // ->where('FECHA_PAGO', '>', $fechaActual)
         ->with(['estadocompras', 'usuarios', 'proyectos', 'tipocompras'])
         ->get();
         //compras sin liquidar retrasadas
@@ -95,8 +95,154 @@ class ComprasControlador extends Controller
         $tipocompras = TipoCompra::all()->KeyBy('COD_TIPO');
         $deduccion = Deduccion::all()->KeyBy('COD_COMPRA');
         $preciofinal = '0.00';
+
+        
         //retorno de la informacion
         return view('compras.index', compact('retraso','Liquidaciones','preciofinal','usuarios','compras','proyectos','estadocompras','tipocompras', 'deduccion'));
+    }
+
+
+    public function pdf(Request $request){
+
+        //Validar que existen reportes
+        $validator = Validator::make($request->all(), [
+            'validacion' => [(new Validaciones)->validarExistenciaDeReportes()],
+        ]);
+
+         // Obtener el ID del estado "aprobada"
+         $estadoAprobado = EstadoCompra::where('DESC_ESTADO', 'APROBADA')->first()->COD_ESTADO;
+
+         $compras = Compras::Where('COD_ESTADO',$estadoAprobado)
+         ->with(['estadocompras', 'usuarios', 'proyectos', 'deduccion', 'tipocompras'])
+        ->get();
+
+
+        foreach ($compras as &$compra) {
+            $compra->totalDeducciones = Deduccion::where('COD_COMPRA', $compra->COD_COMPRA)->sum('VALOR_DEDUCCION');
+           
+            $compra->precioFinal = $compra->PRECIO_COMPRA - $compra->totalDeducciones;
+           
+            if (!empty($compra['FEC_REGISTRO'])) {
+                $compra['FEC_REGISTRO'] = Carbon::parse($compra['FEC_REGISTRO'])->format('Y-m-d');
+            } else {
+                $compra['FEC_REGISTRO'] = 'Fecha no disponible';
+            }
+        }
+
+        $proyectos = Proyectos::all()->keyBy('COD_PROYECTO');
+        $usuarios = User::all()->keyBy('Id_usuario');
+        $estadocompras = EstadoCompra::all()->keyBy('COD_ESTADO');
+        $tipocompras = TipoCompra::all()->KeyBy('COD_TIPO');
+        $deduccion = Deduccion::all()->KeyBy('COD_COMPRA');
+        $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s');
+        $path = public_path('images/CTraterra.jpeg');
+        $logoBase64 = 'data:image/' . pathinfo($path, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($path));
+
+        $pdf = Pdf::loadView('compras.pdf',compact('compras', 'fechaHora', 'logoBase64','estadocompras','usuarios','proyectos','deduccion','tipocompras')) 
+        ->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+            'defaultFont' => 'Arial',
+            'isRemoteEnabled' => true,
+        ]);
+        return $pdf->stream();
+    }
+
+
+    
+    public function pdfLiquidado(Request $request){
+
+        //Validar que existen reportes
+        $validator = Validator::make($request->all(), [
+            'validacion' => [(new Validaciones)->validarExistenciaDeReportes()],
+        ]);
+
+         // Obtener el ID del estado "aprobada"
+         $estadoAprobado = EstadoCompra::where('DESC_ESTADO', 'APROBADA')->first()->COD_ESTADO;
+
+         $compras = Compras::Where('COD_ESTADO',$estadoAprobado)
+         -> Where('LIQUIDEZ_COMPRA',1)
+         ->with(['estadocompras', 'usuarios', 'proyectos', 'deduccion', 'tipocompras'])
+        ->get();
+
+
+        foreach ($compras as &$compra) {
+            $compra->totalDeducciones = Deduccion::where('COD_COMPRA', $compra->COD_COMPRA)->sum('VALOR_DEDUCCION');
+           
+            $compra->precioFinal = $compra->PRECIO_COMPRA - $compra->totalDeducciones;
+           
+            if (!empty($compra['FEC_REGISTRO'])) {
+                $compra['FEC_REGISTRO'] = Carbon::parse($compra['FEC_REGISTRO'])->format('Y-m-d');
+            } else {
+                $compra['FEC_REGISTRO'] = 'Fecha no disponible';
+            }
+        }
+
+        $proyectos = Proyectos::all()->keyBy('COD_PROYECTO');
+        $usuarios = User::all()->keyBy('Id_usuario');
+        $estadocompras = EstadoCompra::all()->keyBy('COD_ESTADO');
+        $tipocompras = TipoCompra::all()->KeyBy('COD_TIPO');
+        $deduccion = Deduccion::all()->KeyBy('COD_COMPRA');
+        $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s');
+        $path = public_path('images/CTraterra.jpeg');
+        $logoBase64 = 'data:image/' . pathinfo($path, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($path));
+
+        $pdf = Pdf::loadView('compras.pdf',compact('compras', 'fechaHora', 'logoBase64','estadocompras','usuarios','proyectos','deduccion','tipocompras')) 
+        ->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+            'defaultFont' => 'Arial',
+            'isRemoteEnabled' => true,
+        ]);  
+        return $pdf->stream();
+    }
+
+
+    public function pdfNoLiquidado(Request $request){
+
+        //Validar que existen reportes
+        $validator = Validator::make($request->all(), [
+            'validacion' => [(new Validaciones)->validarExistenciaDeReportes()],
+        ]);
+
+         // Obtener el ID del estado "aprobada"
+         $estadoAprobado = EstadoCompra::where('DESC_ESTADO', 'APROBADA')->first()->COD_ESTADO;
+
+         $compras = Compras::Where('COD_ESTADO',$estadoAprobado)
+         -> Where('LIQUIDEZ_COMPRA',0)
+         ->with(['estadocompras', 'usuarios', 'proyectos', 'deduccion', 'tipocompras'])
+        ->get();
+
+
+        foreach ($compras as &$compra) {
+            $compra->totalDeducciones = Deduccion::where('COD_COMPRA', $compra->COD_COMPRA)->sum('VALOR_DEDUCCION');
+           
+            $compra->precioFinal = $compra->PRECIO_COMPRA - $compra->totalDeducciones;
+           
+            if (!empty($compra['FEC_REGISTRO'])) {
+                $compra['FEC_REGISTRO'] = Carbon::parse($compra['FEC_REGISTRO'])->format('Y-m-d');
+            } else {
+                $compra['FEC_REGISTRO'] = 'Fecha no disponible';
+            }
+        }
+
+        $proyectos = Proyectos::all()->keyBy('COD_PROYECTO');
+        $usuarios = User::all()->keyBy('Id_usuario');
+        $estadocompras = EstadoCompra::all()->keyBy('COD_ESTADO');
+        $tipocompras = TipoCompra::all()->KeyBy('COD_TIPO');
+        $deduccion = Deduccion::all()->KeyBy('COD_COMPRA');
+        $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s');
+        $path = public_path('images/CTraterra.jpeg');
+        $logoBase64 = 'data:image/' . pathinfo($path, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($path));
+
+        $pdf = Pdf::loadView('compras.pdf',compact('compras', 'fechaHora', 'logoBase64','estadocompras','usuarios','proyectos','deduccion','tipocompras')) 
+        ->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+            'defaultFont' => 'Arial',
+            'isRemoteEnabled' => true,
+        ]);  
+        return $pdf->stream();
     }
 
     public function agregarDeduccion(Request $request, $id)
@@ -174,6 +320,6 @@ class ComprasControlador extends Controller
         return response()->json(['success' => true, 'message' => '¿Seguro que desea liquidar las compras seleccionadas?']);
     }
     
+
     
 }
-

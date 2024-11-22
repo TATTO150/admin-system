@@ -13,9 +13,15 @@ use App\Http\Controllers\BitacoraController;
 use Illuminate\Support\Facades\Auth;
 use App\Providers\PermisoService;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Rules\Validaciones;
+
+use Illuminate\Support\Facades\Validator;
 
 class DeduccionControlador extends Controller
 {
+
+    
     protected $estadocompras, $tipocompras, 
     $permisoService, $bitacora, $proyectos, $usuarios, $deduccion, $preciofinal;
 
@@ -56,9 +62,72 @@ class DeduccionControlador extends Controller
        $totalDeducciones = $deducciones->sum('VALOR_DEDUCCION');
        $pagoFinal = $compras->PRECIO_COMPRA - $totalDeducciones;
 
+       if ($deducciones->isEmpty()) {
+        // Retornar un mensaje de error en formato JSON
+        return back()->withErrors( 'No existen deducciones en esta compra');
+        }
+
        return view('compras.deduccion', compact( 'deducciones','compras', 'pagoFinal'));
    }
 
+   public function generarPDF($id)
+    {
+        // Verificar si el usuario está autenticado
+        if (!Auth::check()) {
+            return redirect()->route('sesion.suspendida');
+        }
+
+        // Obtener la compra
+        $compra = Compras::with(['usuario', 'estadocompras', 'tipocompras','proyectos'])->findOrFail($id);
+
+      
+
+        // Obtener las deducciones asociadas a esa compra
+        $deducciones = Deduccion::where('COD_COMPRA', $id)->get();
+
+        // Validar si no se encontraron deducciones
+        $usuario = User::all()->keyBy('Id_usuario');
+        $estadocompras = EstadoCompra::all()->keyBy('COD_ESTADO');
+        $tipocompras = TipoCompra::all()->KeyBy('COD_TIPO');
+        
+
+        // Suma total de deducciones
+        $totalDeducciones = $deducciones->sum('VALOR_DEDUCCION');
+
+        // Calcular el precio final
+        $pagoFinal = $compra->PRECIO_COMPRA - $totalDeducciones;
+
+        $fechaHora = \Carbon\Carbon::now()->format('d-m-Y H:i:s');
+
+        $path = public_path('images/CTraterra.jpeg');
+        $logoBase64 = 'data:image/' . pathinfo($path, PATHINFO_EXTENSION) . ';base64,' . base64_encode(file_get_contents($path));
+        
+        $pdfFileName = "Reporte_Compra_{$id}_{$compra->usuario->name}_{$fechaHora}.pdf";
+
+
+        
+        // Generar PDF usando la vista `reporte_compras.blade.php`
+        $pdf = Pdf::loadView('compras.reporte_compras', [
+            'compra' => $compra,
+            'deducciones' => $deducciones,
+            'totalDeducciones' => $totalDeducciones,
+            'pagoFinal' => $pagoFinal,
+            'fechaHora' => $fechaHora,
+            'logoBase64' => $logoBase64,
+            'tipocompras' => $tipocompras,
+            'estadocompras' => $estadocompras,
+            'usuario' => $usuario,
+        ])->setOptions([
+            'isHtml5ParserEnabled' => true,
+            'isPhpEnabled' => true,
+            'defaultFont' => 'Arial',
+            'isRemoteEnabled' => true,
+        ]);
+        // Retornar el PDF para descargar
+        return $pdf->stream($pdfFileName);
+    }
+
+   
     public function edit($COD_DEDUCCION){ 
 
         // Verificar si el usuario no está autenticado
@@ -174,6 +243,7 @@ public function destroy($COD_COMPRA, $COD_DEDUCCION)
     return redirect()->route('compras.deduccion', ['COD_COMPRA' => $COD_COMPRA])
         ->with('success', 'Deducción eliminada correctamente.');
 }
+
 
 
 

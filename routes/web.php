@@ -670,6 +670,10 @@ Route::get('estado_proyecto/{id}/check', [EstadoProyectoControllador::class, 'ch
         Route::patch('/actualizar/{COD_MANTENIMIENTO}', [GestionMantenimientoControlador::class, 'actualizarEstado'])->name('gestionMantenimiento.actualizarEstado');
     });
     ///////////////////////////////////////////////////////////////////*COMPRAS*//////////////////////////////////////////////////
+        Route::get('/compras/{id}/reporte', [DeduccionControlador::class, 'generarPDF'])->name('compras.reporte');
+        Route::get('/compras/pdfNoLiquidado', [ComprasControlador::class, 'pdfNoLiquidado'])->name('compras.pdfNoLiquidado');
+        Route::get('/compras/pdfLiquidado', [ComprasControlador::class, 'pdfLiquidado'])->name('compras.pdfLiquidado');
+        Route::get('/compras/pdf', [ComprasControlador::class, 'pdf'])->name('compras.pdf');
         Route::get('/compras', [ComprasControlador::class, 'index'])->name('compras.index');
         Route::post('compras/generar-gastos', [ComprasControlador::class, 'generarGastos'])->name('compras.generarGastos');
         Route::get('/compras/{COD_COMPRA}/deducciones', [DeduccionControlador::class, 'index'])->name('compras.deduccion');
@@ -677,7 +681,8 @@ Route::get('estado_proyecto/{id}/check', [EstadoProyectoControllador::class, 'ch
         Route::put('/compras/{COD_COMPRA}/deducciones/{COD_DEDUCCION}', [DeduccionControlador::class, 'update'])->name('compras.deduccion.update');
         Route::delete('/compras/{COD_COMPRA}/deducciones/{COD_DEDUCCION}', [DeduccionControlador::class, 'destroy'])->name('compras.deduccion.destroy');
         Route::post('/compras', [ComprasControlador::class, 'liquidarCompras'])->name('compras.liquidar');
-        
+        Route::get('/compras/reporte', [ComprasControlador::class, 'generarReporte'])->name('compras.reporte');
+
 
     //////////////////////////////////////////////////////////////////*CARGOS*//////////////////////////////////////////
     Route::get('/cargos/pdf', [CargosControlador::class, 'pdf'])->name('cargos.pdf');
